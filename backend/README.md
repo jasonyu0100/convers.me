@@ -58,7 +58,6 @@ DB_MAX_OVERFLOW=10
 DB_POOL_TIMEOUT=30
 FRONTEND_URL=http://localhost:3000
 REDIRECT_URL=http://localhost:3000/auth/callback
-CORS_ORIGINS=http://localhost:3000,http://convers.me,http://www.convers.me
 OPENAI_API_KEY=your_openai_api_key
 SECRET_KEY=your_secret_key - generate your own with: openssl rand -hex 32
 ALGORITHM=HS256

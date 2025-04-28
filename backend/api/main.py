@@ -81,8 +81,16 @@ app = FastAPI(title="convers.me API", description="API for convers.me platform",
 # Add startup time to app
 app.startup_time = time.time()
 
-# Setup CORS
-origins = os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(",")
+# Setup CORS with hardcoded domains
+origins = [
+    "http://localhost:3000",
+    "https://conversme-frontend.fly.dev",
+    "https://conversme-backend.fly.dev",
+    "http://convers.me",
+    "https://convers.me",
+    "http://www.convers.me",
+    "https://www.convers.me"
+]
 app.add_middleware(CORSMiddleware, allow_origins=origins,
                    allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
