@@ -146,9 +146,9 @@ elif [ -f fly.toml ] && [ "$DEPLOY_ONLY" = false ]; then
     echo -e "${BLUE}Using app name: $FLY_APP_NAME${NC}"
 fi
 
-# Set up Redis and Tigris if not skipped and not in deploy-only mode
+# Set up Redis if not skipped and not in deploy-only mode
 if [ "$SKIP_SERVICES" = false ] && [ "$DEPLOY_ONLY" = false ]; then
-    echo -e "${BLUE}Setting up Redis and Tigris services...${NC}"
+    echo -e "${BLUE}Setting up Redis service...${NC}"
 
     # Create Redis instance
     echo -e "${BLUE}Creating Redis instance...${NC}"
@@ -168,85 +168,9 @@ if [ "$SKIP_SERVICES" = false ] && [ "$DEPLOY_ONLY" = false ]; then
         echo -e "${YELLOW}Failed to attach Redis. It might already be attached.${NC}"
     fi
 
-    # Set up Tigris (using a volume for persistent storage)
-    echo -e "${BLUE}Creating Tigris volume...${NC}"
-    if flyctl volumes create tigris_data --region $REGION --size 10 --app $FLY_APP_NAME; then
-        echo -e "${GREEN}Tigris volume created successfully!${NC}"
-    else
-        echo -e "${YELLOW}Volume might already exist or there was an error.${NC}"
-        echo -e "Check existing volumes with: flyctl volumes list"
-    fi
-
-    # Creating Docker file for Tigris machine
-    echo -e "${BLUE}Creating Tigris Dockerfile...${NC}"
-    cat > tigris.Dockerfile << EOL
-FROM tigrisdata/tigris-local:latest
-
-EXPOSE 8081
-
-ENV TIGRIS_SERVER_HTTP_PORT=8081
-ENV TIGRIS_SERVER_DEFAULT_PROJECT=conversme
-ENV TIGRIS_SERVER_INITIALIZE_SCHEMA=true
-
-VOLUME /data
-
-HEALTHCHECK --interval=10s --timeout=5s --retries=3 CMD wget -O - http://localhost:8081/health || exit 1
-
-CMD ["tigris-server", "--http.addr=0.0.0.0:8081", "--data.path=/data"]
-EOL
-
-    # Create a fly.toml for the Tigris service
-    echo -e "${BLUE}Creating Tigris fly.toml configuration...${NC}"
-    TIGRIS_APP="${FLY_APP_NAME}-tigris"
-    cat > tigris.toml << EOL
-app = "${TIGRIS_APP}"
-primary_region = "${REGION}"
-
-[build]
-  dockerfile = "tigris.Dockerfile"
-
-[http_service]
-  internal_port = 8081
-  force_https = true
-  auto_stop_machines = true
-  auto_start_machines = true
-  min_machines_running = 1
-
-[mounts]
-  source = "tigris_data"
-  destination = "/data"
-
-[vm]
-  cpu_kind = "shared"
-  cpus = 1
-  memory_mb = 1024
-
-[[http_service.checks]]
-  interval = "10s"
-  timeout = "2s"
-  grace_period = "5s"
-  method = "GET"
-  path = "/health"
-  protocol = "http"
-EOL
-
-    echo -e "${BLUE}Deploying Tigris service...${NC}"
-    if flyctl launch --dockerfile tigris.Dockerfile --config tigris.toml --name $TIGRIS_APP --region $REGION --no-deploy; then
-        echo -e "${GREEN}Tigris configuration created!${NC}"
-
-        # Deploy the Tigris service
-        if flyctl deploy --config tigris.toml; then
-            echo -e "${GREEN}Tigris service deployed successfully!${NC}"
-        else
-            echo -e "${RED}Failed to deploy Tigris service.${NC}"
-        fi
-    else
-        echo -e "${RED}Failed to create Tigris configuration.${NC}"
-    fi
-
-    # Set environment variables for the backend
+    # Set environment variables for Tigris (which is already deployed)
     echo -e "${BLUE}Setting Tigris URL environment variable...${NC}"
-    TIGRIS_URL="https://${TIGRIS_APP}.fly.dev"
+    TIGRIS_URL="https://conversme-backend-tigris.fly.dev"
     if flyctl secrets set TIGRIS_URL="$TIGRIS_URL" TIGRIS_PROJECT="conversme" TIGRIS_BUCKET="media" USE_LOCAL_STORAGE="False" --app $FLY_APP_NAME; then
         echo -e "${GREEN}Tigris environment variables set successfully!${NC}"
     else
