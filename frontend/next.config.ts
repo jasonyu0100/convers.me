@@ -27,10 +27,10 @@ const nextConfig: NextConfig = {
   // Improve bundle chunking
   experimental: {
     optimizeCss: true, // Enable CSS optimization
-    optimizePackageImports: ['@heroicons/react', 'date-fns', 'recharts'],
+    optimizePackageImports: ['@heroicons/react', 'date-fns', 'recharts', 'framer-motion'],
     turbotrace: {
       logLevel: 'error',
-      memoryLimit: 5000, // Increase memory limit for faster builds
+      memoryLimit: 4000, // Reduced memory limit for more stable builds
       contextDirectory: '.',
     },
     // Enable enhanced caching
@@ -41,6 +41,8 @@ const nextConfig: NextConfig = {
     isrMemoryCacheSize: 50, // 50MB cache size for ISR
     // Skip duplicate work
     workerThreads: true,
+    // Enable modularization of imports
+    moduleSideEffectImports: true,
   },
 
   // Enable SWC minification for faster builds

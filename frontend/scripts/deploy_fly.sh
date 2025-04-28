@@ -110,9 +110,24 @@ fi
 echo -e "${BLUE}Cleaning build cache...${NC}"
 flyctl builds clear --app $FLY_APP_NAME || true
 
-# Deploy the application with optimized build
+# Optimize deployment strategy
 echo -e "${BLUE}Deploying application with optimized build...${NC}"
-flyctl deploy --app $FLY_APP_NAME --strategy immediate --remote-only --build-only=false --no-cache --vm-cpu-kind shared --vm-memory 2048
+
+# Set build memory limit
+export NEXT_PUBLIC_BUILD_MEMORY_LIMIT=3584
+export NEXT_PUBLIC_BUILD_OPTIMIZATION=true
+
+# Deploy with improved arguments
+flyctl deploy --app $FLY_APP_NAME \
+  --strategy canary \
+  --remote-only \
+  --build-only=false \
+  --vm-cpu-kind shared \
+  --vm-memory 2048 \
+  --build-arg NODE_ENV=production \
+  --build-arg NEXT_TELEMETRY_DISABLED=1 \
+  --build-arg NEXT_PUBLIC_BUILD_MEMORY_LIMIT=$NEXT_PUBLIC_BUILD_MEMORY_LIMIT \
+  --build-arg NEXT_PUBLIC_BUILD_OPTIMIZATION=$NEXT_PUBLIC_BUILD_OPTIMIZATION
 
 # Get app URL
 APP_URL=$(flyctl status --app $FLY_APP_NAME --json | jq -r '.Hostname' 2>/dev/null)

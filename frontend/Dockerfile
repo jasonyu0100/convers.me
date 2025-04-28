@@ -1,8 +1,8 @@
 FROM node:18-alpine AS deps
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install specific pnpm version for better reproducibility
+RUN corepack enable && corepack prepare pnpm@8.14.0 --activate
 
 # Copy package files
 COPY package.json package-lock.json* ./
@@ -10,17 +10,17 @@ COPY package.json package-lock.json* ./
 # Convert npm to pnpm format
 RUN pnpm import
 
-# Set up pnpm caching and install dependencies
-# This improves build speed by using a persistent cache
+# Set up pnpm caching and install dependencies with production flag
+# This improves build speed by using a persistent cache and skipping dev dependencies
 RUN --mount=type=cache,target=/root/.pnpm-store \
-    pnpm install --frozen-lockfile
+    pnpm install --frozen-lockfile --production
 
 # Rebuild the source code only when needed
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Install pnpm in builder stage
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install specific pnpm version in builder stage
+RUN corepack enable && corepack prepare pnpm@8.14.0 --activate
 
 # Copy source code first (excluding node_modules)
 COPY . .
@@ -33,9 +33,12 @@ COPY --from=deps /app/node_modules ./node_modules
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Prune unnecessary files before building
+RUN pnpm fly:prune
+
 # Build application with optimization flags
 RUN --mount=type=cache,target=/app/.next/cache \
-    pnpm fly:build
+    NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 pnpm fly:build
 
 # Production image
 FROM node:18-alpine AS runner

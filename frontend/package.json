@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "fly:build": "NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS='--max_old_space_size=4096' next build"
+    "fly:build": "NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS='--max_old_space_size=3584' next build",
+    "fly:prune": "find node_modules -type d -name '.git' -exec rm -rf {} +"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.2",

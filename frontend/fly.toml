@@ -46,6 +46,9 @@ kill_timeout = 5
   cpus = 1
   memory_mb = 2048
 
+# Configure resource allocation during build
 [build.args]
+  NEXT_PUBLIC_BUILD_MEMORY_LIMIT = "3584"
+  NEXT_PUBLIC_BUILD_OPTIMIZATION = "true"
   NODE_ENV = "production"
   NEXT_TELEMETRY_DISABLED = "1"
