@@ -41,7 +41,6 @@ const nextConfig: NextConfig = {
     isrMemoryCacheSize: 50, // 50MB cache size for ISR
     // Skip duplicate work
     workerThreads: true,
-    ppr: true,
   },
 
   // Enable SWC minification for faster builds

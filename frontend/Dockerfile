@@ -22,11 +22,12 @@ WORKDIR /app
 # Install pnpm in builder stage
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy node_modules
-COPY --from=deps /app/node_modules ./node_modules
-
-# Copy source code with smart layer caching
+# Copy source code first (excluding node_modules)
 COPY . .
+# Remove any existing node_modules to prevent conflicts
+RUN rm -rf node_modules
+# Copy node_modules after
+COPY --from=deps /app/node_modules ./node_modules
 
 # Set NODE_ENV to production during build
 ENV NODE_ENV=production

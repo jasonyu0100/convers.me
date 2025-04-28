@@ -14,12 +14,11 @@ kill_timeout = 5
   dockerfile = "Dockerfile"
 
   [build.cache]
-    mode = "aggressive"
+    mode = "default"
     layer_invalidation_policy = "fine-grained"
     ignore_all_dependency_changes = false
     volume_weights = [
-      { volume = "pnpm-store", weight = 10 },
-      { volume = "node_modules", weight = 10 }
+      { volume = "pnpm-store", weight = 10 }
     ]
 
 [http_service]

@@ -106,9 +106,13 @@ if ! git diff-index --quiet HEAD -- 2>/dev/null; then
     fi
 fi
 
+# Clean build cache first
+echo -e "${BLUE}Cleaning build cache...${NC}"
+flyctl builds clear --app $FLY_APP_NAME || true
+
 # Deploy the application with optimized build
 echo -e "${BLUE}Deploying application with optimized build...${NC}"
-flyctl deploy --app $FLY_APP_NAME --strategy immediate --remote-only --build-only=false --vm-cpu-kind shared --vm-memory 2048
+flyctl deploy --app $FLY_APP_NAME --strategy immediate --remote-only --build-only=false --no-cache --vm-cpu-kind shared --vm-memory 2048
 
 # Get app URL
 APP_URL=$(flyctl status --app $FLY_APP_NAME --json | jq -r '.Hostname' 2>/dev/null)
