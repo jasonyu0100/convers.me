@@ -59,7 +59,7 @@ export function LandingPage() {
   };
 
   return (
-    <div className='relative min-h-screen w-full overflow-x-hidden'>
+    <div className='relative min-h-screen w-full overflow-x-hidden pt-8'>
       {/* Enhanced gradient background */}
       <div className='fixed inset-0 bg-gradient-to-b from-white via-blue-100 to-blue-300'>
         {/* Subtle abstract shapes for visual depth */}
