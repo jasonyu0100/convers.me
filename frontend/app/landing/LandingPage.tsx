@@ -199,14 +199,14 @@ export function LandingPage() {
                   <div className='mr-4 flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 font-bold text-white'>1</div>
                   <h3 className='text-2xl font-bold text-blue-700'>Define Your Intention</h3>
                 </div>
-                <p className='mb-6 text-lg text-slate-600'>
+                <p className='mb-6 text-lg font-light text-blue-600'>
                   Just describe what you need to accomplish this week and the{' '}
                   <span className='bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text font-bold text-transparent'>system handles the rest</span>.
                 </p>
                 <ul className='space-y-3'>
                   <li className='flex'>
-                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100'>
-                      <svg className='h-3 w-3 text-blue-600' fill='currentColor' viewBox='0 0 20 20'>
+                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500'>
+                      <svg className='h-3 w-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
                         <path
                           fillRule='evenodd'
                           d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
@@ -214,11 +214,11 @@ export function LandingPage() {
                         />
                       </svg>
                     </div>
-                    <span className='text-slate-700'>AI matches your goals to SOPs</span>
+                    <span className='font-medium text-blue-800'>AI matches your goals to SOPs</span>
                   </li>
                   <li className='flex'>
-                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100'>
-                      <svg className='h-3 w-3 text-blue-600' fill='currentColor' viewBox='0 0 20 20'>
+                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500'>
+                      <svg className='h-3 w-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
                         <path
                           fillRule='evenodd'
                           d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
@@ -226,11 +226,11 @@ export function LandingPage() {
                         />
                       </svg>
                     </div>
-                    <span className='text-slate-700'>Understands natural language</span>
+                    <span className='font-medium text-blue-800'>Understands natural language</span>
                   </li>
                   <li className='flex'>
-                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100'>
-                      <svg className='h-3 w-3 text-blue-600' fill='currentColor' viewBox='0 0 20 20'>
+                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500'>
+                      <svg className='h-3 w-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
                         <path
                           fillRule='evenodd'
                           d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
@@ -238,7 +238,7 @@ export function LandingPage() {
                         />
                       </svg>
                     </div>
-                    <span className='text-slate-700'>Learns from past executions</span>
+                    <span className='font-medium text-blue-800'>Learns from past executions</span>
                   </li>
                 </ul>
               </div>
@@ -271,7 +271,7 @@ export function LandingPage() {
                   <div className='mr-4 flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 font-bold text-white'>2</div>
                   <h3 className='text-2xl font-bold text-blue-700'>AI-Generated Schedule</h3>
                 </div>
-                <p className='mb-6 text-lg text-slate-600'>
+                <p className='mb-6 text-lg font-light text-blue-600'>
                   Get a <span className='bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text font-bold text-transparent'>time-boxed plan</span> with
                   built-in adaptability that{' '}
                   <span className='bg-gradient-to-r from-purple-500 to-blue-600 bg-clip-text font-bold text-transparent'>
@@ -281,8 +281,8 @@ export function LandingPage() {
                 </p>
                 <ul className='space-y-3'>
                   <li className='flex'>
-                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100'>
-                      <svg className='h-3 w-3 text-blue-600' fill='currentColor' viewBox='0 0 20 20'>
+                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500'>
+                      <svg className='h-3 w-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
                         <path
                           fillRule='evenodd'
                           d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
@@ -290,11 +290,11 @@ export function LandingPage() {
                         />
                       </svg>
                     </div>
-                    <span className='text-slate-700'>Adapts to changing priorities</span>
+                    <span className='font-medium text-blue-800'>Adapts to changing priorities</span>
                   </li>
                   <li className='flex'>
-                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100'>
-                      <svg className='h-3 w-3 text-blue-600' fill='currentColor' viewBox='0 0 20 20'>
+                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500'>
+                      <svg className='h-3 w-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
                         <path
                           fillRule='evenodd'
                           d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
@@ -302,11 +302,11 @@ export function LandingPage() {
                         />
                       </svg>
                     </div>
-                    <span className='text-slate-700'>Respects your calendar</span>
+                    <span className='font-medium text-blue-800'>Respects your calendar</span>
                   </li>
                   <li className='flex'>
-                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100'>
-                      <svg className='h-3 w-3 text-blue-600' fill='currentColor' viewBox='0 0 20 20'>
+                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500'>
+                      <svg className='h-3 w-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
                         <path
                           fillRule='evenodd'
                           d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
@@ -314,7 +314,7 @@ export function LandingPage() {
                         />
                       </svg>
                     </div>
-                    <span className='text-slate-700'>Adjusts to workload changes</span>
+                    <span className='font-medium text-blue-800'>Adjusts to workload changes</span>
                   </li>
                 </ul>
               </div>
@@ -486,15 +486,15 @@ export function LandingPage() {
                   <div className='mr-4 flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 font-bold text-white'>3</div>
                   <h3 className='text-2xl font-bold text-blue-700'>Step-by-Step Execution</h3>
                 </div>
-                <p className='mb-6 text-lg text-slate-600'>
+                <p className='mb-6 text-lg font-light text-blue-600'>
                   Follow <span className='bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text font-bold text-transparent'>guided execution</span> with
                   automatic documentation to ensure{' '}
                   <span className='bg-gradient-to-r from-purple-500 to-blue-600 bg-clip-text font-bold text-transparent'>SOP compliance</span> at every step.
                 </p>
                 <ul className='space-y-3'>
                   <li className='flex'>
-                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100'>
-                      <svg className='h-3 w-3 text-blue-600' fill='currentColor' viewBox='0 0 20 20'>
+                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500'>
+                      <svg className='h-3 w-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
                         <path
                           fillRule='evenodd'
                           d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
@@ -502,11 +502,11 @@ export function LandingPage() {
                         />
                       </svg>
                     </div>
-                    <span className='text-slate-700'>AI guidance at each step</span>
+                    <span className='font-medium text-blue-800'>AI guidance at each step</span>
                   </li>
                   <li className='flex'>
-                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100'>
-                      <svg className='h-3 w-3 text-blue-600' fill='currentColor' viewBox='0 0 20 20'>
+                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500'>
+                      <svg className='h-3 w-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
                         <path
                           fillRule='evenodd'
                           d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
@@ -514,11 +514,11 @@ export function LandingPage() {
                         />
                       </svg>
                     </div>
-                    <span className='text-slate-700'>Automatic documentation</span>
+                    <span className='font-medium text-blue-800'>Automatic documentation</span>
                   </li>
                   <li className='flex'>
-                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100'>
-                      <svg className='h-3 w-3 text-blue-600' fill='currentColor' viewBox='0 0 20 20'>
+                    <div className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500'>
+                      <svg className='h-3 w-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
                         <path
                           fillRule='evenodd'
                           d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
@@ -526,7 +526,7 @@ export function LandingPage() {
                         />
                       </svg>
                     </div>
-                    <span className='text-slate-700'>Clear progress tracking</span>
+                    <span className='font-medium text-blue-800'>Clear progress tracking</span>
                   </li>
                 </ul>
               </div>
