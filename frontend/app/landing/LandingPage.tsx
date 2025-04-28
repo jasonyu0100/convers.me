@@ -59,7 +59,7 @@ export function LandingPage() {
   };
 
   return (
-    <div className='relative min-h-screen w-full overflow-x-hidden pt-8'>
+    <div className='relative min-h-screen w-full overflow-x-hidden pt-20'>
       {/* Enhanced gradient background */}
       <div className='fixed inset-0 bg-gradient-to-b from-white via-blue-100 to-blue-300'>
         {/* Subtle abstract shapes for visual depth */}
@@ -99,7 +99,7 @@ export function LandingPage() {
       </div>
 
       {/* Enhanced Hero Section */}
-      <section className='relative z-10 flex min-h-screen flex-col items-center justify-center px-4 text-center'>
+      <section className='relative z-10 flex min-h-[90vh] flex-col items-center justify-center px-4 text-center'>
         {/* Floating light elements */}
         <div className='pointer-events-none absolute inset-0'>
           <div className='absolute top-1/4 left-1/4 h-2 w-2 animate-pulse rounded-full bg-blue-200 shadow-lg shadow-blue-200/50'></div>
