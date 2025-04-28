@@ -5,7 +5,7 @@ primary_region = "sjc"
   dockerfile = "Dockerfile"
 
   [build.args]
-    BUILDKIT_INLINE_CACHE=1
+    BUILDKIT_INLINE_CACHE="1"
 
   [build.cache]
     mode = "shared"
@@ -23,7 +23,7 @@ primary_region = "sjc"
   ALGORITHM = "HS256"
   ACCESS_TOKEN_EXPIRE_MINUTES = "60"
   UPLOAD_DIR = "/app/uploads"
-  MAX_UPLOAD_SIZE = "10485760"  # 10MB
+  MAX_UPLOAD_SIZE = "10485760"
   ALLOWED_EXTENSIONS = "jpg,jpeg,png,gif,mp3,mp4,wav,pdf,doc,docx"
   LOG_LEVEL = "INFO"
   FRONTEND_URL = "https://conversme-frontend.fly.dev"

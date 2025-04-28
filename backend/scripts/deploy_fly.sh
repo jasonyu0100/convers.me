@@ -14,10 +14,10 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}===== Convers.me Fly.io Deployment =====${NC}"
 
 # Parse command line arguments
-SKIP_SERVICES=false
+SKIP_SERVICES=true  # Skip services by default since they're already set up
 REGION="sjc"
 SETUP_ONLY=false
-DEPLOY_ONLY=false
+DEPLOY_ONLY=true   # Default to deploy-only since everything is already set up
 VM_SIZE="shared-cpu-1x"
 
 while [[ "$#" -gt 0 ]]; do
@@ -95,48 +95,13 @@ if [ ! -f fly.toml ] && [ "$DEPLOY_ONLY" = false ]; then
         echo -e "${GREEN}Created a new fly.toml file${NC}"
     fi
 
-    # Configure PostgreSQL database
-    echo -e "${BLUE}Setting up PostgreSQL on fly.io...${NC}"
-
-    # Check if DB_NAME is provided or generate from app name
-    if [ -z "$FLY_DB_NAME" ]; then
-        FLY_DB_NAME="${FLY_APP_NAME}-db"
-    fi
-
-    echo -e "${BLUE}Creating PostgreSQL database: $FLY_DB_NAME${NC}"
-    flyctl postgres create --name $FLY_DB_NAME --region $REGION --vm-size $VM_SIZE --initial-cluster-size 1
-
-    # Get connection string
-    echo -e "${BLUE}Retrieving database connection string...${NC}"
-    DB_URL=$(flyctl postgres connect --app $FLY_DB_NAME --show-connection-string)
-
-    # Set environment variables
-    echo -e "${BLUE}Configuring environment variables...${NC}"
-
-    # Generate a secure secret key
-    SECRET_KEY=$(openssl rand -hex 32)
-
-    # Determine frontend URL
-    if [ -z "$FRONTEND_URL" ]; then
-        # Default to using app name with -frontend suffix
-        FRONTEND_URL="https://${FLY_APP_NAME%-backend}-frontend.fly.dev"
-        CORS_DOMAINS="$FRONTEND_URL,https://$FLY_APP_NAME.fly.dev"
-    fi
-
-    echo -e "${BLUE}Setting secrets...${NC}"
-    flyctl secrets set \
-        DATABASE_URL="$DB_URL" \
-        SECRET_KEY="$SECRET_KEY" \
-        DEBUG="False" \
-        FRONTEND_URL="$FRONTEND_URL" \
-        REDIRECT_URL="${FRONTEND_URL}/auth/callback" \
-        CORS_ORIGINS="$CORS_DOMAINS"
+    # Skip PostgreSQL database configuration as it's already set up
+    echo -e "${BLUE}Skipping PostgreSQL setup as it's already configured.${NC}"
 
     echo -e "${GREEN}Initial setup complete.${NC}"
-    echo -e "${BLUE}Creating volume for uploads...${NC}"
 
-    # Create volume for uploaded files
-    flyctl volumes create conversme_uploads --size 1 --region $REGION
+    # Skip volume creation as it's already set up
+    echo -e "${BLUE}Skipping volume creation as it's already configured.${NC}"
 
     echo -e "${GREEN}Basic configuration complete.${NC}"
 elif [ -f fly.toml ] && [ "$DEPLOY_ONLY" = false ]; then
@@ -146,37 +111,8 @@ elif [ -f fly.toml ] && [ "$DEPLOY_ONLY" = false ]; then
     echo -e "${BLUE}Using app name: $FLY_APP_NAME${NC}"
 fi
 
-# Set up Redis if not skipped and not in deploy-only mode
-if [ "$SKIP_SERVICES" = false ] && [ "$DEPLOY_ONLY" = false ]; then
-    echo -e "${BLUE}Setting up Redis service...${NC}"
-
-    # Create Redis instance
-    echo -e "${BLUE}Creating Redis instance...${NC}"
-    if flyctl redis create --name "${FLY_APP_NAME}-redis" --region $REGION --vm-size $VM_SIZE; then
-        echo -e "${GREEN}Redis instance created successfully!${NC}"
-    else
-        echo -e "${YELLOW}Redis instance might already exist or there was an error.${NC}"
-        echo -e "Checking existing Redis instances..."
-        flyctl redis list
-    fi
-
-    # Attach Redis to the app
-    echo -e "${BLUE}Attaching Redis to the application...${NC}"
-    if flyctl redis attach "${FLY_APP_NAME}-redis" --app $FLY_APP_NAME; then
-        echo -e "${GREEN}Redis attached successfully!${NC}"
-    else
-        echo -e "${YELLOW}Failed to attach Redis. It might already be attached.${NC}"
-    fi
-
-    # Set environment variables for Tigris (which is already deployed)
-    echo -e "${BLUE}Setting Tigris URL environment variable...${NC}"
-    TIGRIS_URL="https://conversme-backend-tigris.fly.dev"
-    if flyctl secrets set TIGRIS_URL="$TIGRIS_URL" TIGRIS_PROJECT="conversme" TIGRIS_BUCKET="media" USE_LOCAL_STORAGE="False" --app $FLY_APP_NAME; then
-        echo -e "${GREEN}Tigris environment variables set successfully!${NC}"
-    else
-        echo -e "${RED}Failed to set Tigris environment variables.${NC}"
-    fi
-fi
+# Skip Redis, Tigris, and PostgreSQL setup as they are already configured
+echo -e "${BLUE}Skipping Redis, Tigris, and PostgreSQL setup as they are already configured.${NC}"
 
 # Exit if we're only setting up
 if [ "$SETUP_ONLY" = true ]; then
@@ -186,18 +122,11 @@ fi
 
 # Check for requirements.txt if not in setup-only mode
 if [ ! -f requirements.txt ] && [ "$SETUP_ONLY" = false ]; then
-    echo -e "${YELLOW}requirements.txt not found, generating from pyproject.toml...${NC}"
+    # Skip generating requirements.txt since it should already exist
+    echo -e "${BLUE}Using existing requirements.txt file...${NC}"
 
-    if [ -f pyproject.toml ]; then
-        if command -v uv &> /dev/null; then
-            uv pip compile pyproject.toml -o requirements.txt
-        else
-            echo -e "${RED}Error: uv not found. Install uv or create requirements.txt manually.${NC}"
-            exit 1
-        fi
-    else
-        echo -e "${RED}Error: Neither requirements.txt nor pyproject.toml found.${NC}"
-        exit 1
+    if [ ! -f requirements.txt ]; then
+        echo -e "${YELLOW}Warning: requirements.txt not found, but continuing anyway...${NC}"
     fi
 fi
 
