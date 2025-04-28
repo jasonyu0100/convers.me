@@ -1,0 +1,21 @@
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Dependencies
+node_modules/
+
+# Generated files
+*.generated.*
+database.types.ts
+
+# Config files
+next.config.ts
+tailwind.config.js
+postcss.config.mjs
+eslint.config.mjs
+
+# Public assets
+public/

@@ -1,0 +1,57 @@
+{
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.wordWrapColumn": 160,
+
+  // ----------------------------------------
+  // Frontend Development Settings (JavaScript/TypeScript)
+  // ----------------------------------------
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.singleQuote": true,
+  "prettier.jsxSingleQuote": true,
+  "prettier.trailingComma": "all",
+  "prettier.printWidth": 160,
+  "prettier.tabWidth": 2,
+  "prettier.useTabs": false,
+  "prettier.endOfLine": "auto",
+  "eslint.workingDirectories": ["./frontend"],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+
+  // ----------------------------------------
+  // Backend Development Settings (Python)
+  // ----------------------------------------
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.wordWrapColumn": 160
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.wordWrapColumn": 160
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.wordWrapColumn": 160
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.wordWrapColumn": 160
+  },
+  "black-formatter.args": ["--line-length=160", "--fast", "--preview"],
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.autoImportCompletions": true,
+
+  // ----------------------------------------
+  // Shared Settings
+  // ----------------------------------------
+  "editor.codeActionsOnSave": {
+    // Frontend
+    "source.fixAll.eslint": true,
+    "source.organizeImports": true,
+    // Backend Python
+    "source.organizeImports.isort": true
+  }
+}

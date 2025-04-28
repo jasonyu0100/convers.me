@@ -1,0 +1,79 @@
+# flyctl launch added from .gitignore
+# Python bytecode
+**/__pycache__
+**/*.py[cod]
+**/*$py.class
+**/*.so
+**/.Python
+
+# Distribution / packaging
+**/dist
+**/build
+**/*.egg-info
+
+# Virtual environments
+**/.env
+**/.venv
+**/env
+**/venv
+**/ENV
+**/.uv
+
+# Local development settings
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+
+# IDE files
+**/.idea
+**/.vscode
+**/*.swp
+**/*.swo
+**/*~
+**/.DS_Store
+
+# Log files
+**/*.log
+**/logs
+
+# Test cache
+**/.pytest_cache
+**/.coverage
+**/htmlcov
+
+# Uploads directory content
+**/uploads/*
+!**/uploads/.gitkeep
+
+# Alembic auto-generated migration content
+**/migrations/versions/__pycache__
+
+# Temporary files
+**/*.tmp
+**/*.bak
+**/*.swp
+**/*~
+
+# Fly.io
+**/fly.local.toml
+
+# Other
+**/temp_files
+
+# Celery beat
+**/celerybeat-schedule
+**/celerybeat-schedule-shm
+**/celerybeat-schedule-wal
+
+# flyctl launch added from .pytest_cache/.gitignore
+# Created by pytest automatically.
+.pytest_cache/**/*
+
+# flyctl launch added from .ruff_cache/.gitignore
+# Automatically created by ruff.
+.ruff_cache/**/*
+
+# flyctl launch added from .venv/.gitignore
+.venv/**/*
+fly.toml

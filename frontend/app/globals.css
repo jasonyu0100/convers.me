@@ -1,0 +1,53 @@
+@import 'tailwindcss';
+
+.creato-thin {
+  font-family: var(--font-creato-thin);
+  font-weight: 100;
+}
+
+.creato-light {
+  font-family: var(--font-creato-light);
+  font-weight: 300;
+}
+
+.creato-regular {
+  font-family: var(--font-creato-regular);
+  font-weight: 400;
+}
+
+.creato-medium {
+  font-family: var(--font-creato-medium);
+  font-weight: 500;
+}
+
+.creato-bold {
+  font-family: var(--font-creato-bold);
+  font-weight: 700;
+}
+
+.creato-extraBold {
+  font-family: var(--font-creato-extraBold);
+  font-weight: 800;
+}
+
+.creato-black {
+  font-family: var(--font-creato-black);
+  font-weight: 900;
+}
+
+.permanent-marker {
+  font-family: var(--font-marker);
+  font-weight: normal;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+}

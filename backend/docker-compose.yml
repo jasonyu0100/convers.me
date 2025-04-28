@@ -1,0 +1,147 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  tigris:
+    image: tigrisdata/tigris-local:latest
+    ports:
+      - "8081:8081"
+    volumes:
+      - tigris-data:/data
+    environment:
+      TIGRIS_SERVER_HTTP_PORT: 8081
+      TIGRIS_SERVER_DEFAULT_PROJECT: conversme
+      TIGRIS_SERVER_INITIALIZE_SCHEMA: "true"
+    healthcheck:
+      test: ["CMD", "wget", "-O", "-", "http://localhost:8081/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # PostgreSQL service for local development
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "15432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: conversme
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # Your existing FastAPI app service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - ./uploads:/app/uploads
+    environment:
+      - DEBUG=True
+      - API_WORKERS=2
+      - DB_POOL_SIZE=5
+      - DB_MAX_OVERFLOW=10
+      - DB_POOL_TIMEOUT=30
+      - LOG_ALL_QUERIES=False
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - UPLOAD_DIR=/app/uploads
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - TIGRIS_URL=http://tigris:8081
+      - TIGRIS_PROJECT=conversme
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/conversme
+    # Run migrations with our robust script
+    command: >
+      bash -c "
+        ./scripts/migrate_db.sh &&
+        uvicorn app:app --host 0.0.0.0 --port 8080 --workers 2
+      "
+    depends_on:
+      - redis
+      - tigris
+      - postgres
+    restart: unless-stopped
+
+  # Celery worker
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A worker.celery_app worker -l INFO -Q notifications,media,events,celery
+    volumes:
+      - .:/app
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - TIGRIS_URL=http://tigris:8081
+      - TIGRIS_PROJECT=conversme
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/conversme
+    depends_on:
+      - redis
+      - tigris
+      - postgres
+      - api
+    restart: unless-stopped
+
+  # Celery beat scheduler
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A worker.celery_app beat -l INFO
+    volumes:
+      - .:/app
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/conversme
+    depends_on:
+      - redis
+      - worker
+    restart: unless-stopped
+
+  # Flower for monitoring Celery tasks (optional)
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A worker.celery_app flower --port=5555 --url_prefix=flower
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/conversme
+    depends_on:
+      - redis
+      - worker
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+  tigris-data:
+  postgres-data:

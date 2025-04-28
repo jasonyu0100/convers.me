@@ -1,0 +1,46 @@
+INFO:db.database:Connecting to database at: localhost:15432/conversme
+
+ -------------- celery@jasonyu.local v5.3.6 (emerald-rush)
+--- ***** -----
+-- ******* ---- macOS-14.6-arm64-arm-64bit 2025-04-26 18:51:26
+- *** --- * ---
+- ** ---------- [config]
+- ** ---------- .> app:         convers.me:0x107f2a030
+- ** ---------- .> transport:   redis://localhost:6379/1
+- ** ---------- .> results:     redis://localhost:6379/2
+- *** --- * --- .> concurrency: 8 (prefork)
+-- ******* ---- .> task events: OFF (enable -E to monitor tasks in this worker)
+--- ***** -----
+ -------------- [queues]
+                .> celery           exchange=celery(direct) key=celery
+                .> events           exchange=events(direct) key=events
+                .> media            exchange=media(direct) key=media
+                .> notifications    exchange=notifications(direct) key=notifications
+
+[tasks]
+  . tasks.event_tasks.notify_event_updates
+  . tasks.event_tasks.process_event_invitations
+  . tasks.event_tasks.send_event_reminders
+  . tasks.media_processing_tasks.process_media
+  . tasks.notification_tasks.mark_notifications_as_read
+  . tasks.notification_tasks.send_bulk_notifications
+  . tasks.notification_tasks.send_notification
+
+[2025-04-26 18:51:27,091: WARNING/MainProcess] /Users/jasonyu/Documents/github/convers.me/backend/.venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py:507: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2025-04-26 18:51:27,104: INFO/MainProcess] Connected to redis://localhost:6379/1
+[2025-04-26 18:51:27,104: WARNING/MainProcess] /Users/jasonyu/Documents/github/convers.me/backend/.venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py:507: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2025-04-26 18:51:27,109: INFO/MainProcess] mingle: searching for neighbors
+[2025-04-26 18:51:28,120: INFO/MainProcess] mingle: sync with 1 nodes
+[2025-04-26 18:51:28,121: INFO/MainProcess] mingle: sync complete
+[2025-04-26 18:51:28,135: INFO/MainProcess] celery@jasonyu.local ready.
+[2025-04-26 18:51:28,742: WARNING/MainProcess] Substantial drift from celery@ad0689d9b8a1 may mean clocks are out of sync.  Current drift is 36000 seconds.  [orig: 2025-04-26 18:51:28.742371 recv: 2025-04-26 08:51:28.738819]

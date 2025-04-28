@@ -1,0 +1,1 @@
+export { FeedWeeklySchedule } from './FeedWeeklySchedule';

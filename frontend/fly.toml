@@ -1,0 +1,52 @@
+app = "conversme-frontend"
+primary_region = "sjc"
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+[experimental]
+  auto_rollback = true
+
+[env]
+  PORT = "3000"
+  NODE_ENV = "production"
+
+[build]
+  dockerfile = "Dockerfile"
+
+  [build.cache]
+    mode = "aggressive"
+    layer_invalidation_policy = "fine-grained"
+    ignore_all_dependency_changes = false
+    volume_weights = [
+      { volume = "pnpm-store", weight = 10 },
+      { volume = "node_modules", weight = 10 }
+    ]
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 1000
+    soft_limit = 800
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  timeout = "5s"
+  path = "/"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 2048
+
+[build.args]
+  NODE_ENV = "production"
+  NEXT_TELEMETRY_DISABLED = "1"
