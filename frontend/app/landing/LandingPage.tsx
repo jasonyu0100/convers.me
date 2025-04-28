@@ -85,8 +85,8 @@ export function LandingPage() {
             <button onClick={() => router.push('/features')} className='hidden text-sm font-medium text-blue-700 hover:text-blue-800 md:block'>
               Features
             </button>
-            <button onClick={() => router.push('/login?mode=signup')} className='text-sm font-medium text-blue-700 hover:text-blue-800'>
-              Sign Up
+            <button onClick={() => router.push('/login')} className='text-sm font-medium text-blue-700 hover:text-blue-800'>
+              Sign In
             </button>
             <button
               onClick={() => window.open('https://calendly.com/jasonyu0100/15min', '_blank')}
