@@ -25,7 +25,7 @@ export function ScheduleDetails() {
   const selectedDirectory = mockDirectories.find((dir) => dir.id === formState.directoryId);
 
   return (
-    <div className='flex h-full w-full flex-col items-center justify-center'>
+    <div className='flex h-full w-full flex-col items-center justify-center p-6'>
       {selectedEventType && (
         <div className='w-full max-w-xl space-y-6'>
           {/* Preview header */}

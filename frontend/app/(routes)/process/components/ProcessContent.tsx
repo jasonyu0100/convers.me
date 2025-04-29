@@ -1,11 +1,11 @@
 import { useApp } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
-import { ArrowLeftIcon, CalendarDaysIcon, DocumentDuplicateIcon, FolderIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { CalendarDaysIcon, DocumentDuplicateIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import { useProcess } from '../hooks';
 import { ConnectedEventsList } from './connected-events';
-import { DirectoryMapView } from './DirectoryMapView';
+import { ProcessGridView } from './grid-view';
 import { ProcessListView } from './list-view';
 import { ProcessEditor } from './process-editor';
 
@@ -37,9 +37,18 @@ export function ProcessContent() {
   // name for clarity in the code
   const directoryProcesses = processes;
 
-  // If no process is selected and not creating a new list, show the directory/process map view
+  // If no process is selected and not creating a new list, show the directory/process grid view
   if (!selectedList && !isCreatingNewList) {
-    return <DirectoryMapView />;
+    return (
+      <ProcessGridView
+        directories={allDirectories}
+        processes={processes}
+        onSelectDirectory={setSelectedDirectoryId}
+        onSelectProcess={handleProcessesSelect}
+        onCreateProcess={handleCreateNewList}
+        selectedDirectoryId={selectedDirectoryId}
+      />
+    );
   }
 
   // If we're creating a new template or have a selected process,
@@ -51,26 +60,9 @@ export function ProcessContent() {
       <div className='sticky top-0 z-10 border-b border-slate-200 bg-white/90 px-8 py-4 backdrop-blur-sm'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center'>
-            <button
-              onClick={() => {
-                // Clear process selection but keep directory selection
-                handleProcessesSelect('');
-              }}
-              className='mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200'
-              title='Back to Directory'
-            >
-              <ArrowLeftIcon className='h-4 w-4' />
-            </button>
-
             {selectedDirectory && (
               <div className='flex items-center'>
-                <div
-                  className={`mr-2 flex h-6 w-6 items-center justify-center rounded-full ${
-                    selectedDirectory.color || 'bg-gradient-to-r from-blue-500 to-indigo-500'
-                  }`}
-                >
-                  <FolderIcon className='h-3 w-3 text-white' />
-                </div>
+                <div className={`mr-2 h-2 w-2 rounded-full bg-gradient-to-r ${selectedDirectory.color || 'from-blue-500 to-indigo-500'}`}></div>
                 <span className='mr-2 text-sm font-medium text-slate-600'>{selectedDirectory.name} /</span>
                 <span className='text-sm font-medium text-slate-900'>{isCreatingNewList ? 'New Process Template' : selectedList?.title}</span>
                 {!isCreatingNewList && selectedList?.isTemplate && (

@@ -32,39 +32,55 @@ export function ProcessSidebarItem({ list, isSelected }: ProcessSidebarItemProps
   };
 
   const completion = calculateCompletion();
+  const processColor = list.color || 'from-blue-500 to-indigo-500';
+  const isTemplate = list.isTemplate === true;
 
   return (
     <button
-      className={`group w-full rounded-xl px-3 py-2.5 text-left transition-all ${
-        isSelected
-          ? 'border border-blue-200 bg-blue-50 text-blue-700 shadow-sm'
-          : 'border border-transparent text-slate-700 hover:border-slate-200/80 hover:bg-white/80 hover:shadow-sm'
-      }`}
+      className={`relative flex w-full flex-col rounded-lg border text-left ${
+        isSelected ? 'border-blue-200 bg-blue-50 shadow-sm' : 'border-slate-200 bg-white hover:border-blue-200 hover:shadow-sm'
+      } overflow-hidden transition-all`}
       onClick={() => handleProcessSelect(list.id)}
     >
-      <div className='mb-1.5 flex items-center'>
-        <div className={`mr-2.5 h-3 w-3 flex-shrink-0 rounded-full ${list.color || 'bg-gradient-to-r from-blue-500 to-indigo-500'}`}></div>
-        <div className='min-w-0 flex-1'>
-          <h3 className='truncate text-sm font-medium'>{list.title}</h3>
-        </div>
-      </div>
+      {/* Top colored bar */}
+      <div className={`h-1 w-full bg-gradient-to-r ${processColor}`}></div>
 
-      {totalSteps > 0 && (
-        <>
-          <div className='mb-1.5 flex items-center gap-2 pl-1.5'>
-            <div className='flex items-center text-xs text-slate-500'>
-              <DocumentTextIcon className='mr-1 h-3 w-3' />
-              {totalSteps} {totalSteps === 1 ? 'step' : 'steps'}
+      <div className='p-3'>
+        {/* Process header */}
+        <div className='flex items-center justify-between'>
+          <h3 className={`text-sm font-medium ${isSelected ? 'text-blue-700' : 'text-slate-700'} truncate`}>{list.title}</h3>
+          {isTemplate && <span className='ml-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-xs text-blue-600'>Template</span>}
+        </div>
+
+        {/* Process description if available */}
+        {list.description && (
+          <p className='mt-1 line-clamp-1 text-xs text-slate-500' title={list.description}>
+            {list.description}
+          </p>
+        )}
+
+        {/* Process steps and progress */}
+        {totalSteps > 0 && (
+          <div className='mt-2'>
+            <div className='flex items-center justify-between text-xs'>
+              <div className='flex items-center text-slate-500'>
+                <DocumentTextIcon className='mr-1 h-3 w-3' />
+                <span>
+                  {totalSteps} {totalSteps === 1 ? 'step' : 'steps'}
+                </span>
+              </div>
+              <span className={`font-medium ${completion === 100 ? 'text-green-600' : 'text-blue-600'}`}>{completion}%</span>
             </div>
 
-            {completion > 0 && <div className={`h-1.5 w-1.5 rounded-full ${completion === 100 ? 'bg-green-500' : 'bg-amber-400'}`}></div>}
+            <div className='mt-1.5 h-1 w-full overflow-hidden rounded-full bg-slate-100'>
+              <div
+                className={`h-1 rounded-full ${completion === 100 ? 'bg-green-500' : 'bg-gradient-to-r from-blue-500 to-indigo-500'} transition-all`}
+                style={{ width: `${completion}%` }}
+              ></div>
+            </div>
           </div>
-
-          <div className='h-1 w-full overflow-hidden rounded-full bg-slate-100'>
-            <div className='h-1 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all' style={{ width: `${completion}%` }}></div>
-          </div>
-        </>
-      )}
+        )}
+      </div>
     </button>
   );
 }
