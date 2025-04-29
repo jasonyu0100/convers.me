@@ -577,9 +577,9 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Weekly Planner - Sleek & Modern Horizontal Layout */}
-      <section className='relative z-10 bg-gradient-to-b from-white to-blue-50 py-16 md:py-24'>
-        <div className='mx-auto max-w-6xl px-4 md:px-8'>
+      {/* Weekly Planner - Sleek & Modern Layout (Mobile Compatible) */}
+      <section className='relative z-10 bg-gradient-to-b from-white to-blue-50 py-12 md:py-24'>
+        <div className='mx-auto max-w-6xl px-3 md:px-8'>
           <h2 className='mb-4 text-center text-3xl font-bold text-blue-700 md:text-4xl'>Integrated Weekly Planning</h2>
           <p className='mx-auto mb-12 max-w-2xl text-center text-lg text-blue-600/80'>
             <span className='bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text font-bold text-transparent'>Clear schedules</span> with{' '}
@@ -588,13 +588,13 @@ export function LandingPage() {
           </p>
 
           {/* Modern Monday-Friday Planner */}
-          <div className='relative mb-12 overflow-hidden rounded-xl bg-white p-6 shadow-lg md:p-8'>
+          <div className='relative mb-12 overflow-hidden rounded-xl bg-white p-4 shadow-lg md:p-8'>
             {/* Decorative elements */}
             <div className='absolute top-0 right-0 h-32 w-32 translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-50 opacity-50'></div>
             <div className='absolute bottom-0 left-0 h-24 w-24 -translate-x-1/2 translate-y-1/2 rounded-full bg-blue-50 opacity-50'></div>
 
             {/* Weekday Cards */}
-            <div className='grid grid-cols-5 gap-3 md:gap-4'>
+            <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 md:gap-4 lg:grid-cols-5'>
               {/* Monday */}
               <div className='flex flex-col overflow-hidden rounded-lg border border-slate-100 bg-gradient-to-br from-slate-50 to-white shadow-sm transition-all hover:shadow-md'>
                 <div className='border-b border-slate-100 bg-slate-50/50 p-3'>
@@ -726,12 +726,19 @@ export function LandingPage() {
               </div>
             </div>
 
-            {/* Weekly Progress Bar */}
+            {/* Weekly Progress Bar - Mobile Friendly */}
             <div className='mt-8 px-1'>
               <div className='h-1 w-full overflow-hidden rounded-full bg-slate-100'>
                 <div className='h-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600' style={{ width: '51%' }}></div>
               </div>
               <div className='mt-4 flex justify-between text-xs text-slate-500'>
+                <span>M</span>
+                <span>T</span>
+                <span>W</span>
+                <span>T</span>
+                <span>F</span>
+              </div>
+              <div className='mt-2 hidden justify-between text-xs text-slate-500 sm:flex'>
                 <span>Monday</span>
                 <span>Tuesday</span>
                 <span>Wednesday</span>
