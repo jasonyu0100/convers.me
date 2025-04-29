@@ -3,11 +3,11 @@
 import { useApp } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
 import { Divider } from '@/app/components/ui/dividers/Divider';
-import { ArrowLeftIcon, CalendarDaysIcon, FolderIcon, FolderPlusIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { CalendarDaysIcon, FolderIcon, FolderPlusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { useProcess } from '../../hooks';
-import { CreateDirectoryModal } from '../CreateDirectoryModal';
+import { DirectoryModal } from '../directory-modal';
 import { ProcessSidebarItem } from './ProcessSidebarItem';
 
 export function ProcessSidebar() {
@@ -184,12 +184,7 @@ export function ProcessSidebar() {
         </div>
 
         {/* Create directory modal */}
-        <CreateDirectoryModal
-          isOpen={isCreatingNewDirectory}
-          onClose={closeCreateDirectoryModal}
-          onSuccess={handleDirectoryCreated}
-          parentDirectoryId={undefined}
-        />
+        <DirectoryModal isOpen={isCreatingNewDirectory} onClose={closeCreateDirectoryModal} onSuccess={handleDirectoryCreated} parentDirectoryId={undefined} />
       </div>
     );
   } else {
@@ -199,11 +194,6 @@ export function ProcessSidebar() {
         <div className='flex-1 overflow-y-auto'>
           {/* Directory header with back button */}
           <div className='mb-4'>
-            <button onClick={handleBackToDirectories} className='mb-4 flex items-center text-sm font-medium text-slate-600 hover:text-blue-600'>
-              <ArrowLeftIcon className='mr-1.5 h-3.5 w-3.5' />
-              Back to Directories
-            </button>
-
             <div className='flex items-center justify-between'>
               <div className='flex items-center'>
                 <div className={`h-2 w-2 rounded-full bg-gradient-to-r ${directoryColor} mr-2`}></div>

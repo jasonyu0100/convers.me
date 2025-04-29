@@ -1,116 +1,95 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
+import { LibraryContextType } from '../types';
 
-export interface ProcessStep {
-  title: string;
-  description: string;
-}
-
-export interface LibraryProcess {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  icon: React.ReactNode;
-  benefits: string[];
-  steps: ProcessStep[];
-  saves?: number;
-  createdBy?: string;
-  createdAt?: string;
-}
-
-export interface ProcessDirectory {
-  id: string;
-  name: string;
-  description: string;
-  processes: LibraryProcess[];
-  color?: string;
-}
-
-export interface LibraryCollection {
-  id: string;
-  title: string;
-  description: string;
-  coverImage?: string;
-  author: {
-    name: string;
-    avatar?: string;
-  };
-  categories: string[];
-  popularity: number;
-  directories: ProcessDirectory[];
-  createdAt: string;
-}
-
-interface LibraryContextType {
-  isLoading: boolean;
-  error: Error | null;
-  selectedCategory: string;
-  selectedCollection: string | null;
-  collections: LibraryCollection[];
-  setSelectedCategory: (category: string) => void;
-  setSelectedCollection: (id: string | null) => void;
-  handleProcessSelect: (id: string) => void;
-  saveCollection: (id: string) => void;
-  clearError: () => void;
-}
-
+/**
+ * Context for managing library state
+ * Provides state and actions for library functionality
+ */
 const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
 
-export const LibraryProvider: React.FC = ({ children }) => {
+interface LibraryProviderProps {
+  children: React.ReactNode;
+}
+
+/**
+ * Provider component for library functionality
+ * Manages state and provides context for all library components
+ */
+export function LibraryProvider({ children }: LibraryProviderProps) {
+  // State for loading and errors
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
+  // State for category and collection selection
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
+
   const router = useRouter();
   const { isAuthenticated } = useAuth();
 
-  const handleProcessSelect = (id: string) => {
-    if (isAuthenticated) {
-      router.push(`/process?templateId=${id}`);
-    } else {
-      router.push(`/login?redirect=/process&templateId=${id}`);
-    }
-  };
+  /**
+   * Handle selecting a process template
+   * Navigates to the process page with the template ID
+   */
+  const handleProcessSelect = useCallback(
+    (id: string) => {
+      if (isAuthenticated) {
+        router.push(`/process?templateId=${id}`);
+      } else {
+        router.push(`/login?redirect=/process&templateId=${id}`);
+      }
+    },
+    [isAuthenticated, router],
+  );
 
-  const saveCollection = (id: string) => {
-    // In a real implementation, this would call an API to save the collection
+  /**
+   * Save a collection to the user's library
+   * In a real implementation, this would call an API
+   */
+  const saveCollection = useCallback((id: string) => {
+    // This would call an API to save the collection
     console.log('Saving collection', id);
     // For now, just show a message
     alert('Collection saved to your library!');
-  };
+  }, []);
 
-  const clearError = () => {
+  /**
+   * Clear any errors in the library context
+   */
+  const clearError = useCallback(() => {
     setError(null);
+  }, []);
+
+  const contextValue: LibraryContextType = {
+    isLoading,
+    error,
+    selectedCategory,
+    selectedCollection,
+    collections: [], // This will be populated by useLibrary
+    setSelectedCategory,
+    setSelectedCollection,
+    handleProcessSelect,
+    saveCollection,
+    clearError,
   };
 
-  return (
-    <LibraryContext.Provider
-      value={{
-        isLoading,
-        error,
-        selectedCategory,
-        selectedCollection,
-        collections: [], // This will be populated by useLibrary
-        setSelectedCategory,
-        setSelectedCollection,
-        handleProcessSelect,
-        saveCollection,
-        clearError,
-      }}
-    >
-      {children}
-    </LibraryContext.Provider>
-  );
-};
+  return <LibraryContext.Provider value={contextValue}>{children}</LibraryContext.Provider>;
+}
 
-export const useLibraryContext = () => {
+/**
+ * Hook for accessing library context
+ * Returns library state and actions
+ */
+export function useLibraryContext() {
   const context = useContext(LibraryContext);
+
   if (context === undefined) {
     throw new Error('useLibraryContext must be used within a LibraryProvider');
   }
+
   return context;
-};
+}

@@ -3,12 +3,13 @@
 import { QueryKeys, useApiMutation } from '@/app/lib/reactQuery';
 import { ProcessService } from '@/app/services';
 import { CreateProcessSubStepData, UpdateProcessSubStepData } from '@/app/services/processService';
-import { ProcessSchema } from '@/app/types/schema';
+import { ProcessSchema, StepSchema } from '@/app/types/schema';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
 /**
- * Hook for managing substeps functionality extracted from useProcess
+ * Hook for managing process substeps functionality
+ * Handles substep operations like add, edit, delete, and completion tracking
  */
 export function useProcessSubsteps(handleError: (error: any) => void) {
   const queryClient = useQueryClient();
@@ -48,7 +49,7 @@ export function useProcessSubsteps(handleError: (error: any) => void) {
                 if (s.completed !== allSubStepsCompleted) {
                   ProcessService.updateStep(stepId, {
                     completed: allSubStepsCompleted,
-                  }).catch((e) => {});
+                  }).catch((e) => handleError(e));
                 }
 
                 return {
@@ -207,17 +208,11 @@ export function useProcessSubsteps(handleError: (error: any) => void) {
   /**
    * Checks if a step has substeps
    */
-  const hasSubSteps = useCallback((step: any) => {
-    // Safely check for substeps
+  const hasSubSteps = useCallback((step: StepSchema) => {
     if (!step) return false;
     if (!step.subSteps) return false;
+    if (!Array.isArray(step.subSteps)) return false;
 
-    // Handle case where subSteps is not in the expected format
-    if (!Array.isArray(step.subSteps)) {
-      return false;
-    }
-
-    // Verify the array has content
     return step.subSteps.length > 0;
   }, []);
 

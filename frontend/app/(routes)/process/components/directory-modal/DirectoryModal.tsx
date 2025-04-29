@@ -4,7 +4,7 @@ import { Dialog } from '@/app/components/ui/dialog/Dialog';
 import { CreateDirectoryData, DirectoryService } from '@/app/services/directoryService';
 import { useEffect, useState } from 'react';
 
-interface CreateDirectoryModalProps {
+interface DirectoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (directoryId: string) => void;
@@ -24,7 +24,11 @@ const colorOptions = [
   { name: 'Gray', value: 'bg-gray-500' },
 ];
 
-export function CreateDirectoryModal({ isOpen, onClose, onSuccess, parentDirectoryId }: CreateDirectoryModalProps) {
+/**
+ * Modal component for creating a new directory
+ * Provides form controls for name, description and color selection
+ */
+export function DirectoryModal({ isOpen, onClose, onSuccess, parentDirectoryId }: DirectoryModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState('bg-blue-500');

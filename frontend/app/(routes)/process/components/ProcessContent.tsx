@@ -1,14 +1,67 @@
 import { useApp } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
-import { CalendarDaysIcon, DocumentDuplicateIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { CalendarDaysIcon, PlusIcon, StarIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import { useProcess } from '../hooks';
 import { ConnectedEventsList } from './connected-events';
+import { ProcessHeader } from './common/ProcessHeader';
 import { ProcessGridView } from './grid-view';
 import { ProcessListView } from './list-view';
 import { ProcessEditor } from './process-editor';
 
+/**
+ * ProcessDetail component for displaying process details
+ */
+function ProcessDetail({ selectedList, onToggleFavorite, onCreateEvent, onAddStep }) {
+  return (
+    <>
+      {/* Title and button */}
+      <div className='mb-6 flex items-center justify-between'>
+        <div className='flex items-center'>
+          <h1 className='mr-3 text-2xl font-bold text-gray-800'>{selectedList?.title || 'Process'}</h1>
+          <button onClick={onToggleFavorite} className='text-slate-400 hover:text-yellow-500'>
+            {selectedList?.favorite ? <StarIconSolid className='h-5 w-5 text-yellow-500' /> : <StarIcon className='h-5 w-5' />}
+          </button>
+        </div>
+        <button onClick={onCreateEvent} className='flex items-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-white'>
+          <CalendarDaysIcon className='mr-2 h-4 w-4' />
+          <span>Create Event from Template</span>
+        </button>
+      </div>
+
+      {/* Description */}
+      <div className='mb-8 rounded-xl border border-slate-200/70 bg-white/80 p-6 shadow-sm'>
+        <p className='text-slate-700'>{selectedList?.description || 'No description provided for this process template.'}</p>
+      </div>
+
+      {/* Steps */}
+      <div className='mb-8'>
+        <div className='mb-4 flex items-center justify-between'>
+          <div className='flex items-center text-lg font-semibold text-gray-800'>
+            <span className='mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-medium text-blue-600'>
+              {selectedList?.steps?.length || 0}
+            </span>
+            Process Steps
+          </div>
+          <button className='flex items-center rounded-full border border-blue-200 px-4 py-1.5 text-sm font-medium text-blue-600' onClick={onAddStep}>
+            <PlusIcon className='mr-1.5 h-4 w-4' />
+            Add Step
+          </button>
+        </div>
+
+        <div className='rounded-xl border border-slate-200/70 bg-white/80 shadow-sm'>
+          <ProcessListView />
+        </div>
+      </div>
+    </>
+  );
+}
+
+/**
+ * Main content component for the Process section
+ * Handles rendering the appropriate view based on selection state
+ */
 export function ProcessContent() {
   const {
     processes,
@@ -30,12 +83,11 @@ export function ProcessContent() {
   // Get the selected directory
   const selectedDirectory = allDirectories?.find((dir) => dir.id === selectedDirectoryId);
 
-  // Get process IDs from the selected directory
-  const filteredProcessIds = selectedDirectory && Array.isArray(selectedDirectory.processes) ? selectedDirectory.processes : [];
-
-  // The processes are already filtered in the context, but we keep the variable
-  // name for clarity in the code
-  const directoryProcesses = processes;
+  // Handle creating an event from template
+  const handleCreateEvent = () => {
+    router.push(`/schedule?processId=${selectedList?.id || ''}`);
+    app.setMainView(AppRoute.SCHEDULE);
+  };
 
   // If no process is selected and not creating a new list, show the directory/process grid view
   if (!selectedList && !isCreatingNewList) {
@@ -47,54 +99,30 @@ export function ProcessContent() {
         onSelectProcess={handleProcessesSelect}
         onCreateProcess={handleCreateNewList}
         selectedDirectoryId={selectedDirectoryId}
+        onBackFromDirectory={() => {
+          /* Handle back navigation from directory view if needed */
+          router.back();
+        }}
       />
     );
   }
 
-  // If we're creating a new template or have a selected process,
-  // show the process detail view with template editor or process content
+  // Get the directory color if available
+  const dirColor = selectedDirectory?.color || 'from-blue-500 to-indigo-500';
 
+  // If creating a new process or editing existing process
   return (
     <div className='flex h-full w-full flex-col overflow-hidden'>
       {/* Header */}
-      <div className='sticky top-0 z-10 border-b border-slate-200 bg-white/90 px-8 py-4 backdrop-blur-sm'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center'>
-            {selectedDirectory && (
-              <div className='flex items-center'>
-                <div className={`mr-2 h-2 w-2 rounded-full bg-gradient-to-r ${selectedDirectory.color || 'from-blue-500 to-indigo-500'}`}></div>
-                <span className='mr-2 text-sm font-medium text-slate-600'>{selectedDirectory.name} /</span>
-                <span className='text-sm font-medium text-slate-900'>{isCreatingNewList ? 'New Process Template' : selectedList?.title}</span>
-                {!isCreatingNewList && selectedList?.isTemplate && (
-                  <span className='ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800'>Template</span>
-                )}
-              </div>
-            )}
-          </div>
-
-          {selectedList && !isCreatingNewList && (
-            <div className='flex space-x-2'>
-              <button
-                onClick={() => handleDuplicateList(selectedList.id)}
-                className='rounded-full p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-600'
-                title='Duplicate'
-              >
-                <DocumentDuplicateIcon className='h-4.5 w-4.5' />
-              </button>
-              <button onClick={() => handleCreateNewList()} className='rounded-full p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-600' title='Edit'>
-                <PencilIcon className='h-4.5 w-4.5' />
-              </button>
-              <button
-                onClick={() => handleDeleteList(selectedList.id)}
-                className='rounded-full p-2 text-slate-500 hover:bg-red-50 hover:text-red-600'
-                title='Delete'
-              >
-                <TrashIcon className='h-4.5 w-4.5' />
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+      <ProcessHeader
+        directoryName={selectedDirectory?.name}
+        processName={isCreatingNewList ? 'New Process Template' : selectedList?.title}
+        isDetailView={true}
+        onDuplicate={() => selectedList && handleDuplicateList(selectedList.id)}
+        onEdit={handleCreateNewList}
+        onDelete={() => selectedList && handleDeleteList(selectedList.id)}
+        color={dirColor}
+      />
 
       {/* Content */}
       <div className='flex-1 overflow-auto p-8'>
@@ -102,53 +130,12 @@ export function ProcessContent() {
           <ProcessEditor />
         ) : selectedList ? (
           <div>
-            {/* Title and button */}
-            <div className='mb-6 flex items-center justify-between'>
-              <div className='flex items-center'>
-                <h1 className='mr-3 text-2xl font-bold text-gray-800'>{selectedList?.title || 'Process'}</h1>
-                <button onClick={() => toggleFavorite(selectedList?.id || '')} className='text-slate-400 hover:text-yellow-500'>
-                  {selectedList?.favorite ? <StarIconSolid className='h-5 w-5 text-yellow-500' /> : <StarIcon className='h-5 w-5' />}
-                </button>
-              </div>
-              <button
-                onClick={() => {
-                  router.push(`/schedule?processId=${selectedList?.id || ''}`);
-                  app.setMainView(AppRoute.SCHEDULE);
-                }}
-                className='flex items-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-white'
-              >
-                <CalendarDaysIcon className='mr-2 h-4 w-4' />
-                <span>Create Event from Template</span>
-              </button>
-            </div>
-
-            {/* Description */}
-            <div className='mb-8 rounded-xl border border-slate-200/70 bg-white/80 p-6 shadow-sm'>
-              <p className='text-slate-700'>{selectedList?.description || 'No description provided for this process template.'}</p>
-            </div>
-
-            {/* Steps */}
-            <div className='mb-8'>
-              <div className='mb-4 flex items-center justify-between'>
-                <div className='flex items-center text-lg font-semibold text-gray-800'>
-                  <span className='mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-medium text-blue-600'>
-                    {selectedList?.steps?.length || 0}
-                  </span>
-                  Process Steps
-                </div>
-                <button
-                  className='flex items-center rounded-full border border-blue-200 px-4 py-1.5 text-sm font-medium text-blue-600'
-                  onClick={() => handleAddStep(selectedList?.id || '')}
-                >
-                  <PlusIcon className='mr-1.5 h-4 w-4' />
-                  Add Step
-                </button>
-              </div>
-
-              <div className='rounded-xl border border-slate-200/70 bg-white/80 shadow-sm'>
-                <ProcessListView />
-              </div>
-            </div>
+            <ProcessDetail
+              selectedList={selectedList}
+              onToggleFavorite={() => selectedList && toggleFavorite(selectedList.id)}
+              onCreateEvent={handleCreateEvent}
+              onAddStep={() => selectedList && handleAddStep(selectedList.id)}
+            />
 
             {/* Related Events */}
             {selectedList?.connectedEvents && selectedList.connectedEvents.length > 0 && <ConnectedEventsList events={selectedList.connectedEvents} />}

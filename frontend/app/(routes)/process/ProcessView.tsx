@@ -1,20 +1,19 @@
 import { AppHeader } from '@/app/components/app/AppHeader';
 import { ErrorDisplay } from '@/app/components/ui/errors';
 import { PageLoading } from '@/app/components/ui/loading';
-import { ProcessContent as ProcessMainContent, ProcessSidebar } from './components';
+import { ProcessContent, ProcessSidebar } from './components';
 import { useProcess } from './hooks/useProcess';
 import { useProcessHeader } from './hooks/useProcessHeader';
 
 /**
- * Content component for the Processes section
- * This handles loading and error states
+ * Main view component for the Process section
+ * Handles loading and error states, renders the process UI
  */
 export function ProcessView() {
-  // Get header configuration from the processes header hook
+  // Get header configuration from the process header hook
   const headerProps = useProcessHeader();
   const { isLoading, error, clearError } = useProcess();
 
-  // Handle loading state
   if (isLoading) {
     return (
       <div className='flex h-full w-full flex-col'>
@@ -26,7 +25,6 @@ export function ProcessView() {
     );
   }
 
-  // Handle error state
   if (error) {
     return (
       <div className='flex h-full w-full flex-col'>
@@ -52,7 +50,7 @@ export function ProcessView() {
       {/* Main content area with sidebar and process content */}
       <div className='flex flex-1 overflow-hidden'>
         <ProcessSidebar />
-        <ProcessMainContent />
+        <ProcessContent />
       </div>
     </div>
   );

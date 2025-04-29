@@ -8,7 +8,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 
 /**
- * Hook for managing steps functionality extracted from useProcess
+ * Hook for managing process steps functionality
+ * Handles step operations like add, edit, delete, and completion tracking
  */
 export function useProcessSteps(handleError: (error: any) => void) {
   const queryClient = useQueryClient();
@@ -17,8 +18,7 @@ export function useProcessSteps(handleError: (error: any) => void) {
   // Complete step mutation
   const completeStepMutation = useApiMutation(
     async ({ processId, stepId, completed }: { processId: string; stepId: string; completed: boolean }) => {
-      // Find the step
-      // Need to get current processes from the cache or props
+      // Get current processes from the cache
       const processes = queryClient.getQueryData<ProcessSchema[]>(QueryKeys.process.all) || [];
       const process = processes.find((p) => p.id === processId);
       const step = process?.steps?.find((s) => s.id === stepId);
@@ -246,6 +246,15 @@ export function useProcessSteps(handleError: (error: any) => void) {
     });
   }, []);
 
+  // Check if a step has substeps
+  const hasSubSteps = useCallback((step: StepSchema) => {
+    if (!step) return false;
+    if (!step.subSteps) return false;
+    if (!Array.isArray(step.subSteps)) return false;
+
+    return step.subSteps.length > 0;
+  }, []);
+
   return {
     expandedStepIds,
     handleCompleteStep,
@@ -255,5 +264,6 @@ export function useProcessSteps(handleError: (error: any) => void) {
     handleEditStep,
     handleDeleteStep,
     initializeExpandedSteps,
+    hasSubSteps,
   };
 }

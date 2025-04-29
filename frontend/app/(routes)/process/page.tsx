@@ -7,29 +7,22 @@ import { ProcessView } from './ProcessView';
 import { PageLoading } from '@/app/components/ui/loading';
 
 /**
- * Wrapper component that ensures autoselection of directory and process
+ * ProcessPage wrapper that handles initialization and selection persistence
+ * Ensures directories and processes are selected properly on navigation and first load
  */
-function ProcessWrapper() {
-  const {
-    allDirectories,
-    processes,
-    setSelectedDirectoryId: contextSetSelectedDirectoryId,
-    selectedDirectoryId,
-    handleProcessesSelect,
-    selectedList,
-    isLoading,
-  } = useProcess();
+function ProcessPage() {
+  const { allDirectories, processes, setSelectedDirectoryId, selectedDirectoryId, handleProcessesSelect, selectedList, isLoading } = useProcess();
   const [initializationComplete, setInitializationComplete] = useState(false);
 
-  // Select directory and save to localStorage
+  // Select directory and persist to localStorage
   const selectDirectory = (dirId: string | null) => {
     if (typeof window !== 'undefined' && dirId) {
       localStorage.setItem('process_selected_directory', dirId);
     }
-    contextSetSelectedDirectoryId(dirId);
+    setSelectedDirectoryId(dirId);
   };
 
-  // Select process and save to localStorage
+  // Select process and persist to localStorage
   const selectProcess = (processId: string) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('process_selected_process', processId);
@@ -37,20 +30,18 @@ function ProcessWrapper() {
     handleProcessesSelect(processId);
   };
 
-  // Handle initial selection only if nothing is currently selected
+  // Handle initial selections
   useEffect(() => {
     // Set a timeout to avoid infinite loading state
     const timeoutId = setTimeout(() => {
       setInitializationComplete(true);
     }, 2000);
 
-    // Check if we're coming back from another view (as with back button press)
-    // If we already have a directory or process selected, we'll assume we're returning and skip selection
+    // Check if we already have a selection (coming back from another view)
     const hasExistingSelection = selectedDirectoryId !== null || selectedList !== null;
 
     if (!isLoading && allDirectories.length > 0 && !hasExistingSelection) {
-      // We only do auto-selection on first initialization, not on back navigation
-      // Check localStorage first
+      // Restore saved selections if available
       const savedDir = localStorage.getItem('process_selected_directory');
       const savedProcess = localStorage.getItem('process_selected_process');
 
@@ -64,7 +55,7 @@ function ProcessWrapper() {
       }
     }
 
-    // Once we've loaded directories or made selections, we're done initializing
+    // Once we've loaded directories, we're done initializing
     if (!isLoading && allDirectories.length > 0) {
       setInitializationComplete(true);
     }
@@ -72,7 +63,7 @@ function ProcessWrapper() {
     return () => clearTimeout(timeoutId);
   }, [allDirectories, processes, selectedDirectoryId, selectedList, isLoading]);
 
-  // Brief loading state only when data is available but selections aren't made yet
+  // Brief loading state when data is available but selections aren't made yet
   if (!initializationComplete && !isLoading && allDirectories.length > 0) {
     return (
       <div className='flex h-full w-full flex-col'>
@@ -87,12 +78,13 @@ function ProcessWrapper() {
 }
 
 /**
- * Root processes page component for direct URL access
+ * Root processes page component
+ * Sets up the provider and context for process management
  */
 export default function Page() {
   return (
     <ProcessProvider>
-      <ProcessWrapper />
+      <ProcessPage />
     </ProcessProvider>
   );
 }

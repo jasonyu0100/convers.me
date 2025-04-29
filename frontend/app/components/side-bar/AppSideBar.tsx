@@ -90,12 +90,6 @@ const NAV_ITEMS: SideBarNavItem[] = [
     icon: <HomeIcon className='size-5' />,
   },
   {
-    label: 'Calendar',
-    route: '/calendar',
-    appRoute: AppRoute.CALENDAR,
-    icon: <CalendarIcon className='size-5' />,
-  },
-  {
     label: 'Process',
     route: '/process',
     appRoute: AppRoute.PROCESS,
@@ -106,6 +100,12 @@ const NAV_ITEMS: SideBarNavItem[] = [
     route: '/library',
     appRoute: AppRoute.LIBRARY,
     icon: <GlobeAltIcon className='size-5' />,
+  },
+  {
+    label: 'Calendar',
+    route: '/calendar',
+    appRoute: AppRoute.CALENDAR,
+    icon: <CalendarIcon className='size-5' />,
   },
   {
     label: 'Insight',

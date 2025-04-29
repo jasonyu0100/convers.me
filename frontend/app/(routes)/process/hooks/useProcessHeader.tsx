@@ -7,14 +7,33 @@ import { useCallback, useState, useMemo } from 'react';
 import { useProcess } from './useProcess';
 
 /**
- * Custom hook for Processes header with specialized search functionality
+ * Custom hook for managing Process header configuration
+ * Provides title, search functionality, and other header properties
  */
 export function useProcessHeader() {
+  // Get base header properties from the app header hook
   const baseHeader = useAppHeader(AppRoute.PROCESS);
   const { setLoading, handleError } = useRouteComponent();
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Processes-specific search functionality with error handling
+  // Get process context to access selected directory for dynamic title
+  const { selectedDirectoryId, selectedList, allDirectories } = useProcess();
+
+  // Dynamic title based on current view
+  const title = useMemo(() => {
+    if (selectedList) {
+      return selectedList.title || 'Process';
+    }
+
+    if (selectedDirectoryId) {
+      const directory = allDirectories.find((dir) => dir.id === selectedDirectoryId);
+      return directory ? `${directory.name}` : 'Directory';
+    }
+
+    return 'Process Manager';
+  }, [selectedDirectoryId, selectedList, allDirectories]);
+
+  // Process-specific search functionality
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent) => {
       try {
@@ -26,6 +45,7 @@ export function useProcessHeader() {
     [handleError],
   );
 
+  // Process search submit handler
   const handleSearchSubmit = useCallback(
     (value: string) => {
       try {
@@ -33,8 +53,8 @@ export function useProcessHeader() {
 
         setLoading(true);
         console.log('Searching processes for:', value);
-        // Implement processes-specific search logic here
-        // This could search across processes titles, tasks, descriptions, etc.
+        // Process-specific search logic would be implemented here
+        // For now, this is a placeholder for future functionality
       } catch (error) {
         handleError(error);
       } finally {
@@ -43,23 +63,6 @@ export function useProcessHeader() {
     },
     [setLoading, handleError],
   );
-
-  // Get process context to access selected directory
-  const { selectedDirectoryId, selectedList, allDirectories } = useProcess();
-  
-  // Get dynamic title based on the current view
-  const title = useMemo(() => {
-    if (selectedList) {
-      return selectedList.title || 'Process';
-    }
-    
-    if (selectedDirectoryId) {
-      const directory = allDirectories.find(dir => dir.id === selectedDirectoryId);
-      return directory ? `${directory.name}` : 'Directory';
-    }
-    
-    return 'Directory Map';
-  }, [selectedDirectoryId, selectedList, allDirectories]);
 
   return {
     ...baseHeader,

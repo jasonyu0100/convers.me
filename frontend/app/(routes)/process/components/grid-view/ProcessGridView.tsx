@@ -3,6 +3,7 @@
 import { DirectorySchema, ProcessSchema } from '@/app/types/schema';
 import { FolderIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useMemo } from 'react';
+import { ProcessHeader } from '../common/ProcessHeader';
 
 // Process card component for the grid view
 const ProcessCard = ({ process, onClick }: { process: ProcessSchema; onClick: () => void }) => {
@@ -83,9 +84,18 @@ interface ProcessGridViewProps {
   onSelectProcess: (id: string) => void;
   onCreateProcess?: () => void;
   selectedDirectoryId?: string;
+  onBackFromDirectory?: () => void; // Handler for navigating back from the directories view
 }
 
-export function ProcessGridView({ directories, processes, onSelectDirectory, onSelectProcess, onCreateProcess, selectedDirectoryId }: ProcessGridViewProps) {
+export function ProcessGridView({
+  directories,
+  processes,
+  onSelectDirectory,
+  onSelectProcess,
+  onCreateProcess,
+  selectedDirectoryId,
+  onBackFromDirectory,
+}: ProcessGridViewProps) {
   // Get the selected directory
   const selectedDirectory = useMemo(() => directories.find((dir) => dir.id === selectedDirectoryId), [directories, selectedDirectoryId]);
 
@@ -98,64 +108,66 @@ export function ProcessGridView({ directories, processes, onSelectDirectory, onS
   // If no directory is selected, show all directories
   if (!selectedDirectoryId) {
     return (
-      <div className='flex h-full w-full flex-col p-6'>
-        <h2 className='mb-6 text-2xl font-bold text-slate-800'>Process Directories</h2>
+      <div className='flex h-full w-full flex-col overflow-hidden'>
+        <ProcessHeader directoryName='Process Directories' onBack={onBackFromDirectory} isDetailView={!!onBackFromDirectory} />
 
-        <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
-          {directories.map((directory) => {
-            // Count processes in this directory
-            const directoryProcesses = processes.filter((p) => p.directoryId === directory.id);
-            const templateCount = directoryProcesses.filter((p) => p.isTemplate).length;
-            const directoryColor = directory.color || 'from-blue-500 to-indigo-500';
+        <div className='flex-1 overflow-auto p-6'>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
+            {directories.map((directory) => {
+              // Count processes in this directory
+              const directoryProcesses = processes.filter((p) => p.directoryId === directory.id);
+              const templateCount = directoryProcesses.filter((p) => p.isTemplate).length;
+              const directoryColor = directory.color || 'from-blue-500 to-indigo-500';
 
-            return (
-              <div
-                key={directory.id}
-                className='relative flex aspect-[3/2] cursor-pointer flex-col rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md'
-                onClick={() => onSelectDirectory(directory.id)}
-              >
-                {/* Top colored bar */}
-                <div className={`h-1.5 w-full rounded-t-xl bg-gradient-to-r ${directoryColor}`}></div>
+              return (
+                <div
+                  key={directory.id}
+                  className='relative flex aspect-[3/2] cursor-pointer flex-col rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md'
+                  onClick={() => onSelectDirectory(directory.id)}
+                >
+                  {/* Top colored bar */}
+                  <div className={`h-1.5 w-full rounded-t-xl bg-gradient-to-r ${directoryColor}`}></div>
 
-                {/* Content */}
-                <div className='flex flex-1 flex-col p-5'>
-                  <h3 className='mb-2 text-lg font-semibold text-slate-800'>{directory.name}</h3>
+                  {/* Content */}
+                  <div className='flex flex-1 flex-col p-5'>
+                    <h3 className='mb-2 text-lg font-semibold text-slate-800'>{directory.name}</h3>
 
-                  {directory.description ? (
-                    <p className='mb-auto line-clamp-3 text-sm text-slate-600'>{directory.description}</p>
-                  ) : (
-                    <div className='mb-auto'></div>
-                  )}
-
-                  <div className='mt-2 flex items-center justify-between text-sm text-slate-500'>
-                    <div className='flex items-center'>
-                      <FolderIcon className='mr-1.5 h-4 w-4 text-slate-400' />
-                      <span>
-                        {directoryProcesses.length} {directoryProcesses.length === 1 ? 'process' : 'processes'}
-                      </span>
-                    </div>
-                    {templateCount > 0 && (
-                      <span className='rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700'>
-                        {templateCount} {templateCount === 1 ? 'template' : 'templates'}
-                      </span>
+                    {directory.description ? (
+                      <p className='mb-auto line-clamp-3 text-sm text-slate-600'>{directory.description}</p>
+                    ) : (
+                      <div className='mb-auto'></div>
                     )}
+
+                    <div className='mt-2 flex items-center justify-between text-sm text-slate-500'>
+                      <div className='flex items-center'>
+                        <FolderIcon className='mr-1.5 h-4 w-4 text-slate-400' />
+                        <span>
+                          {directoryProcesses.length} {directoryProcesses.length === 1 ? 'process' : 'processes'}
+                        </span>
+                      </div>
+                      {templateCount > 0 && (
+                        <span className='rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700'>
+                          {templateCount} {templateCount === 1 ? 'template' : 'templates'}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {/* Add directory button */}
-          <div
-            className='flex aspect-[3/2] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/50 hover:bg-slate-50'
-            onClick={() => {
-              /* Add directory creation logic here */
-            }}
-          >
-            <div className='mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100'>
-              <PlusIcon className='h-6 w-6 text-slate-400' />
+            {/* Add directory button */}
+            <div
+              className='flex aspect-[3/2] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/50 hover:bg-slate-50'
+              onClick={() => {
+                /* Add directory creation logic here */
+              }}
+            >
+              <div className='mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100'>
+                <PlusIcon className='h-6 w-6 text-slate-400' />
+              </div>
+              <p className='text-sm font-medium text-slate-500'>Create New Directory</p>
             </div>
-            <p className='text-sm font-medium text-slate-500'>Create New Directory</p>
           </div>
         </div>
       </div>
@@ -164,49 +176,58 @@ export function ProcessGridView({ directories, processes, onSelectDirectory, onS
 
   // If a directory is selected, show its details and processes
   return (
-    <div className='flex h-full w-full flex-col p-6'>
-      {/* Directory summary */}
-      <div className='mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
-        <div className='mb-4 border-b border-slate-100 pb-4'>
-          <h1 className='mb-1 text-2xl font-bold text-slate-800'>{selectedDirectory?.name}</h1>
-          {selectedDirectory?.description && <p className='text-slate-600'>{selectedDirectory.description}</p>}
-        </div>
+    <div className='flex h-full w-full flex-col overflow-hidden'>
+      <ProcessHeader
+        directoryName={selectedDirectory?.name}
+        onBack={() => onSelectDirectory('')}
+        isDetailView={true}
+        color={selectedDirectory?.color || 'from-blue-500 to-indigo-500'}
+      />
 
-        <div className='flex items-center text-sm text-slate-500'>
-          <span>
-            {filteredProcesses.length} {filteredProcesses.length === 1 ? 'process' : 'processes'}
-          </span>
-          <span className='mx-2'>•</span>
-          <span>{filteredProcesses.filter((p) => p.isTemplate).length} templates</span>
-        </div>
-      </div>
-
-      {/* Processes grid */}
-      <div className='mb-6 flex items-center justify-between'>
-        <h2 className='text-xl font-semibold text-slate-800'>Processes</h2>
-        <button
-          onClick={() => onCreateProcess && onCreateProcess()}
-          className='flex items-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm text-white hover:shadow-md'
-        >
-          <PlusIcon className='mr-1.5 h-4 w-4' />
-          New Process
-        </button>
-      </div>
-
-      <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-        {filteredProcesses.map((process) => (
-          <ProcessCard key={process.id} process={process} onClick={() => onSelectProcess(process.id)} />
-        ))}
-
-        {/* Add process button */}
-        <div
-          className='flex aspect-[4/3] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white/50 hover:bg-slate-50'
-          onClick={() => onCreateProcess && onCreateProcess()}
-        >
-          <div className='mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100'>
-            <PlusIcon className='h-6 w-6 text-slate-400' />
+      <div className='flex-1 overflow-auto p-6'>
+        {/* Directory summary */}
+        <div className='mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
+          <div className='mb-4 border-b border-slate-100 pb-4'>
+            <h1 className='mb-1 text-2xl font-bold text-slate-800'>{selectedDirectory?.name}</h1>
+            {selectedDirectory?.description && <p className='text-slate-600'>{selectedDirectory.description}</p>}
           </div>
-          <p className='text-sm font-medium text-slate-500'>Create New Process</p>
+
+          <div className='flex items-center text-sm text-slate-500'>
+            <span>
+              {filteredProcesses.length} {filteredProcesses.length === 1 ? 'process' : 'processes'}
+            </span>
+            <span className='mx-2'>•</span>
+            <span>{filteredProcesses.filter((p) => p.isTemplate).length} templates</span>
+          </div>
+        </div>
+
+        {/* Processes grid */}
+        <div className='mb-6 flex items-center justify-between'>
+          <h2 className='text-xl font-semibold text-slate-800'>Processes</h2>
+          <button
+            onClick={() => onCreateProcess && onCreateProcess()}
+            className='flex items-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm text-white hover:shadow-md'
+          >
+            <PlusIcon className='mr-1.5 h-4 w-4' />
+            New Process
+          </button>
+        </div>
+
+        <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+          {filteredProcesses.map((process) => (
+            <ProcessCard key={process.id} process={process} onClick={() => onSelectProcess(process.id)} />
+          ))}
+
+          {/* Add process button */}
+          <div
+            className='flex aspect-[4/3] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white/50 hover:bg-slate-50'
+            onClick={() => onCreateProcess && onCreateProcess()}
+          >
+            <div className='mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100'>
+              <PlusIcon className='h-6 w-6 text-slate-400' />
+            </div>
+            <p className='text-sm font-medium text-slate-500'>Create New Process</p>
+          </div>
         </div>
       </div>
     </div>

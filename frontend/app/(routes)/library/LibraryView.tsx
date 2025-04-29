@@ -5,8 +5,12 @@ import { LibrarySidebar, LibraryContent } from './components';
 import { useLibrary } from './hooks/useLibrary';
 import { useLibraryHeader } from './hooks/useLibraryHeader';
 
+/**
+ * Main view component for the Library section
+ * Handles the layout and error/loading states for the library module
+ */
 export function LibraryView() {
-  // Get header configuration
+  // Get header configuration from the library header hook
   const headerProps = useLibraryHeader();
   const { isLoading, error, clearError } = useLibrary();
 
@@ -45,7 +49,7 @@ export function LibraryView() {
         onSearchSubmit={headerProps.onSearchSubmit}
       />
 
-      {/* Main content area with sidebar and process content */}
+      {/* Main content area with sidebar and library content */}
       <div className='flex flex-1 overflow-hidden'>
         <LibrarySidebar />
         <LibraryContent />
