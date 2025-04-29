@@ -72,7 +72,7 @@ export function LiveTranscript({ entries, isRecording }: LiveTranscriptProps) {
     } else if (entry.speaker === 'System') {
       className += 'bg-gradient-to-r from-slate-50 to-slate-100 text-slate-500 italic text-sm border-l-2 border-slate-300 ';
     } else {
-      className += 'bg-white/90 text-slate-800 border-l-2 border-slate-400 shadow-sm ';
+      className += 'bg-white/80 text-slate-800 border-l-2 border-slate-400 shadow-sm ';
     }
 
     if (isFirst && isLast) {

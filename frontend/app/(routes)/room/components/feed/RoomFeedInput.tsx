@@ -138,7 +138,7 @@ export function RoomFeedInput({ currentUser, onFocus, onSubmit, onMediaUpload }:
 
           {uploadedMedia && (
             <div className='relative mt-4'>
-              <div className='overflow-hidden rounded-lg border border-slate-200 bg-white/90 p-2 shadow-sm'>
+              <div className='overflow-hidden rounded-lg border border-slate-200 bg-white/80 p-2 shadow-sm'>
                 {uploadedMedia.url.includes('image') ? (
                   <img src={uploadedMedia.url} alt='Uploaded content' className='max-h-64 w-full rounded object-cover' />
                 ) : uploadedMedia.url.includes('video') ? (

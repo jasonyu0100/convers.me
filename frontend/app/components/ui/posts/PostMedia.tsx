@@ -61,20 +61,20 @@ export function PostMedia({ postId, media, onClick, isInRoom = false }: PostMedi
   const RoomIndicator = null;
 
   return (
-    <div className='relative mb-2 w-full max-w-[360px]'>
+    <div className='relative w-full'>
       {RoomIndicator}
 
-      {/* Common wrapper for all media types - only applied to media content */}
-      <div className='relative flex w-full flex-col overflow-hidden rounded-md'>
+      {/* Common wrapper for all media types - Instagram style */}
+      <div className='relative w-full flex-col overflow-hidden'>
         {/* Media content - different for each type */}
         {media.type === 'video' && (
-          <div className={`relative ${aspectRatioClass} overflow-hidden`}>
+          <div className={`relative ${aspectRatioClass} overflow-hidden border-t border-b border-gray-100`}>
             {!isPlaying ? (
               // Video thumbnail with play button
               <div onClick={handleMediaClick}>
-                <Image src={thumbnailPath} alt={media.title || 'Video thumbnail'} fill sizes='(max-width: 400px) 100vw, 400px' style={{ objectFit: 'cover' }} />
-                <div className='absolute inset-0 flex items-center justify-center bg-black/20'>
-                  <div className='bg-white/80/90 rounded-full p-3'>
+                <Image src={thumbnailPath} alt={media.title || 'Video thumbnail'} fill sizes='100vw' style={{ objectFit: 'cover' }} />
+                <div className='absolute inset-0 flex items-center justify-center bg-black/10'>
+                  <div className='rounded-full bg-white/80 p-3 shadow-sm'>
                     <svg
                       xmlns='http://www.w3.org/2000/svg'
                       fill='none'
@@ -92,8 +92,8 @@ export function PostMedia({ postId, media, onClick, isInRoom = false }: PostMedi
                   </div>
                 </div>
 
-                {/* Type badge */}
-                <div className='bg-opacity-60 absolute top-2 left-2 z-10 rounded-full bg-black/70 px-2 py-0.5 text-xs font-medium text-white'>
+                {/* Type badge - Instagram style */}
+                <div className='absolute top-3 right-3 z-10 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white'>
                   {typeLabel}
                   {durationLabel && <span className='ml-1'>• {durationLabel}</span>}
                 </div>
@@ -114,17 +114,17 @@ export function PostMedia({ postId, media, onClick, isInRoom = false }: PostMedi
         )}
 
         {media.type === 'audio' && (
-          <div className='p-3' onClick={handleMediaClick}>
+          <div className='border-t border-b border-gray-100 p-4' onClick={handleMediaClick}>
             {!isPlaying ? (
               <div className='flex items-center'>
-                <div className='mr-3 rounded-full bg-blue-100 p-2'>
+                <div className='mr-3 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 p-2.5'>
                   <svg
                     xmlns='http://www.w3.org/2000/svg'
                     fill='none'
                     viewBox='0 0 24 24'
                     strokeWidth={1.5}
                     stroke='currentColor'
-                    className='h-6 w-6 text-blue-600'
+                    className='h-5 w-5 text-white'
                   >
                     <path
                       strokeLinecap='round'
@@ -147,22 +147,33 @@ export function PostMedia({ postId, media, onClick, isInRoom = false }: PostMedi
         )}
 
         {media.type === 'image' && (
-          <div className={`relative ${aspectRatioClass} overflow-hidden`}>
-            <Image src={thumbnailPath} alt={media.title || 'Image'} fill sizes='(max-width: 400px) 100vw, 400px' style={{ objectFit: 'cover' }} />
+          <div className={`relative ${aspectRatioClass} overflow-hidden border-t border-b border-gray-100`}>
+            <Image
+              src={thumbnailPath}
+              alt={media.title || 'Image'}
+              fill
+              sizes='100vw'
+              style={{ objectFit: 'cover' }}
+              className='transition-opacity hover:opacity-95'
+            />
           </div>
         )}
 
-        {/* Content metadata - simplified and minimalist */}
-        {media.title && media.type !== 'audio' && (
-          <div className='px-3 py-2'>
-            <h3 className='truncate text-sm font-medium text-gray-800'>{media.title}</h3>
-          </div>
-        )}
+        {/* Content title bar - simplified, no Instagram buttons */}
+        <div className='flex items-center px-4 py-2'>
+          {/* Only show title if it exists and isn't in audio (already shown there) */}
+          {media.title && media.type !== 'audio' && (
+            <div>
+              <span className='text-sm font-medium text-gray-700'>{media.title}</span>
+            </div>
+          )}
+        </div>
 
-        {/* Category and date in compact format - only shown if there's a category or publishedAt date */}
+        {/* Category and date in compact format - Instagram style */}
         {(media.category || media.publishedAt) && (
-          <div className='flex items-center justify-between border-t border-slate-100 px-3 py-2 text-xs text-gray-500'>
-            {media.category && <span className='text-blue-700'>{media.category}</span>}
+          <div className='px-4 pb-1 text-xs text-gray-500'>
+            {media.category && <span className='font-medium'>{media.category}</span>}
+            {media.publishedAt && media.category && <span className='mx-1'>•</span>}
             {media.publishedAt && <span>{media.publishedAt}</span>}
           </div>
         )}

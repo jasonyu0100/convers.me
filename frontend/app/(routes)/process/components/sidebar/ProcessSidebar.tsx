@@ -114,7 +114,7 @@ export function ProcessSidebar() {
   if (!selectedDirectoryId) {
     // Show directories list when no directory is selected
     return (
-      <div className='flex w-[360px] flex-shrink-0 flex-col border-r border-slate-200/50 bg-gradient-to-b from-white/95 to-white/90 p-5 backdrop-blur-xl'>
+      <div className='flex w-[360px] flex-shrink-0 flex-col border-r-1 border-slate-200 bg-white/80 p-5 backdrop-blur-xl'>
         <div className='mb-5'>
           <div className='mb-4 flex items-center justify-between'>
             <h3 className='text-lg font-semibold text-slate-800'>Directories</h3>

@@ -50,14 +50,8 @@ export function FeedContentView() {
   };
 
   return (
-    <div className='flex h-full flex-1 flex-col bg-slate-50/50'>
-      {/* Header */}
-      <div className='px-6 pt-6'>
-        <h2 className='text-lg font-semibold text-slate-800'>Recent Posts</h2>
-      </div>
-
-      {/* Scrollable content area */}
-      <div className='flex-1 overflow-auto px-6' ref={containerRef}>
+    <div className='flex h-full flex-1 flex-col border-l-1 border-slate-200'>
+      <div className='flex-1 overflow-auto' ref={containerRef}>
         {!currentUser ? (
           <div className='flex justify-center py-8'>
             <LoadingSpinner size='lg' />
@@ -65,38 +59,37 @@ export function FeedContentView() {
         ) : feedPosts.length === 0 ? (
           <EmptyStateDisplay title='No posts found' description='Create a post to get started' actionText='Refresh Feed' onAction={clearError} />
         ) : (
-          <div className='my-6 flex flex-col-reverse space-y-6 space-y-reverse'>
-            {feedPosts.map((post) => (
-              <div key={post.id}>
-                <FeedPostItem post={post} />
-              </div>
-            ))}
-
-            <div className='flex justify-center pt-2'>
+          <div className='w-full p-6'>
+            <div className='flex flex-col space-y-6'>
               <Button
                 onClick={handleLoadMorePosts}
                 variant='outlined'
-                size='md'
+                size='sm'
                 isLoading={isLoadingMore}
                 fullWidth={false}
                 className='border border-blue-200 px-6 text-blue-500 hover:bg-blue-50'
                 disabled={isLoadingMore}
               >
-                {isLoadingMore ? 'Loading...' : 'Load more posts'}
+                {isLoadingMore ? 'Loading...' : 'Load earlier posts'}
               </Button>
-            </div>
 
-            {isLoadingMore && (
-              <div className='flex items-center justify-center py-4'>
-                <div className='h-8 w-8 animate-spin rounded-full border-t-2 border-b-2 border-blue-500'></div>
-              </div>
-            )}
+              {/* Loading indicator */}
+              {isLoadingMore && (
+                <div className='absolute -bottom-3 left-1/2 -translate-x-1/2 transform'>
+                  <div className='h-4 w-4 animate-spin rounded-full border-t-2 border-b-2 border-blue-500'></div>
+                </div>
+              )}
+              {[...feedPosts].reverse().map((post) => (
+                <div key={post.id}>
+                  <FeedPostItem post={post} />
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Footer - Input fixed at bottom */}
-      <div className='px-6 pt-2 pb-6'>
+      <div className='w-full p-6'>
         <FeedCreatePostBox currentUser={currentUser} onFocus={handleCreatePostFocus} onSubmit={handleCreatePost} onMediaUpload={handleMediaUpload} />
       </div>
     </div>

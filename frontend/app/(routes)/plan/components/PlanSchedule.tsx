@@ -24,7 +24,7 @@ const DayEvent = React.memo(({ event, onEventClick }: { event: plan.PlanEvent; o
   return (
     <button
       type='button'
-      className='group flex w-full cursor-pointer items-center rounded-lg border border-slate-200 bg-white/90 p-3 text-left transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md active:translate-y-[1px]'
+      className='group flex w-full cursor-pointer items-center rounded-lg border border-slate-200 bg-white/80 p-3 text-left transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md active:translate-y-[1px]'
       onClick={() => onEventClick(event.id)}
     >
       <div className='flex-1'>

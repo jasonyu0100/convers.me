@@ -134,7 +134,7 @@ export function LandingPage() {
             </button>
             <button
               onClick={() => window.open('https://calendly.com/jasonyu0100/15min', '_blank')}
-              className='group flex items-center justify-center rounded-full border border-blue-100 bg-white/90 px-8 py-4 text-lg font-bold text-blue-700 shadow-md transition-all hover:bg-white/80 hover:shadow-lg md:px-10 md:py-5'
+              className='group flex items-center justify-center rounded-full border border-blue-100 bg-white/80 px-8 py-4 text-lg font-bold text-blue-700 shadow-md transition-all hover:bg-white/80 hover:shadow-lg md:px-10 md:py-5'
             >
               <PlayIcon className='mr-3 h-5 w-5' />
               Book a Demo

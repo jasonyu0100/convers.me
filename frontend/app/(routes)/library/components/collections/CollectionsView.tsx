@@ -10,7 +10,7 @@ import { CollectionsList } from './CollectionsList';
  */
 function CollectionsHeader({ categoryName, isDetailView = false, onBack, onSave, collectionTitle }) {
   return (
-    <div className='sticky top-0 z-10 border-b border-slate-200 bg-white/90 px-8 py-4 backdrop-blur-sm'>
+    <div className='sticky top-0 z-10 border-b border-slate-200 bg-white/80 px-8 py-4 backdrop-blur-sm'>
       <div className='flex items-center justify-between'>
         <div className='flex items-center'>
           {isDetailView && (

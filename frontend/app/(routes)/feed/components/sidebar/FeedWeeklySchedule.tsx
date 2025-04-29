@@ -164,7 +164,7 @@ export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProp
   };
 
   return (
-    <div className='flex h-full w-[360px] flex-shrink-0 flex-col border-l border-slate-100 bg-white/95'>
+    <div className='flex h-full w-[360px] flex-shrink-0 flex-col bg-white/80'>
       <div className='flex items-center justify-between p-4 pb-3'>
         <h2 className='text-sm font-medium text-slate-800'>Weekly Schedule</h2>
         <button

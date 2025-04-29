@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { Button } from './components/ui/buttons';
 import { cn } from './lib/utils';
 
@@ -21,7 +20,7 @@ export default function NotFound() {
       <div className='absolute right-10 bottom-10 h-64 w-64 animate-pulse rounded-full bg-purple-300 opacity-20 blur-3xl filter'></div>
 
       {/* Content */}
-      <div className='z-10 w-full max-w-md overflow-hidden rounded-lg border border-gray-200 bg-white/90 shadow-xl backdrop-blur-sm'>
+      <div className='z-10 w-full max-w-md overflow-hidden rounded-lg border border-gray-200 bg-white/80 shadow-xl backdrop-blur-sm'>
         <div className='p-6 sm:p-8'>
           <div className='text-center'>
             {/* 404 Icon/Illustration */}

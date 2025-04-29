@@ -13,7 +13,7 @@ export function GuestCredentialsDialog({ isOpen, onClose, credentials }: GuestCr
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose} maxWidth='md' showCloseButton={false} variant='borderless'>
-      <div className='overflow-hidden rounded-2xl bg-white/90 backdrop-blur-sm'>
+      <div className='overflow-hidden rounded-2xl bg-white/80 backdrop-blur-sm'>
         {/* Success banner at top */}
         <div className='bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 text-white'>
           <div className='flex items-center'>

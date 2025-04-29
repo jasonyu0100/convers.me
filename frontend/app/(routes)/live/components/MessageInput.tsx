@@ -1,8 +1,8 @@
 'use client';
 
 import { MessageInputProps } from '@/app/types/live';
-import { ArrowUpIcon, PaperClipIcon, MicrophoneIcon } from '@heroicons/react/24/solid';
-import React, { FormEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { ArrowUpIcon, PaperClipIcon } from '@heroicons/react/24/solid';
+import React, { useEffect, useRef, useState } from 'react';
 
 export function MessageInput({ onSendMessage, isDisabled = false, placeholder = 'Type a message...' }: MessageInputProps) {
   const [message, setMessage] = useState('');
@@ -41,7 +41,7 @@ export function MessageInput({ onSendMessage, isDisabled = false, placeholder = 
     : 'cursor-not-allowed bg-slate-200 text-slate-400';
 
   return (
-    <form onSubmit={handleSubmit} className='flex w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white/90 shadow-md transition-all'>
+    <form onSubmit={handleSubmit} className='flex w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white/80 shadow-md transition-all'>
       <div className='flex w-full items-center'>
         <div className='flex flex-1 items-center'>
           <textarea

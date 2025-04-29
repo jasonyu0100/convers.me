@@ -33,7 +33,7 @@ export function LoadingSpinner({ size = 'md', color = 'blue', text, fullScreen =
 
   // Container styles for fullScreen mode
   const containerClasses = fullScreen
-    ? 'h-screen w-full flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm'
+    ? 'h-screen w-full flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm'
     : 'flex flex-col items-center justify-center';
 
   // Transition style for smooth fade-in

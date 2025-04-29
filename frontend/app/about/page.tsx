@@ -42,7 +42,7 @@ export default function AboutPage() {
 
       {/* Blog Content - blog style with more text focus */}
       <main className='relative mx-auto max-w-4xl px-6 py-12 md:px-8 md:py-16'>
-        <article className='prose prose-lg mx-auto rounded-lg border border-blue-200 bg-white/90 p-6 shadow-lg backdrop-blur-md md:p-8'>
+        <article className='prose prose-lg mx-auto rounded-lg border border-blue-200 bg-white/80 p-6 shadow-lg backdrop-blur-md md:p-8'>
           {/* Article Header */}
           <header className='mb-10 text-center'>
             <h1 className='mb-4 text-4xl leading-tight font-bold text-blue-700 md:text-5xl'>Introducing Convers.me: Intelligent Process Planning</h1>

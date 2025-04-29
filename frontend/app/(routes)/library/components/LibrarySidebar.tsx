@@ -16,7 +16,7 @@ export function LibrarySidebar() {
   const app = useApp();
 
   return (
-    <div className='flex w-[360px] flex-shrink-0 flex-col border-r border-slate-200/50 bg-gradient-to-b from-white/95 to-white/90 p-6 backdrop-blur-xl'>
+    <div className='flex w-[360px] flex-shrink-0 flex-col border-r-1 border-slate-200 bg-white/80 p-6 backdrop-blur-xl'>
       {/* Categories section */}
       <div className='flex-1 overflow-y-auto pr-2'>
         <CategoryList />

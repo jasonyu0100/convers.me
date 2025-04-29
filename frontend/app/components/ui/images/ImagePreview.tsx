@@ -80,7 +80,7 @@ export function ImagePreview({ src, alt, width, height, previewScale = 2, hoverD
         {/* Interaction hint overlay */}
         {showHint && !showPreview && (
           <div className='absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-[1px] transition-all duration-300'>
-            <div className='rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium text-blue-600 transition-all duration-200 hover:bg-white'>
+            <div className='rounded-full bg-white/80 px-3 py-1.5 text-xs font-medium text-blue-600 transition-all duration-200 hover:bg-white'>
               {clickToOpen ? 'Click to preview' : 'Hold to preview'}
             </div>
           </div>

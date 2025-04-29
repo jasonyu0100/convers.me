@@ -1,8 +1,8 @@
 'use client';
 
+import { cn } from '@/app/lib/utils';
 import React from 'react';
 import { Button } from '../buttons';
-import { cn } from '@/app/lib/utils';
 
 interface OfflinePageProps {
   onRetry?: () => void;
@@ -25,7 +25,7 @@ export function OfflinePage({ onRetry }: OfflinePageProps) {
       <div className='absolute right-10 bottom-10 h-64 w-64 animate-pulse rounded-full bg-cyan-300 opacity-20 blur-3xl filter'></div>
 
       {/* Content */}
-      <div className='z-10 w-full max-w-md overflow-hidden rounded-lg border border-gray-200 bg-white/90 shadow-xl backdrop-blur-sm'>
+      <div className='z-10 w-full max-w-md overflow-hidden rounded-lg border border-gray-200 bg-white/80 shadow-xl backdrop-blur-sm'>
         <div className='p-6 sm:p-8'>
           <div className='text-center'>
             {/* Icon */}

@@ -76,7 +76,7 @@ export default function FeaturesPage() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className='group relative overflow-hidden rounded-2xl bg-white/90 p-1 shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl'
+              className='group relative overflow-hidden rounded-2xl bg-white/80 p-1 shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl'
             >
               {/* Gradient border */}
               <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${feature.gradient} opacity-80`}></div>
@@ -101,7 +101,7 @@ export default function FeaturesPage() {
 
         {/* Performance Insights section */}
         <div className='mt-32'>
-          <div className='rounded-2xl bg-white/90 p-1 shadow-xl'>
+          <div className='rounded-2xl bg-white/80 p-1 shadow-xl'>
             <div className='overflow-hidden rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 p-8 md:p-10'>
               <div className='grid gap-10 md:grid-cols-2'>
                 <div>
@@ -160,28 +160,28 @@ export default function FeaturesPage() {
             From Chaos to Clarity in 4 Steps
           </h2>
           <div className='grid gap-8 md:grid-cols-4'>
-            <div className='rounded-xl bg-white/90 p-6 shadow-lg'>
+            <div className='rounded-xl bg-white/80 p-6 shadow-lg'>
               <div className='mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-cyan-400'>
                 <span className='text-xl font-bold text-white'>1</span>
               </div>
               <h3 className='mb-2 text-xl font-semibold text-slate-900'>Drop in Your SOPs</h3>
               <p className='text-slate-700'>Our AI transforms boring documents into smart, interactive guides</p>
             </div>
-            <div className='rounded-xl bg-white/90 p-6 shadow-lg'>
+            <div className='rounded-xl bg-white/80 p-6 shadow-lg'>
               <div className='mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-700 to-indigo-500'>
                 <span className='text-xl font-bold text-white'>2</span>
               </div>
               <h3 className='mb-2 text-xl font-semibold text-slate-900'>Plan in Seconds</h3>
               <p className='text-slate-700'>Tell our AI what you want to achieve and get a perfect schedule instantly</p>
             </div>
-            <div className='rounded-xl bg-white/90 p-6 shadow-lg'>
+            <div className='rounded-xl bg-white/80 p-6 shadow-lg'>
               <div className='mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 to-blue-500'>
                 <span className='text-xl font-bold text-white'>3</span>
               </div>
               <h3 className='mb-2 text-xl font-semibold text-slate-900'>Execute Flawlessly</h3>
               <p className='text-slate-700'>Never miss a step with AI guidance that adapts to your workstyle</p>
             </div>
-            <div className='rounded-xl bg-white/90 p-6 shadow-lg'>
+            <div className='rounded-xl bg-white/80 p-6 shadow-lg'>
               <div className='mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-500'>
                 <span className='text-xl font-bold text-white'>4</span>
               </div>

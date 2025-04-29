@@ -102,7 +102,7 @@ export function LoginView() {
               <h3 className='text-xl font-semibold text-green-800'>Guest Account Created!</h3>
             </div>
 
-            <div className='mt-4 rounded-lg border border-green-200 bg-white/90 p-4 shadow-sm'>
+            <div className='mt-4 rounded-lg border border-green-200 bg-white/80 p-4 shadow-sm'>
               <p className='mb-3 font-medium text-slate-700'>Save these credentials to log back in later:</p>
               <div className='space-y-3'>
                 <div className='flex items-center justify-between rounded-md bg-green-50 p-2'>

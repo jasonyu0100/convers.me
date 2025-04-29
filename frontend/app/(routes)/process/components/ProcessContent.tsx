@@ -4,8 +4,8 @@ import { CalendarDaysIcon, PlusIcon, StarIcon } from '@heroicons/react/24/outlin
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import { useProcess } from '../hooks';
-import { ConnectedEventsList } from './connected-events';
 import { ProcessHeader } from './common/ProcessHeader';
+import { ConnectedEventsList } from './connected-events';
 import { ProcessGridView } from './grid-view';
 import { ProcessListView } from './list-view';
 import { ProcessEditor } from './process-editor';
