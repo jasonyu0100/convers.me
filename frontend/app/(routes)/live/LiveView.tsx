@@ -148,63 +148,109 @@ export function LiveView() {
     processLoaded: false,
   });
 
-  // Track whether we've sent a context update message
-  const contextUpdateSent = useRef(false);
-
-  // Update context loading status when data changes
+  // Handle event data loading
   useEffect(() => {
-    let contextChanged = false;
+    if (eventData && !eventUpdateSent.current && welcomeMessageSent.current) {
+      console.log('Event data loaded, sending event update message');
+      eventUpdateSent.current = true;
 
-    if (eventData && !contextState.eventLoaded) {
+      // Set loading flag for UI updates
       setContextState((prev) => ({ ...prev, eventLoaded: true }));
-      contextChanged = true;
-    }
 
-    // Mark process as loaded if we have context, or we know there's none to load
-    if ((processContext?.process || eventData?.processId || (eventData && !eventData.processId)) && !contextState.processLoaded) {
-      setContextState((prev) => ({ ...prev, processLoaded: true }));
-      contextChanged = true;
-    }
-
-    // Send a follow-up message when context is fully loaded
-    if (contextChanged && welcomeMessageSent.current && !contextUpdateSent.current && eventData && (processContext?.process || eventData?.processId)) {
-      contextUpdateSent.current = true;
-
+      // Show event details with slight delay for natural conversation
       setTimeout(() => {
-        // Build detailed context update message
-        let updateText = "I've loaded your session context. ";
+        let eventText = "I've loaded your event information.";
 
-        if (eventData?.title) {
-          updateText += `\nEvent: "${eventData.title}"`;
+        if (eventData.title) {
+          eventText += `\nEvent: "${eventData.title}"`;
         }
 
-        if (processContext?.process?.title) {
-          updateText += `\nProcess: "${processContext.process.title}"`;
-
-          // Include progress if there are steps
-          const steps = processContext.process.steps || [];
-          if (steps.length > 0) {
-            const completedSteps = steps.filter((step) => step.completed).length;
-            updateText += ` (${completedSteps}/${steps.length} steps complete)`;
-          }
+        if (eventData.description) {
+          eventText += `\nDescription: ${eventData.description}`;
         }
 
-        updateText += '\nHow would you like to proceed?';
+        if (eventData.startTime) {
+          const startDate = new Date(eventData.startTime);
+          eventText += `\nScheduled for: ${startDate.toLocaleString()}`;
+        }
 
-        // Add context update message to transcript
+        // Add event update message to transcript
         setTranscript((prev) => [
           ...prev,
           {
-            id: `context-update-${Date.now()}`,
+            id: `event-update-${Date.now()}`,
             time: new Date().toISOString(),
             speaker: 'AI Assistant',
-            text: updateText,
+            text: eventText,
             isAI: true,
           },
         ]);
-      }, 1000);
+      }, 800);
     }
-  }, [eventData, processContext, contextState]);
+  }, [eventData, welcomeMessageSent.current]);
+
+  // Handle process data loading separately
+  useEffect(() => {
+    if (processContext?.process && !processUpdateSent.current && welcomeMessageSent.current) {
+      console.log('Process data loaded, sending process update message');
+      processUpdateSent.current = true;
+
+      // Set loading flag for UI updates
+      setContextState((prev) => ({ ...prev, processLoaded: true }));
+
+      // Show process details with slight delay after event message
+      setTimeout(() => {
+        let processText = "I've loaded your process information.";
+
+        const process = processContext.process;
+        processText += `\nProcess: "${process.title || 'Untitled Process'}"`;
+
+        if (process.description) {
+          processText += `\nDescription: ${process.description}`;
+        }
+
+        // Include progress if there are steps
+        const steps = process.steps || [];
+        if (steps.length > 0) {
+          const completedSteps = steps.filter((step) => step.completed).length;
+          const percent = Math.round((completedSteps / steps.length) * 100);
+
+          processText += `\nProgress: ${percent}% (${completedSteps}/${steps.length} steps complete)`;
+
+          // Add next pending step
+          const nextStep = steps.find((step) => !step.completed);
+          if (nextStep) {
+            processText += `\nNext step: "${nextStep.content}"`;
+          }
+        }
+
+        processText += '\nHow would you like to proceed with this process?';
+
+        // Add process update message to transcript
+        setTranscript((prev) => [
+          ...prev,
+          {
+            id: `process-update-${Date.now()}`,
+            time: new Date().toISOString(),
+            speaker: 'AI Assistant',
+            text: processText,
+            isAI: true,
+          },
+        ]);
+      }, 1500);
+    }
+  }, [processContext, welcomeMessageSent.current]);
+
+  // Handle case where there is no process associated with event
+  useEffect(() => {
+    if (eventData && !eventData.processId && !processUpdateSent.current && welcomeMessageSent.current) {
+      console.log('Event has no process, marking process as loaded');
+      processUpdateSent.current = true;
+
+      // Set loading flag for UI updates
+      setContextState((prev) => ({ ...prev, processLoaded: true }));
+    }
+  }, [eventData, welcomeMessageSent.current]);
 
   // Send welcome message on component mount
   useEffect(() => {
