@@ -123,7 +123,12 @@ export interface LiveOperation {
 }
 
 export interface LiveProcessContext {
-  process?: any;
+  process: {
+    id: string;
+    title: string;
+    description?: string;
+    steps?: Array;
+  };
   relatedEvents: any[];
   recentMessages: LiveMessage[];
   userPreferences?: any;

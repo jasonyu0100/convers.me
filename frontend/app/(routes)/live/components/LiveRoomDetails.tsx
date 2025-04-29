@@ -39,42 +39,62 @@ export function LiveRoomDetails() {
 
         console.log(`Loading event with ID: ${id}`);
 
-        // Load event data and steps in parallel to reduce loading time
-        const [eventResult, stepsResult] = await Promise.all([EventService.getEventById(id), EventService.getEventSteps(id)]);
+        // Load event data first
+        const eventResult = await EventService.getEventById(id);
 
         // Check if component is still mounted before state updates
         if (!isMounted) return;
 
-        // Check if both API calls were successful
-        if (eventResult.data) {
-          const steps = stepsResult.data || [];
-
-          const eventListData = {
-            id: id,
-            title: eventResult.data.title,
-            description: eventResult.data.description || '',
-            status: eventResult.data?.status || ('Pending' as EventStatus),
-            isTemplate: false,
-            templateId: eventResult.data.processId || templateId || undefined,
-            steps:
-              steps.map((step) => ({
-                id: step.id,
-                content: step.content,
-                completed: step.completed,
-                subSteps:
-                  step.subSteps?.map((subStep) => ({
-                    id: subStep.id,
-                    content: subStep.content,
-                    completed: subStep.completed,
-                  })) || [],
-              })) || [],
-          };
-
-          setCurrentRoomList(eventListData);
-          console.log('Loaded event data:', eventListData.title, 'Status:', eventListData.status, 'Steps:', eventListData.steps.length);
-        } else {
+        if (!eventResult.data) {
           console.error('Error loading event details:', eventResult.error);
+          return;
         }
+
+        // Get processId from event data
+        const processId = eventResult.data.processId;
+
+        // Steps should ONLY come from the process, NEVER directly from events
+        let steps = [];
+
+        if (processId) {
+          // If we have a processId, fetch process steps via the event steps endpoint
+          // which should now proxy to the process steps
+          const stepsResult = await EventService.getEventSteps(id);
+          if (stepsResult.data) {
+            steps = stepsResult.data;
+          } else {
+            console.warn('No steps found for processId:', processId);
+          }
+        } else {
+          console.warn('Event has no processId, no steps will be loaded');
+        }
+
+        // Create the event data with steps from process
+        const eventListData = {
+          id: id,
+          title: eventResult.data.title,
+          description: eventResult.data.description || '',
+          status: eventResult.data?.status || ('Pending' as EventStatus),
+          isTemplate: false,
+          templateId: processId || templateId || undefined,
+          steps:
+            steps.map((step) => ({
+              id: step.id,
+              content: step.content,
+              completed: step.completed,
+              completedAt: step.completedAt, // Include completedAt timestamp
+              subSteps:
+                step.subSteps?.map((subStep) => ({
+                  id: subStep.id,
+                  content: subStep.content,
+                  completed: subStep.completed,
+                  completedAt: subStep.completedAt, // Include completedAt timestamp
+                })) || [],
+            })) || [],
+        };
+
+        setCurrentRoomList(eventListData);
+        console.log('Loaded event data:', eventListData.title, 'Status:', eventListData.status, 'Steps:', eventListData.steps.length);
       } catch (err) {
         console.error('Error in loadEventData:', err);
       }
@@ -187,9 +207,11 @@ export function LiveRoomDetails() {
 
       // Update step in API
       if (currentRoomList.id) {
-        // Update the step
+        // Update the step - send completedAt timestamp along with completed state
         await EventService.updateStep(currentRoomList.id, stepId, {
           completed,
+          // Explicitly include completedAt in API call to ensure backend sets it
+          completedAt: completed ? currentTime : null,
         });
 
         // If completing a step, update all substeps too
@@ -200,6 +222,8 @@ export function LiveRoomDetails() {
               id: subStep.id,
               stepId: stepId,
               completed: true,
+              // Explicitly include completedAt for substeps too
+              completedAt: currentTime,
             }));
 
             // Batch update all substeps
@@ -231,7 +255,8 @@ export function LiveRoomDetails() {
           });
 
           // Check if all substeps are completed to determine parent step status
-          const allSubStepsCompleted = updatedSubSteps?.every((subStep) => subStep.completed) ?? false;
+          // Only count substeps as completed if they have completed=true AND completedAt set
+          const allSubStepsCompleted = updatedSubSteps?.every((subStep) => subStep.completed && subStep.completedAt) ?? false;
 
           return {
             ...step,
@@ -262,7 +287,8 @@ export function LiveRoomDetails() {
         const stepIndex = updatedList.steps.findIndex((s) => s.id === stepId);
         if (stepIndex !== -1) {
           const step = updatedList.steps[stepIndex];
-          const allSubStepsCompleted = step.subSteps?.every((s) => s.completed) ?? false;
+          // Only count substeps as completed if they have both completed=true AND completedAt set
+          const allSubStepsCompleted = step.subSteps?.every((s) => s.completed && s.completedAt) ?? false;
 
           // Batch update the substep with completed_at timestamp
           const updates = [
@@ -270,6 +296,8 @@ export function LiveRoomDetails() {
               id: subStepId,
               stepId: stepId,
               completed,
+              // Explicitly include completedAt timestamp in the update
+              completedAt: completed ? currentTime : null,
             },
           ];
 
@@ -278,6 +306,8 @@ export function LiveRoomDetails() {
             // Update the step separately since it's a different endpoint
             await EventService.updateStep(currentRoomList.id, stepId, {
               completed: allSubStepsCompleted,
+              // Explicitly include completedAt in step update too
+              completedAt: allSubStepsCompleted ? currentTime : null,
             });
           }
 
@@ -296,10 +326,12 @@ export function LiveRoomDetails() {
       id: step.id,
       content: step.content,
       completed: step.completed,
+      completedAt: step.completedAt, // Include completedAt timestamp
       subSteps: step.subSteps?.map((subStep) => ({
         id: subStep.id,
         content: subStep.content,
         completed: subStep.completed,
+        completedAt: subStep.completedAt, // Include completedAt timestamp
       })),
     }));
   };

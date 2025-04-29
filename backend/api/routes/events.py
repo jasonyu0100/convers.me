@@ -229,7 +229,6 @@ async def create_event(event: SchemaEventCreate, current_user: Annotated[User, D
         tags=tags,
         participants=new_event.participants,
         participantsGroup=participants_group,
-        steps=[],
     )
 
 
@@ -554,12 +553,15 @@ async def get_events(
 @router.get("/{event_id:uuid}", response_model=SchemaEventDetailOut)
 async def get_event(event_id: UUID, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_db)):
     """Get a specific event by ID with all related information."""
+    from db.models import Process
+
     event = (
         db.query(Event)
         .options(
             joinedload(Event.topics),
             joinedload(Event.participants).joinedload(EventParticipant.user),
-            joinedload(Event.steps).joinedload(Step.sub_steps),
+            # Steps are now linked to Process, not directly to Event
+            joinedload(Event.process).joinedload(Process.steps).joinedload(Step.sub_steps),
         )
         .filter(Event.id == event_id)
         .first()
@@ -585,12 +587,6 @@ async def get_event(event_id: UUID, current_user: Annotated[User, Depends(get_cu
         topics.append(topic_dict)
 
     tags = [topic["name"] for topic in topics]
-
-    # Get steps with substeps properly loaded
-    from api.lib.events.steps import get_event_steps
-
-    # Instead of processing steps here, use the specialized function
-    steps = get_event_steps(db, str(event_id), current_user)
 
     # Create participants group
     participants_list = []
@@ -655,7 +651,7 @@ async def get_event(event_id: UUID, current_user: Annotated[User, Depends(get_cu
         "updatedAt": event.updated_at,
         "topics": topics,
         "tags": tags,
-        "steps": steps,
+        "steps": [], # Empty steps array to maintain schema compatibility without including actual steps
         "participantsGroup": participants_group,
         "relatedEvents": related_events,
     }
@@ -707,7 +703,6 @@ async def update_event(
         .options(
             joinedload(Event.topics),
             joinedload(Event.participants).joinedload(EventParticipant.user),
-            joinedload(Event.steps).joinedload(Step.sub_steps),
         )
         .filter(Event.id == event_id)
         .first()
@@ -805,27 +800,7 @@ async def update_event(
     topics = [topic for topic in db_event.topics]
     tags = [topic.name for topic in topics]
 
-    steps = []
-    if db_event.steps:
-        for step in sorted(db_event.steps, key=lambda s: s.order):
-            sub_steps = []
-            if step.sub_steps:
-                sub_steps = sorted(step.sub_steps, key=lambda ss: ss.order)
-
-            steps.append(
-                SchemaStepOut(
-                    id=str(step.id),
-                    content=step.content,
-                    completed=step.completed,
-                    order=step.order,
-                    dueDate=step.due_date,
-                    eventId=str(step.event_id) if step.event_id else None,
-                    processId=str(step.process_id) if step.process_id else None,
-                    createdAt=step.created_at,
-                    updatedAt=step.updated_at,
-                    subSteps=sub_steps,
-                )
-            )
+    # Return empty steps array to maintain schema compatibility without including actual steps
 
     # Create participants group
     participants_list = [
@@ -857,7 +832,6 @@ async def update_event(
         **db_event.__dict__,
         topics=topics,
         tags=tags,
-        steps=steps,
         participants=db_event.participants,
         participantsGroup=participants_group,
         statusLogs=status_logs,
@@ -881,13 +855,18 @@ async def delete_event(event_id: UUID, current_user: Annotated[User, Depends(get
     db.query(EventParticipant).filter(
         EventParticipant.event_id == event_id).delete()
 
-    # Delete steps and substeps
-    for step in db_event.steps:
-        # Delete substeps
-        db.query(SubStep).filter(SubStep.step_id == step.id).delete()
+    # Steps are now always connected to processes, not directly to events
+    # If the event has a process, we need to handle the steps
+    if db_event.process_id:
+        # Get steps associated with the event's process
+        process_steps = db.query(Step).filter(Step.process_id == db_event.process_id).all()
 
-    # Now delete steps
-    db.query(Step).filter(Step.event_id == event_id).delete()
+        # Delete substeps for each step
+        for step in process_steps:
+            db.query(SubStep).filter(SubStep.step_id == step.id).delete()
+
+        # Delete steps
+        db.query(Step).filter(Step.process_id == db_event.process_id).delete()
 
     # Delete event topic associations
     db.execute(event_topics.delete().where(
@@ -1055,9 +1034,14 @@ async def update_event_step(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
 
-    # Check if the step exists and belongs to the event
+    # Check if the step exists and belongs to the event's process
+    # Event must have a process_id for steps to be associated with it
+    if not event.process_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                          detail="Event has no associated process")
+
     step = db.query(Step).filter(Step.id == step_id,
-                                 Step.event_id == event_id).first()
+                                Step.process_id == event.process_id).first()
 
     if not step:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -1083,29 +1067,49 @@ async def update_event_step(
     for key, value in step_update.model_dump(exclude_unset=True).items():
         setattr(step, key, value)
 
+    # Check if the completed status is being updated
+    is_completion_update = "completed" in step_update.model_dump(exclude_unset=True)
+
     # Set the completed_at timestamp if completed status is being updated to True
-    if "completed" in step_update.model_dump(exclude_unset=True) and step_update.completed:
+    if is_completion_update and step_update.completed:
         from datetime import datetime
 
         step.completed_at = datetime.utcnow()
+
+        # If the step is being marked as completed, also mark all substeps as completed
+        substeps = db.query(SubStep).filter(SubStep.step_id == step_id).all()
+        for substep in substeps:
+            substep.completed = True
+            substep.completed_at = datetime.utcnow()
+
     # Clear the completed_at timestamp if step is being marked as incomplete
-    elif "completed" in step_update.model_dump(exclude_unset=True) and not step_update.completed:
+    elif is_completion_update and not step_update.completed:
         step.completed_at = None
 
+        # Optionally, mark all substeps as incomplete as well
+        substeps = db.query(SubStep).filter(SubStep.step_id == step_id).all()
+        for substep in substeps:
+            substep.completed = False
+            substep.completed_at = None
+
     db.commit()
-    db.refresh(step)
+
+    # Get the updated step with substeps
+    updated_step = db.query(Step).options(
+        joinedload(Step.sub_steps)
+    ).filter(Step.id == step_id).first()
 
     return SchemaStepOut(
-        id=str(step.id),
-        content=step.content,
-        completed=step.completed,
-        order=step.order,
-        dueDate=step.due_date,
-        eventId=str(step.event_id),
-        processId=None,
-        createdAt=step.created_at,
-        updatedAt=step.updated_at,
-        completedAt=step.completed_at,
+        id=str(updated_step.id),
+        content=updated_step.content,
+        completed=updated_step.completed,
+        order=updated_step.order,
+        dueDate=updated_step.due_date,
+        eventId=str(updated_step.event_id) if updated_step.event_id else None,
+        processId=str(updated_step.process_id) if updated_step.process_id else None,
+        createdAt=updated_step.created_at,
+        updatedAt=updated_step.updated_at,
+        completedAt=updated_step.completed_at,
         subSteps=[
             SchemaSubStepOut(
                 id=str(ss.id),
@@ -1117,7 +1121,7 @@ async def update_event_step(
                 updatedAt=ss.updated_at,
                 completedAt=ss.completed_at,
             )
-            for ss in step.sub_steps
+            for ss in updated_step.sub_steps
         ],
     )
 
@@ -1131,9 +1135,14 @@ async def delete_event_step(event_id: str, step_id: str, current_user: Annotated
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
 
-    # Check if the step exists and belongs to the event
+    # Check if the step exists and belongs to the event's process
+    # Event must have a process_id for steps to be associated with it
+    if not event.process_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                          detail="Event has no associated process")
+
     step = db.query(Step).filter(Step.id == step_id,
-                                 Step.event_id == event_id).first()
+                                Step.process_id == event.process_id).first()
 
     if not step:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -1183,9 +1192,14 @@ async def create_sub_step(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
 
-    # Check if the step exists and belongs to the event
+    # Check if the step exists and belongs to the event's process
+    # Event must have a process_id for steps to be associated with it
+    if not event.process_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                          detail="Event has no associated process")
+
     step = db.query(Step).filter(Step.id == step_id,
-                                 Step.event_id == event_id).first()
+                                Step.process_id == event.process_id).first()
 
     if not step:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -1243,9 +1257,14 @@ async def update_sub_step(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
 
-    # Check if the step exists and belongs to the event
+    # Check if the step exists and belongs to the event's process
+    # Event must have a process_id for steps to be associated with it
+    if not event.process_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                          detail="Event has no associated process")
+
     step = db.query(Step).filter(Step.id == step_id,
-                                 Step.event_id == event_id).first()
+                                Step.process_id == event.process_id).first()
 
     if not step:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -1351,9 +1370,13 @@ async def batch_update_event_substeps(
         if not substep_id or not step_id:
             continue
 
-        # Verify the step belongs to this event
+        # Verify the step belongs to this event's process
+        # Check if event has a process
+        if not event.process_id:
+            continue
+
         step = db.query(Step).filter(Step.id == step_id,
-                                     Step.event_id == event_id).first()
+                                    Step.process_id == event.process_id).first()
         if not step:
             continue
 
@@ -1416,9 +1439,14 @@ async def delete_sub_step(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
 
-    # Check if the step exists and belongs to the event
+    # Check if the step exists and belongs to the event's process
+    # Event must have a process_id for steps to be associated with it
+    if not event.process_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                          detail="Event has no associated process")
+
     step = db.query(Step).filter(Step.id == step_id,
-                                 Step.event_id == event_id).first()
+                                Step.process_id == event.process_id).first()
 
     if not step:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -1586,8 +1614,7 @@ async def get_user_events(
 async def get_event_steps(
     event_id: str,
     current_user: Annotated[User, Depends(get_current_user)],
-    db: Session = Depends(get_db),
-    generate_missing: bool = Query(False, description="Generate example substeps if none exist")
+    db: Session = Depends(get_db)
 ):
     """Get all steps for an event.
 
@@ -1595,21 +1622,12 @@ async def get_event_steps(
         event_id: The event ID to get steps for
         current_user: The authenticated user
         db: Database session
-        generate_missing: If True, will call service to generate missing substeps
 
     Returns:
         List of steps with their substeps
     """
     # Use the steps helper from lib
     from api.lib.events.steps import get_event_steps as get_steps
-
-    # If generate_missing is requested, call the service layer to handle it
-    if generate_missing:
-        # Import the process service for generating missing substeps
-        from services.process.process_service import ProcessService
-
-        # Generate missing substeps for the event
-        ProcessService.generate_missing_substeps_for_event(db, event_id)
 
     # Get steps with substeps
     return get_steps(db, event_id, current_user)

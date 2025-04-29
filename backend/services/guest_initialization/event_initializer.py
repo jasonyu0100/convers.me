@@ -167,20 +167,9 @@ class EventInitializer:
                         if topic:
                             self.db.execute(event_topics.insert().values(event_id=standup.id, topic_id=topic.id))
 
-                    # Create standard standup steps
-                    standup_steps = ["Review yesterday's accomplishments", "Discuss today's priorities", "Identify any blockers", "Assign action items"]
-
-                    for i, step_content in enumerate(standup_steps):
-                        # For past events, all steps completed; for today, first 2 completed
-                        if status == EventStatusEnum.DONE:
-                            step_completed = True
-                        elif status == EventStatusEnum.EXECUTION:
-                            step_completed = i < 2  # First two steps completed for today
-                        else:
-                            step_completed = False  # No steps completed for future events
-
-                        step = Step(id=str(uuid.uuid4()), content=step_content, completed=step_completed, order=i + 1, event_id=standup.id)
-                        self.db.add(step)
+                    # Use EventHelpers to create standup steps instead of creating them directly here
+                    # This will ensure proper checks for existing steps to avoid duplication
+                    EventHelpers.create_standard_standup_steps(standup, status, self.db)
 
                     # Add to events list and count
                     events.append(standup)
@@ -545,20 +534,9 @@ class EventInitializer:
                         if topic:
                             self.db.execute(event_topics.insert().values(event_id=standup.id, topic_id=topic.id))
 
-                    # Create standard standup steps
-                    standup_steps = ["Review yesterday's accomplishments", "Discuss today's priorities", "Identify any blockers", "Assign action items"]
-
-                    for i, step_content in enumerate(standup_steps):
-                        # For past events, all steps completed; for today, first 2 completed
-                        if status == EventStatusEnum.DONE:
-                            step_completed = True
-                        elif status == EventStatusEnum.EXECUTION:
-                            step_completed = i < 2  # First two steps completed for today
-                        else:
-                            step_completed = False  # No steps completed for future events
-
-                        step = Step(id=str(uuid.uuid4()), content=step_content, completed=step_completed, order=i + 1, event_id=standup.id)
-                        self.db.add(step)
+                    # Use EventHelpers to create standup steps instead of creating them directly here
+                    # This will ensure proper checks for existing steps to avoid duplication
+                    EventHelpers.create_standard_standup_steps(standup, status, self.db)
 
                     # Add to events list and count
                     events.append(standup)
@@ -758,7 +736,17 @@ class EventInitializer:
 
     def _create_steps_for_event(self, event: Event, process: Process, status: EventStatusEnum) -> None:
         """Create appropriate steps for an event based on the process template."""
-        EventHelpers.create_steps_for_event(event, process, status, self.db)
+        # Check if steps already exist for this process to avoid duplication
+        existing_steps = self.db.query(Step).filter(Step.process_id == process.id).count()
+        if existing_steps > 0:
+            logger.info(f"Process {process.id} already has {existing_steps} steps. Skipping step creation.")
+            return
+
+        # Extra caution for standups to prevent duplicate steps
+        if "standup" in event.title.lower() or "sync" in event.title.lower():
+            EventHelpers.create_standard_standup_steps(event, status, self.db)
+        else:
+            EventHelpers.create_steps_for_event(event, process, status, self.db)
 
     def _create_special_events(self, user: User, processes: List[Process], topics: List[Topic], today: datetime) -> List[Event]:
         """Create special events referenced in the frontend."""
@@ -937,7 +925,7 @@ class EventInitializer:
                     else:
                         step_completed = False
 
-                    step = Step(id=str(uuid.uuid4()), content=step_content, completed=step_completed, order=i + 1, event_id=event.id)
+                    step = Step(id=str(uuid.uuid4()), content=step_content, completed=step_completed, order=i + 1, process_id=process_instance.id)
                     self.db.add(step)
 
             special_events.append(event)

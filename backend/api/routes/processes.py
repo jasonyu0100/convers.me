@@ -242,6 +242,8 @@ async def get_template(template_id: UUID, current_user: Annotated[User, Depends(
                     step.sub_steps, key=lambda ss: ss.order)
 
                 for substep in sorted_substeps:
+                            # Substeps should have their completed_at set when marked as completed
+
                     substeps_data.append({
                         "id": str(substep.id),
                         "content": substep.content,
@@ -253,6 +255,8 @@ async def get_template(template_id: UUID, current_user: Annotated[User, Depends(
                         "updatedAt": substep.updated_at.isoformat() if substep.updated_at else None,
                     })
 
+            # Steps should have their completed_at set when marked as completed
+
             step_data = {
                 "id": str(step.id),
                 "content": step.content,
@@ -261,7 +265,6 @@ async def get_template(template_id: UUID, current_user: Annotated[User, Depends(
                 "order": step.order,
                 "dueDate": step.due_date,
                 "processId": str(step.process_id) if step.process_id else None,
-                "eventId": str(step.event_id) if step.event_id else None,
                 "createdAt": step.created_at.isoformat() if step.created_at else None,
                 "updatedAt": step.updated_at.isoformat() if step.updated_at else None,
                 "subSteps": substeps_data,
@@ -439,7 +442,7 @@ async def create_live_process(process: ProcessCreate, current_user: Annotated[Us
 async def get_live_process(process_id: UUID, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_db)):
     """Get a specific live process by ID."""
     process = (
-        db.query(Process).filter(Process.id == process_id, Process.is_template == False).options(
+        db.query(Process).filter(Process.id == process_id).options(
             joinedload(Process.steps).joinedload(Step.sub_steps)).first()
     )
 
@@ -454,6 +457,9 @@ async def get_live_process(process_id: UUID, current_user: Annotated[User, Depen
 
     # Convert to dictionary to ensure proper UUID and metadata conversion
     process_dict = process.to_dict()
+
+    # Process dictionary should already include properly formatted steps
+    # No need for additional formatting here
 
     # Add connectedEvents to comply with ProcessDetailOut schema
     process_dict["connectedEvents"] = []
@@ -528,6 +534,58 @@ async def delete_live_process(process_id: UUID, current_user: Annotated[User, De
     return None
 
 
+@live_processes_router.post("/{process_id:uuid}/fix-completion", response_model=Dict[str, Any])
+async def fix_live_process_completion(
+    process_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    """
+    Ensure completed steps have their substeps marked as completed.
+    """
+    # Verify process exists and user has permission
+    process = db.query(Process).filter(
+        Process.id == process_id, Process.is_template == False).first()
+
+    if not process:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Live process not found")
+
+    # Check if the user is the creator
+    if process.created_by_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                        detail="You don't have permission to update this process")
+
+    # Load the process with all steps and substeps
+    process = db.query(Process).options(
+        joinedload(Process.steps).joinedload(Step.sub_steps)
+    ).filter(Process.id == process_id, Process.is_template == False).first()
+
+    # Track how many items we update
+    updated_substeps = 0
+
+    # Check steps and ensure their substeps are synchronized
+    if process.steps:
+        for step in process.steps:
+            # If parent step is completed, ensure all substeps are completed
+            if step.completed and step.sub_steps:
+                for substep in step.sub_steps:
+                    if not substep.completed:
+                        substep.completed = True
+                        substep.completed_at = datetime.utcnow()
+                        updated_substeps += 1
+
+    # Commit the changes
+    db.commit()
+
+    return {
+        "success": True,
+        "processId": str(process_id),
+        "updatedSubsteps": updated_substeps,
+        "message": f"Synchronized {updated_substeps} substeps with their completed parent steps"
+    }
+
+
 @router.get("/{process_id:uuid}", response_model=ProcessDetailOut)
 async def get_process(process_id: UUID, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_db)):
     """Get a specific process by ID."""
@@ -545,6 +603,9 @@ async def get_process(process_id: UUID, current_user: Annotated[User, Depends(ge
 
     # Convert to dictionary to ensure proper UUID and metadata conversion
     process_dict = process.to_dict()
+
+    # Process dictionary should already include properly formatted steps
+    # No need for additional formatting here
 
     # Add connectedEvents to comply with ProcessDetailOut schema
     process_dict["connectedEvents"] = []
@@ -664,18 +725,45 @@ async def update_step(
     for key, value in step_update.model_dump(exclude_unset=True).items():
         setattr(db_step, key, value)
 
+    # Check if the completed status is being updated
+    is_completion_update = "completed" in step_update.model_dump(exclude_unset=True)
+
     # Set the completed_at timestamp if completed status is being updated to True
-    if "completed" in step_update.model_dump(exclude_unset=True) and step_update.completed:
+    if is_completion_update and step_update.completed:
         db_step.completed_at = datetime.utcnow()
+
+        # If the step is being marked as completed, also mark all substeps as completed
+        substeps = db.query(SubStep).filter(SubStep.step_id == step_id).all()
+        for substep in substeps:
+            substep.completed = True
+            substep.completed_at = datetime.utcnow()
+
     # Clear the completed_at timestamp if step is being marked as incomplete
-    elif "completed" in step_update.model_dump(exclude_unset=True) and not step_update.completed:
+    elif is_completion_update and not step_update.completed:
         db_step.completed_at = None
+
+        # Optionally, you can also mark all substeps as incomplete when the step is marked incomplete
+        substeps = db.query(SubStep).filter(SubStep.step_id == step_id).all()
+        for substep in substeps:
+            substep.completed = False
+            substep.completed_at = None
 
     db.commit()
     db.refresh(db_step)
 
-    # Convert to dictionary to ensure proper UUID and metadata conversion
-    return db_step.to_dict()
+    # Get the updated step with substeps
+    updated_step = db.query(Step).options(
+        joinedload(Step.sub_steps)
+    ).filter(Step.id == step_id).first()
+
+    # Convert to dictionary including substeps
+    result = updated_step.to_dict()
+
+    # Add substeps to the response
+    if updated_step.sub_steps:
+        result["subSteps"] = [substep.to_dict() for substep in updated_step.sub_steps]
+
+    return result
 
 
 @router.delete("/steps/{step_id:uuid}", status_code=status.HTTP_204_NO_CONTENT)
@@ -852,3 +940,83 @@ async def delete_substep(substep_id: UUID, current_user: Annotated[User, Depends
     db.delete(db_substep)
     db.commit()
     return None
+
+
+# Internal function to get process steps - can be called from other modules
+def get_process_steps_internal(db: Session, process_id: UUID, current_user: User) -> List[Any]:
+    """
+    Get steps for a process - internal function that can be called from other modules.
+    Returns properly formatted steps with their substeps.
+
+    Args:
+        db: Database session
+        process_id: Process ID
+        current_user: Current user
+
+    Returns:
+        List of formatted steps with substeps
+    """
+    # Verify process exists
+    process = db.query(Process).filter(Process.id == process_id).first()
+    if not process:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Process not found")
+
+    # Load steps with substeps
+    steps = db.query(Step).options(
+        joinedload(Step.sub_steps)
+    ).filter(Step.process_id == process_id).order_by(Step.order).all()
+
+    # If no steps, return empty list
+    if not steps:
+        return []
+
+    # Format steps using helper function
+    from api.lib.events.helpers import format_steps_with_substeps
+    return format_steps_with_substeps(steps)
+
+
+@router.post("/{process_id:uuid}/fix-completion", response_model=Dict[str, Any])
+async def fix_process_completion(
+    process_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+):
+    """
+    Ensure completed steps have their substeps marked as completed.
+    """
+    # Verify process exists and user has permission
+    process = verify_process_ownership(db, process_id, current_user.id)
+
+    # Load the process with all steps and substeps
+    process = db.query(Process).options(
+        joinedload(Process.steps).joinedload(Step.sub_steps)
+    ).filter(Process.id == process_id).first()
+
+    if not process:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Process not found")
+
+    # Track how many items we update
+    updated_substeps = 0
+
+    # Check steps and ensure their substeps are synchronized
+    if process.steps:
+        for step in process.steps:
+            # If parent step is completed, ensure all substeps are completed
+            if step.completed and step.sub_steps:
+                for substep in step.sub_steps:
+                    if not substep.completed:
+                        substep.completed = True
+                        substep.completed_at = datetime.utcnow()
+                        updated_substeps += 1
+
+    # Commit the changes
+    db.commit()
+
+    return {
+        "success": True,
+        "processId": str(process_id),
+        "updatedSubsteps": updated_substeps,
+        "message": f"Synchronized {updated_substeps} substeps with their completed parent steps"
+    }

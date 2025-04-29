@@ -7,9 +7,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from fastapi import HTTPException, status
-
-from db.models import Event, Process, Step, SubStep
+from db.models import Process, Step, SubStep
 from services.common.base_service import BaseService
 
 # Set up logger
@@ -371,126 +369,86 @@ class ProcessService(BaseService):
         return True
 
     @staticmethod
-    def generate_missing_substeps_for_event(db, event_id: str) -> bool:
+    def migrate_all_event_steps_to_processes(db) -> Dict[str, Any]:
         """
-        Generate missing substeps for an event's steps.
-        This method is called when the API receives a request to populate missing substeps.
+        Admin utility to migrate all event steps to processes.
+        This fixes the critical architectural issue where steps should be linked to processes, not events.
 
         Args:
             db: Database session
-            event_id: The event ID
 
         Returns:
-            bool: True if successful
+            Dict with migration statistics
         """
-        from api.lib.events.helpers import generate_substeps_for_step, should_have_substeps
+        import uuid
+        from datetime import datetime
+
+        from db.models import Event, Process, Step
 
         try:
-            logger.info(f"Generating missing substeps for event {event_id}")
+            # Find all events that have steps directly attached but no linked process
+            events_with_steps = db.query(Event).join(
+                Step, Event.id == Step.event_id
+            ).filter(
+                Event.process_id.is_(None)
+            ).distinct().all()
 
-            # Get event information to determine the appropriate substeps
-            event = db.query(Event).filter(Event.id == event_id).first()
-            if not event:
-                logger.error(f"Event {event_id} not found")
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
+            logger.info(f"Found {len(events_with_steps)} events with steps but no linked process")
 
-            steps = db.query(Step).filter(Step.event_id == event_id).all()
+            events_processed = 0
+            steps_migrated = 0
 
-            # Generate standard substep data based on event type
-            default_substeps_map = {}
-            event_title = event.title.lower() if event.title else ""
+            # Process each event
+            for event in events_with_steps:
+                # Create a new process for this event
+                new_process = Process(
+                    id=str(uuid.uuid4()),
+                    title=event.title,
+                    description=event.description or f"Process for event: {event.title}",
+                    color=event.color or "blue",
+                    last_updated=datetime.utcnow().isoformat(),
+                    favorite=False,
+                    category="event",
+                    created_by_id=event.created_by_id,
+                    process_metadata={"migrated_from_event": True, "event_id": str(event.id)},
+                )
+                db.add(new_process)
+                db.flush()  # Get ID without committing
 
-            if "standup" in event_title or "sync" in event_title:
-                # Standup meeting substeps
-                default_substeps = {
-                    "Review yesterday's accomplishments": ["List individual achievements", "Review team progress", "Discuss completed tasks", "Share metrics and results"],
-                    "Discuss today's priorities": ["Outline key objectives", "Prioritize tasks", "Allocate resources", "Set expectations"],
-                    "Identify any blockers": ["Technical issues", "Resource constraints", "Dependencies", "Process bottlenecks"],
-                    "Assign action items": ["Delegate tasks", "Set deadlines", "Define deliverables", "Schedule follow-ups"]
-                }
-                default_substeps_map.update(default_substeps)
-            elif "review" in event_title:
-                # Review meeting substeps
-                default_substeps = {
-                    "Present work completed": ["Prepare demonstrations", "Collect metrics", "Create visual summaries", "Outline achievements"],
-                    "Gather feedback": ["Stakeholder input", "User feedback", "Team perspectives", "External opinions"],
-                    "Identify areas for improvement": ["Technical debt", "Process inefficiencies", "Quality issues", "Performance bottlenecks"],
-                    "Plan next iteration": ["Define priorities", "Resource allocation", "Timeline adjustments", "Risk management"],
-                    "Document decisions": ["Meeting notes", "Action items", "Responsibility assignments", "Follow-up schedule"]
-                }
-                default_substeps_map.update(default_substeps)
-            elif "planning" in event_title:
-                # Planning meeting substeps
-                default_substeps = {
-                    "Define objectives": ["Business goals", "Project milestones", "Success metrics", "Expected outcomes"],
-                    "Identify requirements": ["User needs", "Technical constraints", "Dependencies", "Acceptance criteria"],
-                    "Break down tasks": ["Component identification", "Work packages", "Effort estimation", "Prioritization"],
-                    "Assign responsibilities": ["Team allocation", "Role definition", "Accountability matrix", "Skill matching"],
-                    "Set timeline": ["Milestone dates", "Deliverable schedule", "Buffer allocation", "Critical path analysis"],
-                    "Define success criteria": ["Quantitative metrics", "Qualitative indicators", "Evaluation process", "Stakeholder approval"]
-                }
-                default_substeps_map.update(default_substeps)
-            else:
-                # Generic meeting substeps
-                default_substeps = {
-                    "Prepare agenda": ["Outline key topics", "Set time allocations", "Define objectives", "Share ahead of time"],
-                    "Send meeting invites": ["Include necessary participants", "Provide context", "Attach relevant documents", "Confirm attendance"],
-                    "Conduct meeting": ["Introduction and objectives", "Topic discussions", "Decision making", "Summarize key points"],
-                    "Document outcomes": ["Meeting minutes", "Decision logs", "Action items", "Supporting materials"],
-                    "Follow up on action items": ["Assign responsibilities", "Set deadlines", "Create tracking mechanism", "Schedule check-ins"]
-                }
-                default_substeps_map.update(default_substeps)
+                # Update the event to link to this process
+                event.process_id = new_process.id
 
-            # Add more generic substeps for common step types
-            common_substeps = {
-                "Planning": ["Determine scope", "Identify resources", "Create timeline", "Assess risks"],
-                "Implementation": ["Setup environment", "Create components", "Integration", "Testing"],
-                "Testing": ["Create test cases", "Run tests", "Document results", "Fix issues"],
-                "Review": ["Gather feedback", "Identify issues", "Document findings", "Plan improvements"]
+                # Find all steps for this event
+                event_steps = db.query(Step).filter(Step.event_id == event.id).all()
+
+                # Migrate steps to the process
+                event_steps_count = len(event_steps)
+                for step in event_steps:
+                    step.process_id = new_process.id
+                    step.event_id = None  # Remove event link
+
+                db.commit()
+
+                logger.info(f"Migrated {event_steps_count} steps from event {event.id} to process {new_process.id}")
+                events_processed += 1
+                steps_migrated += event_steps_count
+
+            return {
+                "success": True,
+                "events_processed": events_processed,
+                "steps_migrated": steps_migrated,
+                "message": f"Successfully migrated {steps_migrated} steps from {events_processed} events to new processes"
             }
-            default_substeps_map.update(common_substeps)
-
-            substeps_added = 0
-
-            for step in steps:
-                # Check if step already has substeps
-                substeps_count = db.query(SubStep).filter(SubStep.step_id == step.id).count()
-                if substeps_count == 0:
-                    logger.info(f"Generating substeps for step: '{step.content}'")
-                    substep_contents = []
-
-                    # Try to find matching default substeps
-                    for key, substeps in default_substeps_map.items():
-                        if step.content and (key.lower() in step.content.lower() or step.content.lower() in key.lower()):
-                            substep_contents = substeps
-                            break
-
-                    # If no matching default substeps, generate them
-                    if not substep_contents and should_have_substeps(step.content or ""):
-                        substep_contents = generate_substeps_for_step(step.content or "")
-
-                    # Create the substeps
-                    if substep_contents:
-                        for i, content in enumerate(substep_contents):
-                            substep = SubStep(
-                                id=str(uuid.uuid4()),
-                                content=content,
-                                completed=step.completed,  # Match parent step's completion
-                                order=i + 1,
-                                step_id=step.id
-                            )
-                            db.add(substep)
-                            substeps_added += 1
-                        logger.info(f"Added {len(substep_contents)} substeps to step '{step.content}'")
-
-            db.commit()
-            logger.info(f"Successfully added {substeps_added} total substeps across {len(steps)} steps")
-            return True
 
         except Exception as e:
-            logger.error(f"Error generating substeps for event {event_id}: {str(e)}")
+            logger.error(f"Error migrating event steps to processes: {str(e)}")
             db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Error generating substeps: {str(e)}"
-            )
+            return {
+                "success": False,
+                "error": str(e),
+                "message": "Error occurred during migration"
+            }
+
+    # The generate_missing_substeps_for_event method has been removed
+    # as it's not supported in the current architecture where
+    # steps should only be associated with processes, not events

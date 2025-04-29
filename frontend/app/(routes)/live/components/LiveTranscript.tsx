@@ -89,7 +89,7 @@ export function LiveTranscript({ entries, isRecording }: LiveTranscriptProps) {
   };
 
   return (
-    <div ref={scrollRef} className='h-full overflow-x-hidden overflow-y-auto bg-gradient-to-b from-white to-slate-50 p-4'>
+    <div ref={scrollRef} className='h-full overflow-x-hidden overflow-y-auto p-4'>
       <div className='mx-auto w-full max-w-3xl'>
         {entries.map((entry, index) => {
           const timeLabel = getMessageTime(entry, index);

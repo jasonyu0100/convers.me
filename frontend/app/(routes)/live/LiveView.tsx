@@ -1,21 +1,29 @@
+import { useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'next/navigation';
+
 import { AppHeader } from '@/app/components/app/AppHeader';
+import { AudioWaveform } from '@/app/components/side-panel/live/AudioWaveform';
 import { ErrorDisplay } from '@/app/components/ui/errors';
 import { PageLoading } from '@/app/components/ui/loading';
-import { AudioWaveform } from '@/app/components/side-panel/live/AudioWaveform';
+import { liveService } from '@/app/services';
+import { EventService } from '@/app/services/eventService';
 import { MediaControlState } from '@/app/types/live';
+
 import { LiveMediaView } from './components/LiveMediaView';
 import { LiveRoomDetails } from './components/LiveRoomDetails';
+import { LiveSuggestedOperations } from './components/LiveSuggestedOperations';
 import { LiveTranscript } from './components/LiveTranscript';
 import { MessageInput } from './components/MessageInput';
-import { LiveSuggestedOperations } from './components/LiveSuggestedOperations';
 import { useLive, useLiveHeader } from './hooks';
-import { useState, useEffect, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { liveService } from '@/app/services';
 import openAIService from './services/openAIService';
 
 export function LiveView() {
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+
+  // Get URL params
+
   const {
     videoRef,
     screenShareRef,
@@ -33,53 +41,257 @@ export function LiveView() {
     error,
     // Live context data
     processId,
-    processContext,
     processMessage,
   } = useLive();
 
-  // Track suggested operations separately
+  // Get processId from useLive hook
+
+  // Fetch event data explicitly to ensure it's available
+  const eventId = searchParams?.get('id');
+  const { data: eventData } = useQuery({
+    queryKey: ['event', eventId],
+    queryFn: async () => {
+      if (!eventId) return null;
+      // Fetching event data
+      const result = await EventService.getEventById(eventId);
+      if (result.error) {
+        console.error('Error fetching event:', result.error);
+        throw new Error(result.error);
+      }
+      // Event data received
+      return result.data;
+    },
+    enabled: !!eventId,
+    staleTime: 30000, // Cache for 30 seconds
+    onSuccess: (data) => {
+      // Event data loaded
+      // Check event process data
+    },
+  });
+
+  // Get process ID either from URL or from event data
+  const eventProcessId = eventData?.processId;
+  const effectiveProcessId = processId || eventProcessId;
+
+  // Track the source of process ID
+  useEffect(() => {
+    console.log('Process ID source:', {
+      fromURL: processId,
+      fromEvent: eventProcessId,
+      effectiveId: effectiveProcessId,
+    });
+  }, [processId, eventProcessId, effectiveProcessId]);
+
+  // Fetch process context with debugging
+  const {
+    data: processContext,
+    isLoading: isLoadingProcessContext,
+    error: processContextError,
+  } = useQuery({
+    queryKey: ['process-context', effectiveProcessId],
+    queryFn: async () => {
+      // Log the fetch attempt
+      console.log('Fetching process context for ID:', effectiveProcessId);
+
+      if (!effectiveProcessId) {
+        console.log('No process ID available, skipping fetch');
+        return null;
+      }
+
+      try {
+        const result = await liveService.getProcessContext(effectiveProcessId);
+
+        if (result.error) {
+          console.error('Error fetching process context:', result.error);
+          throw new Error(result.error);
+        }
+
+        console.log('Process context fetched successfully:', result.data);
+        return result.data;
+      } catch (error) {
+        console.error('Process context fetch exception:', error);
+        throw error;
+      }
+    },
+    enabled: !!effectiveProcessId,
+    staleTime: 30000, // Cache for 30 seconds
+    onSuccess: (data) => {
+      console.log('Process context query success:', data?.process?.title || 'No title', 'Steps:', data?.process?.steps?.length || 0);
+    },
+    onError: (error) => {
+      console.error('Process context query error:', error);
+    },
+  });
+
+  // Track suggested operations from AI or backend
   const [suggestedOperations, setSuggestedOperations] = useState([]);
-  // Use ref to track whether welcome message has been sent
-  // Using a ref instead of state prevents re-renders and infinite loops
+
+  // Track whether welcome message has been sent
   const welcomeMessageSent = useRef(false);
 
-  // Send welcome message when component mounts
+  /**
+   * Generate a contextual welcome message
+   */
+  const generateWelcomeMessage = () => {
+    let welcomeText = "Welcome to Convers.me! I'm your AI assistant. I'm loading your session data...";
+    welcomeText += ' How can I assist you today?';
+    return welcomeText;
+  };
+
+  // Track whether we've sent context update messages
+  const eventUpdateSent = useRef(false);
+  const processUpdateSent = useRef(false);
+
+  // Track context loading state
+  const [contextState, setContextState] = useState({
+    eventLoaded: false,
+    processLoaded: false,
+  });
+
+  // Track whether we've sent a context update message
+  const contextUpdateSent = useRef(false);
+
+  // Update context loading status when data changes
   useEffect(() => {
-    // Only check for sending welcome message when loading completes and message hasn't been sent yet
-    if (!isLoading && !error && !welcomeMessageSent.current && transcript.length === 0) {
-      // Set flag immediately to prevent multiple executions
-      welcomeMessageSent.current = true;
+    let contextChanged = false;
 
-      // Wait a bit to show welcome message for a more natural feel
-      const timer = setTimeout(() => {
-        // Add the welcome message directly without using sendMessage
-        // This avoids adding a user message and only shows the AI message
-        const welcomeMessageId = `welcome-${Date.now()}`;
+    if (eventData && !contextState.eventLoaded) {
+      setContextState((prev) => ({ ...prev, eventLoaded: true }));
+      contextChanged = true;
+    }
 
-        // Create a message that appears to be from the AI assistant
-        const welcomeMessage = {
-          id: welcomeMessageId,
+    // Mark process as loaded if we have context, or we know there's none to load
+    if ((processContext?.process || eventData?.processId || (eventData && !eventData.processId)) && !contextState.processLoaded) {
+      setContextState((prev) => ({ ...prev, processLoaded: true }));
+      contextChanged = true;
+    }
+
+    // Send a follow-up message when context is fully loaded
+    if (contextChanged && welcomeMessageSent.current && !contextUpdateSent.current && eventData && (processContext?.process || eventData?.processId)) {
+      contextUpdateSent.current = true;
+
+      setTimeout(() => {
+        // Build detailed context update message
+        let updateText = "I've loaded your session context. ";
+
+        if (eventData?.title) {
+          updateText += `\nEvent: "${eventData.title}"`;
+        }
+
+        if (processContext?.process?.title) {
+          updateText += `\nProcess: "${processContext.process.title}"`;
+
+          // Include progress if there are steps
+          const steps = processContext.process.steps || [];
+          if (steps.length > 0) {
+            const completedSteps = steps.filter((step) => step.completed).length;
+            updateText += ` (${completedSteps}/${steps.length} steps complete)`;
+          }
+        }
+
+        updateText += '\nHow would you like to proceed?';
+
+        // Add context update message to transcript
+        setTranscript((prev) => [
+          ...prev,
+          {
+            id: `context-update-${Date.now()}`,
+            time: new Date().toISOString(),
+            speaker: 'AI Assistant',
+            text: updateText,
+            isAI: true,
+          },
+        ]);
+      }, 1000);
+    }
+  }, [eventData, processContext, contextState]);
+
+  // Send welcome message on component mount
+  useEffect(() => {
+    // Skip if message already sent or transcript has entries
+    if (welcomeMessageSent.current || transcript.length > 0) {
+      return;
+    }
+
+    console.log('Component mounted, sending initial welcome message');
+
+    // Set flag immediately to prevent multiple executions
+    welcomeMessageSent.current = true;
+
+    // Send welcome message with short delay
+    const timer = setTimeout(() => {
+      const welcomeText = generateWelcomeMessage();
+
+      // Add AI welcome message to transcript
+      setTranscript((prev) => [
+        ...prev,
+        {
+          id: `welcome-${Date.now()}`,
           time: new Date().toISOString(),
           speaker: 'AI Assistant',
-          text: "Welcome to Convers.me! I'm your AI assistant. I can help you with process tasks, schedule management, and more. How can I help you today?",
+          text: welcomeText,
           isAI: true,
-        };
+        },
+      ]);
+    }, 800);
 
-        // Add to transcript directly
-        setTranscript((prev) => [...prev, welcomeMessage]);
-      }, 800);
+    return () => clearTimeout(timer);
+  }, []);
 
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading, error, transcript.length]); // Remove aiConversation to avoid potential loops
-
-  // Set up process context for OpenAI service when available
+  /**
+   * Initialize AI context with available event and process data
+   * Following the correct architecture: event -> process -> steps
+   */
   useEffect(() => {
-    if (processContext) {
-      console.log('Setting process context for OpenAI service:', processContext);
+    // Set event context
+    if (eventData) {
+      // Setting minimal event context with essential fields only
+      // (We don't pass steps or process through event context)
+      const minimalEventContext = {
+        id: eventData.id,
+        title: eventData.title,
+        description: eventData.description,
+        startTime: eventData.startTime,
+        endTime: eventData.endTime,
+        processId: eventData.processId,
+        // Explicitly not including steps or complete process object
+      };
+
+      openAIService.setEventContext(minimalEventContext);
+    }
+
+    // Set process context - ONLY use processContext from backend
+    if (processContext?.process) {
+      // Use process context from backend API
       openAIService.setProcessContext(processContext);
     }
-  }, [processContext]);
+    // Only create minimal context if we have eventData with processId but no processContext
+    else if (eventData?.processId) {
+      // Create minimal process context with ID only - NO steps
+      // Steps must be fetched through proper process endpoint
+      const minimalProcessData = {
+        process: {
+          id: eventData.processId,
+          title: eventData.title || 'Current Process',
+          // No steps array - will be fetched properly through process endpoint
+        },
+        relatedEvents: [
+          {
+            id: eventData.id,
+            title: eventData.title,
+          },
+        ],
+        recentMessages: [],
+      };
+
+      openAIService.setProcessContext(minimalProcessData);
+    }
+
+    // Reset welcome message if context changed after initial load
+    if (welcomeMessageSent.current && transcript.length > 0) {
+      welcomeMessageSent.current = false;
+    }
+  }, [processContext, eventData]);
 
   // Track the last processed user transcript entry
   const lastProcessedEntryRef = useRef(null);
@@ -106,7 +318,7 @@ export function LiveView() {
     // Only process if it came from voice transcription
     // (entries from MessageInput are handled directly by the sendMessage function)
     if (isRecording) {
-      console.log('Processing voice transcription:', lastUserEntry.text);
+      // Processing voice transcription
       sendMessage(lastUserEntry.text);
       lastProcessedEntryRef.current = lastUserEntry.id;
     }
@@ -117,7 +329,7 @@ export function LiveView() {
     const handleBackendResponse = (data) => {
       // Check if the response contains suggested operations
       if (data && data.suggestedOperations && data.suggestedOperations.length > 0) {
-        console.log('Received suggested operations from backend:', data.suggestedOperations);
+        // Received suggested operations from backend
         setSuggestedOperations(data.suggestedOperations);
       }
     };
@@ -130,29 +342,33 @@ export function LiveView() {
 
   // Function to handle suggested operations from OpenAI
   const handleOpenAISuggestedOperations = (operations) => {
-    console.log('Received suggested operations from OpenAI:', operations);
+    // Received suggested operations from OpenAI
     setSuggestedOperations(operations);
   };
 
-  // Process user input from MessageInput component or voice transcription
+  /**
+   * Process user message and generate AI response
+   * @param message User's message text
+   */
   const sendMessage = async (message) => {
+    if (!message || message.trim() === '') return;
+
     try {
-      // Add the user message to transcript
+      // Add user message to transcript
       const userEntry = {
         id: `user-${Date.now()}`,
         time: new Date().toISOString(),
-        speaker: 'Jason Yu',
+        speaker: 'You', // Generic name
         text: message,
       };
-
       setTranscript((prev) => [...prev, userEntry]);
 
-      // Add message to OpenAI conversation history
+      // Add to OpenAI conversation
       openAIService.addUserMessage(message);
 
-      // Create an initial empty AI response in the transcript
+      // Create placeholder for AI response
       const responseId = `ai-${Date.now()}`;
-      const initialAiEntry = {
+      const aiPlaceholder = {
         id: responseId,
         time: new Date().toISOString(),
         speaker: 'AI Assistant',
@@ -160,46 +376,25 @@ export function LiveView() {
         isAI: true,
         isStreaming: true,
       };
+      setTranscript((prev) => [...prev, aiPlaceholder]);
 
-      setTranscript((prev) => [...prev, initialAiEntry]);
-
-      // Use OpenAI streaming response with chunks
+      // Generate and stream response
       await openAIService.generateStreamingResponse(
-        // Chunk handler - update the transcript with each chunk
+        // Update transcript with each chunk
         (chunk) => {
-          setTranscript((prev) => {
-            return prev.map((entry) => {
-              if (entry.id === responseId) {
-                return {
-                  ...entry,
-                  text: entry.text + chunk,
-                };
-              }
-              return entry;
-            });
-          });
+          setTranscript((prev) => prev.map((entry) => (entry.id === responseId ? { ...entry, text: entry.text + chunk } : entry)));
         },
-        // Complete handler - mark as no longer streaming
+
+        // Mark as complete when done
         (fullText) => {
-          setTranscript((prev) => {
-            return prev.map((entry) => {
-              if (entry.id === responseId) {
-                return {
-                  ...entry,
-                  text: fullText,
-                  isStreaming: false,
-                };
-              }
-              return entry;
-            });
-          });
+          setTranscript((prev) => prev.map((entry) => (entry.id === responseId ? { ...entry, text: fullText, isStreaming: false } : entry)));
         },
-        // Suggested operations handler
+
+        // Handle suggested operations
         handleOpenAISuggestedOperations,
       );
 
-      // FALLBACK: If we want to also use the backend API (for logging/analytics)
-      // We could call this in parallel, but not show the result to the user
+      // Log to backend in parallel (if process context exists)
       if (processId) {
         try {
           await processMessage({
@@ -207,75 +402,81 @@ export function LiveView() {
             contextId: processMessage?.data?.data?.contextId,
           });
         } catch (backendError) {
-          console.error('Backend message processing error (fallback mode):', backendError);
+          console.error('Error logging message to backend:', backendError);
+          // No user-facing error for backend logging failures
         }
       }
     } catch (error) {
-      console.error('Error processing message with OpenAI:', error);
+      console.error('Error processing message:', error);
 
-      // Add error message to transcript
+      // Show error message in transcript
       const errorEntry = {
         id: `error-${Date.now()}`,
         time: new Date().toISOString(),
         speaker: 'System',
-        text: `Error processing message: ${error.message || 'Unknown error'}`,
+        text: `Error: ${error.message || 'Failed to process message'}`,
       };
-
       setTranscript((prev) => [...prev, errorEntry]);
     }
   };
 
+  /**
+   * Execute an operation suggested by the AI
+   * @param operation The operation to execute
+   */
   const handleExecuteOperation = async (operation) => {
-    try {
-      console.log('Executing operation:', operation);
+    if (!operation) return;
 
-      // Add a system message to show operation in progress
-      const newEntry = {
-        id: Date.now().toString(),
+    try {
+      // Show operation in progress
+      const progressEntry = {
+        id: `op-${Date.now()}`,
         time: new Date().toISOString(),
         speaker: 'System',
-        text: `Executing operation: ${operation.operation} for ${operation.description}...`,
+        text: `Executing: ${operation.description}...`,
       };
+      setTranscript((prev) => [...prev, progressEntry]);
 
-      // Update the transcript with the new entry
-      setTranscript((prev) => [...prev, newEntry]);
-
-      // Call the backend API to perform the operation
+      // Call the backend API
       const result = await liveService.performOperation(operation);
-
       if (result.error) {
         throw new Error(result.error);
       }
 
-      // Add success message to transcript
+      // Show success message
       const successEntry = {
         id: `success-${Date.now()}`,
         time: new Date().toISOString(),
         speaker: 'System',
-        text: `Operation completed successfully: ${operation.description}`,
+        text: `✅ Operation completed: ${operation.description}`,
       };
-
       setTranscript((prev) => [...prev, successEntry]);
 
-      // Clear the suggested operations
+      // Clear suggested operations after execution
       setSuggestedOperations([]);
 
-      // Refresh process data if needed
+      // Refresh relevant data
       if (processId) {
-        queryClient.invalidateQueries({ queryKey: ['process', processId] });
-        queryClient.invalidateQueries({ queryKey: ['process-context', processId] });
+        // Invalidate both the process context and regular process queries
+        queryClient.invalidateQueries({
+          queryKey: ['process-context', processId],
+        });
+
+        // Also invalidate the process itself if available
+        queryClient.invalidateQueries({
+          queryKey: ['process', processId],
+        });
       }
     } catch (error) {
-      console.error('Error executing operation:', error);
+      console.error('Operation execution failed:', error);
 
-      // Add error message to transcript
+      // Show error message
       const errorEntry = {
         id: `error-${Date.now()}`,
         time: new Date().toISOString(),
         speaker: 'System',
-        text: `Error executing operation: ${error.message || 'Unknown error'}`,
+        text: `❌ Error: ${error.message || 'Failed to execute operation'}`,
       };
-
       setTranscript((prev) => [...prev, errorEntry]);
     }
   };
@@ -314,7 +515,7 @@ export function LiveView() {
         onSearchSubmit={headerProps.onSearchSubmit}
       />
 
-      <div className='relative flex w-full flex-1 overflow-hidden bg-gradient-to-b from-white to-slate-50' aria-label='Conversation view'>
+      <div className='relative flex w-full flex-1 overflow-hidden' aria-label='Conversation view'>
         <div className='flex flex-1 flex-col'>
           <div className='relative flex flex-1 overflow-hidden'>
             {/* Media view container */}

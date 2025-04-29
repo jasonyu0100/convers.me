@@ -73,6 +73,8 @@ def format_steps_with_substeps(steps: List[Step]) -> List[SchemaStepOut]:
             logger.error(f"Error processing substeps for step {step.id}: {e}")
             formatted_substeps = []
 
+        # We don't need to set completed_at here since it should be done at the DB level when marking as completed
+
         # Create step output - use camelCase field names
         step_out = SchemaStepOut(
             id=str(step.id),

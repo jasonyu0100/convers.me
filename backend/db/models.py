@@ -203,7 +203,6 @@ class Event(Base, TimestampMixin):
     # Relationships
     created_by = relationship("User", back_populates="events_created")
     process = relationship("Process", back_populates="events")
-    steps = relationship("Step", back_populates="event", cascade="all, delete-orphan")
     participants = relationship("EventParticipant", back_populates="event", cascade="all, delete-orphan")
     topics = relationship("Topic", secondary=event_topics, back_populates="events")
     posts = relationship("Post", back_populates="event", cascade="all, delete-orphan")
@@ -388,8 +387,7 @@ class Process(Base, TimestampMixin):
                     "completedAt": step.completed_at.isoformat() if step.completed_at else None,
                     "order": step.order,
                     "dueDate": step.due_date,
-                    "processId": str(step.process_id) if step.process_id else None,
-                    "eventId": str(step.event_id) if step.event_id else None,
+                    "processId": str(step.process_id),
                     "createdAt": step.created_at.isoformat() if step.created_at else None,
                     "updatedAt": step.updated_at.isoformat() if step.updated_at else None,
                     "subSteps": [],
@@ -442,19 +440,16 @@ class Step(Base, TimestampMixin):
     order = Column(Integer, nullable=False)
     due_date = Column(String)
 
-    # Foreign keys - one of these will be set
-    process_id = Column(UUID, ForeignKey("processes.id", ondelete="CASCADE"))
-    event_id = Column(UUID, ForeignKey("events.id", ondelete="CASCADE"))
+    # Foreign key - only process_id is valid now
+    process_id = Column(UUID, ForeignKey("processes.id", ondelete="CASCADE"), nullable=False)
 
     # Relationships
     process = relationship("Process", back_populates="steps")
-    event = relationship("Event", back_populates="steps")
     sub_steps = relationship("SubStep", back_populates="step", cascade="all, delete-orphan")
 
     # Indices
     __table_args__ = (
         Index("idx_steps_process_id", process_id),
-        Index("idx_steps_event_id", event_id),
         Index("idx_steps_order", order),
         Index("idx_steps_completed", completed),
     )
@@ -468,8 +463,7 @@ class Step(Base, TimestampMixin):
             "completedAt": self.completed_at.isoformat() if self.completed_at else None,
             "order": self.order,
             "dueDate": self.due_date,
-            "processId": str(self.process_id) if self.process_id else None,
-            "eventId": str(self.event_id) if self.event_id else None,
+            "processId": str(self.process_id),
             "createdAt": self.created_at.isoformat() if self.created_at else None,
             "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
             "subSteps": ([sub.to_dict() for sub in self.sub_steps] if self.sub_steps else []),

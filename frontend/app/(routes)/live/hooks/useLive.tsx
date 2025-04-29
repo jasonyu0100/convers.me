@@ -2,6 +2,9 @@
 
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { useRouter, useSearchParams } from 'next/navigation';
+
 import {
   AIConversation,
   LiveContext,
@@ -16,15 +19,13 @@ import {
   StreamParticipant,
   TranscriptEntry,
 } from '../../../types/live';
-import audioRecorder from '../services/audioRecorder';
-import openAIService from '../services/openAIService';
 import { LiveProviderProps } from '../types';
-import { EventService } from '@/app/services/eventService';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useApp } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
-import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { EventService } from '@/app/services/eventService';
 import { liveService } from '@/app/services';
+import audioRecorder from '../services/audioRecorder';
+import openAIService from '../services/openAIService';
 
 // Define return type of the hook for better type inference
 export interface LiveContextValue {
@@ -198,7 +199,7 @@ function useLiveState(): LiveContextValue {
     enabled: !!eventId,
     onSuccess: (data) => {
       if (data?.process?.templateId) {
-        console.log(`Found template ID: ${data.process.templateId}`);
+        // Found template ID
       }
     },
     onError: (error) => {
@@ -210,20 +211,47 @@ function useLiveState(): LiveContextValue {
   // Extract template ID from event data
   const templateId = eventData?.process?.templateId || null;
 
-  // Fetch process context with React Query to get process details
-  const { data: processContext } = useQuery<LiveProcessContext>({
-    queryKey: ['process-context', processId],
-    queryFn: async () => {
-      if (!processId) return null;
+  // Extract process ID from event data if not in URL
+  // Direct processId from the event object (not nested under process)
+  const eventProcessId = eventData?.processId;
+  const effectiveProcessId = processId || eventProcessId;
 
-      const result = await liveService.getProcessContext(processId);
+  // Debug the process ID source
+  useEffect(() => {
+    if (processId) {
+      // Process ID from URL params
+    } else if (eventProcessId) {
+      // Process ID from event data
+    }
+  }, [processId, eventProcessId]);
+
+  // Fetch process context with React Query to get process details
+  // Using the standard process endpoint
+  const { data: processContext } = useQuery<LiveProcessContext>({
+    queryKey: ['process-context', effectiveProcessId],
+    queryFn: async () => {
+      if (!effectiveProcessId) {
+        // No process ID available for fetching context
+        return null;
+      }
+
+      // Fetching process context
+      const result = await liveService.getProcessContext(effectiveProcessId);
+
       if (result.error) {
+        console.error('Error fetching process context:', result.error);
         throw new Error(result.error);
       }
 
+      // Process context fetched successfully
+
       return result.data;
     },
-    enabled: !!processId,
+    enabled: !!effectiveProcessId,
+    staleTime: 30000, // Cache for 30 seconds for better performance
+    onError: (error) => {
+      console.error('Process context query error:', error);
+    },
   });
 
   // Fetch participants with React Query
@@ -580,27 +608,27 @@ function useLiveState(): LiveContextValue {
     try {
       // Make sure audio recorder isn't already running
       if (audioRecorder.isRecordingActive()) {
-        console.log('Audio recorder is already active, stopping previous instance');
+        // Audio recorder is already active
         audioRecorder.stopRecording();
       }
 
-      console.log('Starting audio recorder and real-time transcription');
+      // Starting audio recorder
 
       // Start audio recording with a callback when audio data is available
       await audioRecorder.startRecording(async (audioBlob) => {
         // Update isRecording state to match the actual recorder state
         if (!isRecording && audioRecorder.isRecordingActive()) {
-          console.log('Updating recording state to match actual recorder state');
+          // Updating recording state
           setIsRecording(true);
         }
 
         // Skip processing if recording has been explicitly stopped by user
         if (!audioRecorder.isRecordingActive()) {
-          console.log('Audio recorder is inactive, skipping transcription');
+          // Audio recorder is inactive
           return;
         }
 
-        console.log(`Audio chunk received (${audioBlob.size} bytes), sending for transcription...`);
+        // Audio chunk received, sending for transcription
 
         try {
           // Send audio to OpenAI for transcription
@@ -609,7 +637,7 @@ function useLiveState(): LiveContextValue {
           // If transcription has content, add it to the transcript
           if (result.text && result.text.trim() !== '') {
             const text = result.text.trim();
-            console.log('Transcription received:', text);
+            // Transcription received
 
             // Create a new entry object
             const newEntry: TranscriptEntry = {
@@ -626,7 +654,7 @@ function useLiveState(): LiveContextValue {
             // The LiveView component will detect new transcript entries from microphone
             // and process them appropriately
           } else {
-            console.log('Empty transcription received, skipping');
+            // Empty transcription received
           }
         } catch (error) {
           console.error('Error processing audio transcription:', error);
@@ -643,7 +671,7 @@ function useLiveState(): LiveContextValue {
         }
       });
 
-      console.log('Real-time transcription started successfully');
+      // Real-time transcription started
     } catch (error) {
       console.error('Failed to start real-time transcription:', error);
 
@@ -664,7 +692,7 @@ function useLiveState(): LiveContextValue {
 
   // Fallback to simulated transcription if real transcription fails
   const simulateTranscriptionFallback = () => {
-    console.log('SIMULATION DISABLED - using empty transcription');
+    // Simulation disabled
 
     // Do not auto-generate any messages
     const errorEntry: TranscriptEntry = {
@@ -740,7 +768,7 @@ function useLiveState(): LiveContextValue {
   const sendMessage = async (text: string): Promise => {
     // This function is now a stub that just logs the request
     // Actual processing is handled in LiveView component
-    console.log(`Message received in useLive hook: "${text}"`);
+    // Message received in hook
 
     try {
       // Get the latest context ID
@@ -823,7 +851,7 @@ function useLiveState(): LiveContextValue {
   const handleViewTemplate = () => {
     if (templateId) {
       try {
-        console.log(`Navigating to template process: ${templateId}`);
+        // Navigating to template process
 
         // Update the app state to show we're in the PROCESS view
         app.setMainView(AppRoute.PROCESS);
@@ -838,7 +866,7 @@ function useLiveState(): LiveContextValue {
       // If no template exists, navigate to create a new template
       // with current session data as prefill values
       try {
-        console.log('Creating new template from live session');
+        // Creating new template
 
         // Update the app state
         app.setMainView(AppRoute.PROCESS);

@@ -190,8 +190,7 @@ class SchemaStepOut(SchemaStepBase):
     """Step output model."""
 
     id: str
-    eventId: Optional[str] = Field(default=None)
-    processId: Optional[str] = Field(default=None)
+    processId: str = Field()  # Process ID is now required
     createdAt: Optional[datetime] = Field(default=None)
     updatedAt: Optional[datetime] = Field(default=None)
     subSteps: List[SchemaSubStepOut] = Field(default_factory=list)
@@ -199,7 +198,7 @@ class SchemaStepOut(SchemaStepBase):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     # Use the utility function to create model_validate
-    model_validate = classmethod(create_model_validator(["id", "event_id", "process_id"]))
+    model_validate = classmethod(create_model_validator(["id", "process_id"]))
 
 
 class SchemaEventOut(SchemaEventBase):
@@ -262,7 +261,6 @@ class SchemaRelatedEventOut(APIBaseModel):
 class SchemaEventDetailOut(SchemaEventOut):
     """Detailed event output with additional fields."""
 
-    steps: List[SchemaStepOut] = []
     tags: List[str] = []  # Tag names extracted from topics for UI
     participantsGroup: Optional[SchemaParticipantsGroup] = Field(default=None)
     relatedEvents: List[SchemaRelatedEventOut] = Field(default=[])  # Related events

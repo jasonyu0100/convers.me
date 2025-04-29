@@ -109,13 +109,42 @@ export class LiveService {
   }
 
   /**
-   * Get context information about a process for use in live sessions
+   * Get process context information for use in live sessions
+   * Uses the standard process endpoint that already includes steps, substeps, and connected events
    */
   async getProcessContext(processId: string): Promise {
+    if (!processId) {
+      console.error('getProcessContext called with null/undefined processId');
+      return { data: null, error: 'Process ID is required' };
+    }
+
+    console.log('LiveService: Getting process context for ID:', processId);
+
     try {
-      const response = await apiClient.get(`/live/process-context/${processId}`);
-      return { data: response.data, error: null };
+      // Use the standard process endpoint which has all the information we need
+      // Note: The router uses 'processes' (plural) not 'process' (singular)
+      const response = await apiClient.get(`/processes/${processId}`);
+      console.log('LiveService: Process API response received:', !!response.data);
+
+      const processData = response.data;
+
+      if (!processData) {
+        console.error('LiveService: Empty response data from process endpoint');
+        return { data: null, error: 'Empty response from process endpoint' };
+      }
+
+      // Convert to LiveProcessContext format for consistency
+      const processContext: LiveProcessContext = {
+        process: processData,
+        relatedEvents: processData.connectedEvents || [],
+        recentMessages: [],
+        userPreferences: null,
+      };
+
+      console.log('LiveService: Process context created successfully');
+      return { data: processContext, error: null };
     } catch (error) {
+      console.error('LiveService: Process endpoint error:', error);
       return handleApiError(error, 'Failed to get process context');
     }
   }

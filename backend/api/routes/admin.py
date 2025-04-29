@@ -338,6 +338,37 @@ async def update_user(
 
     return UserResponseAdmin.from_orm_obj(user)
 
+@router.post("/migrate-event-steps", status_code=status.HTTP_200_OK)
+async def migrate_event_steps_to_processes(current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_db)):
+    """
+    Migrate all steps directly attached to events to their linked processes.
+    This fixes the critical architectural issue where steps should only be
+    linked to processes, not directly to events.
+
+    Args:
+        current_user: The authenticated user (must be an admin)
+        db: The database session
+
+    Returns:
+        dict: Migration statistics
+    """
+    if not current_user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                           detail="Only admin users can access this endpoint")
+
+    try:
+        # Import the ProcessService
+        from services.process.process_service import ProcessService
+
+        # Call the migration method
+        result = ProcessService.migrate_all_event_steps_to_processes(db)
+
+        return result
+    except Exception as e:
+        logger.error(f"Error migrating event steps: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                           detail=f"Failed to migrate event steps: {str(e)}")
+
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(user_id: str, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_db)):
     """

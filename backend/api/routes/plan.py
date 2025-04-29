@@ -346,7 +346,7 @@ async def save_plan(
                         completed=False,
                         order=template_step.order,
                         due_date=None,
-                        event_id=event.id
+                        process_id=event.process_id or process.id  # Use event's process if available, otherwise use the template's process
                     )
                     db.add(step)
                     db.flush()

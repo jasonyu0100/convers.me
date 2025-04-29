@@ -357,12 +357,29 @@ async def perform_live_operation(
         # Update the step
         step.completed = True
         step.completed_at = datetime.utcnow()
+
+        # Update all substeps to completed as well
+        substeps = db.query(SubStep).filter(SubStep.step_id == step.id).all()
+        for substep in substeps:
+            substep.completed = True
+            substep.completed_at = datetime.utcnow()
+
         db.commit()
+
+        # Include updated substeps in the result
+        updated_substeps = []
+        for substep in substeps:
+            updated_substeps.append({
+                "id": str(substep.id),
+                "completed": True,
+                "completedAt": substep.completed_at.isoformat() if substep.completed_at else None
+            })
 
         result["details"] = {
             "stepId": str(step.id),
             "completed": True,
             "completedAt": step.completed_at.isoformat(),
+            "updatedSubsteps": updated_substeps
         }
 
     elif operation.operation == "add_step":

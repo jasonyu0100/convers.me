@@ -85,6 +85,7 @@ export interface CreateStepData {
 export interface UpdateStepData {
   content?: string;
   completed?: boolean;
+  completedAt?: string | null; // ISO date when completed, null when uncompleted
   order?: number;
   dueDate?: string;
 }
@@ -104,6 +105,7 @@ export interface CreateSubStepData {
 export interface UpdateSubStepData {
   content?: string;
   completed?: boolean;
+  completedAt?: string | null; // ISO date when completed, null when uncompleted
   order?: number;
 }
 
@@ -250,7 +252,28 @@ export class EventService {
    * @param stepData - Step data to create
    */
   static async createStep(eventId: string, stepData: CreateStepData): Promise {
-    return ApiClient.post<StepSchema>(`/events/${eventId}/steps`, stepData);
+    try {
+      // Get the event to find its linked process
+      const eventResult = await ApiClient.get<EventSchema>(`/events/${eventId}`);
+
+      if (eventResult.error) {
+        return eventResult;
+      }
+
+      // Use the process service to create a step in the linked process
+      const processId = eventResult.data.processId;
+      const processService = (await import('./processService')).ProcessService;
+
+      // Convert event step to process step format
+      const processStepData = {
+        ...stepData,
+        processId: processId,
+      };
+
+      return processService.createStep(processId, processStepData);
+    } catch (error) {
+      return { error: 'Failed to create event step', status: 500 };
+    }
   }
 
   /**
@@ -260,7 +283,13 @@ export class EventService {
    * @param updateData - Step data to update
    */
   static async updateStep(eventId: string, stepId: string, updateData: UpdateStepData): Promise {
-    return ApiClient.put<StepSchema>(`/events/${eventId}/steps/${stepId}`, updateData);
+    try {
+      // We don't need the event since we have the stepId which can be updated directly
+      const processService = (await import('./processService')).ProcessService;
+      return processService.updateStep(stepId, updateData);
+    } catch (error) {
+      return { error: 'Failed to update event step', status: 500 };
+    }
   }
 
   /**
@@ -269,15 +298,40 @@ export class EventService {
    * @param stepId - Step ID
    */
   static async deleteStep(eventId: string, stepId: string): Promise {
-    return ApiClient.delete<void>(`/events/${eventId}/steps/${stepId}`);
+    // Get the event to find its process
+    const eventResult = await ApiClient.get<EventSchema>(`/events/${eventId}`);
+
+    if (eventResult.error) {
+      return eventResult;
+    }
+
+    // Use the process service to delete the step
+    const processService = (await import('./processService')).ProcessService;
+    return processService.deleteStep(stepId);
   }
 
   /**
    * Get all steps for an event
+   * IMPORTANT: This follows the architecture: event -> process -> steps
+   * It retrieves steps from the event's associated process whenever possible
    * @param eventId - Event ID
    */
   static async getEventSteps(eventId: string): Promise {
-    return ApiClient.get<StepSchema[]>(`/events/${eventId}/steps`);
+    try {
+      // Get the event to find its linked process
+      const eventResult = await ApiClient.get<EventSchema>(`/events/${eventId}`);
+
+      if (eventResult.error) {
+        return eventResult;
+      }
+
+      // Use the process service to get steps from the linked process
+      const processId = eventResult.data.processId;
+      const processService = (await import('./processService')).ProcessService;
+      return processService.getProcessSteps(processId);
+    } catch (error) {
+      return { error: 'Failed to get event steps', status: 500 };
+    }
   }
 
   /**
@@ -291,7 +345,9 @@ export class EventService {
    * @param subStepData - Sub-step data to create
    */
   static async createSubStep(eventId: string, stepId: string, subStepData: CreateSubStepData): Promise {
-    return ApiClient.post<SubStepSchema>(`/events/${eventId}/steps/${stepId}/sub-steps`, subStepData);
+    // Use the process service to create the substep
+    const processService = (await import('./processService')).ProcessService;
+    return processService.createSubStep(stepId, subStepData);
   }
 
   /**
@@ -302,7 +358,9 @@ export class EventService {
    * @param updateData - Sub-step data to update
    */
   static async updateSubStep(eventId: string, stepId: string, subStepId: string, updateData: UpdateSubStepData): Promise {
-    return ApiClient.put<SubStepSchema>(`/events/${eventId}/steps/${stepId}/sub-steps/${subStepId}`, updateData);
+    // Use the process service to update the substep
+    const processService = (await import('./processService')).ProcessService;
+    return processService.updateSubStep(subStepId, updateData);
   }
 
   /**
@@ -311,7 +369,9 @@ export class EventService {
    * @param updates - Array of sub-step updates, each containing id, step_id, and fields to update
    */
   static async batchUpdateSubSteps(eventId: string, updates: Array): Promise {
-    return ApiClient.post<SubStepSchema[]>(`/events/${eventId}/batch/substeps/update`, updates);
+    // Use the process service to batch update the substeps
+    const processService = (await import('./processService')).ProcessService;
+    return processService.batchUpdateSubSteps(updates);
   }
 
   /**
@@ -321,7 +381,9 @@ export class EventService {
    * @param subStepId - Sub-step ID
    */
   static async deleteSubStep(eventId: string, stepId: string, subStepId: string): Promise {
-    return ApiClient.delete<void>(`/events/${eventId}/steps/${stepId}/sub-steps/${subStepId}`);
+    // Use the process service to delete the substep
+    const processService = (await import('./processService')).ProcessService;
+    return processService.deleteSubStep(subStepId);
   }
 
   /**

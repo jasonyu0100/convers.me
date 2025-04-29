@@ -255,17 +255,30 @@ class EventHelpers:
         return [p[0] for p in weighted_processes[:max_count]]
 
     @staticmethod
-    def create_standard_standup_steps(event_id: str, status: EventStatusEnum, db: Session) -> List[Step]:
+    def create_standard_standup_steps(event: Event, status: EventStatusEnum, db: Session) -> List[Step]:
         """Create standard steps for a standup event.
 
         Args:
-            event_id: The event ID to associate steps with
+            event: The event to associate steps with
             status: The event status to determine which steps are completed
             db: Database session
 
         Returns:
             List[Step]: The created steps
         """
+        # Return empty list if event has no process_id
+        if not event.process_id:
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Event {event.id} has no process_id. Cannot create standup steps.")
+            return []
+
+        # Check if the process already has steps to avoid duplication
+        existing_steps = db.query(Step).filter(Step.process_id == event.process_id).all()
+        if existing_steps:
+            logger = logging.getLogger(__name__)
+            logger.info(f"Process {event.process_id} already has {len(existing_steps)} steps. Skipping standup step creation.")
+            return existing_steps
+
         # Define standup steps with their substeps
         standup_steps_with_substeps = [
             {
@@ -297,7 +310,7 @@ class EventHelpers:
                 step_completed = False  # No steps completed for future events
 
             # Create the main step
-            step = Step(id=str(uuid.uuid4()), content=step_data["content"], completed=step_completed, order=i + 1, event_id=event_id)
+            step = Step(id=str(uuid.uuid4()), content=step_data["content"], completed=step_completed, order=i + 1, process_id=event.process_id)
             db.add(step)
             db.flush()  # Get the ID
 
@@ -449,6 +462,24 @@ class EventHelpers:
         Returns:
             List[Step]: The created steps
         """
+        logger = logging.getLogger(__name__)
+
+        # Return empty list if event has no process_id or if process is None
+        if not event.process_id or not process or event.process_id != process.id:
+            logger.warning(f"Event {event.id} has invalid process configuration. Cannot create steps.")
+            return []
+
+        # Check if the process already has steps to avoid duplication
+        existing_steps = db.query(Step).filter(Step.process_id == process.id).all()
+        if existing_steps:
+            logger.info(f"Process {process.id} already has {len(existing_steps)} steps. Skipping step creation.")
+            return existing_steps
+
+        # Special handling for standups to prevent duplication
+        if "standup" in event.title.lower() or "sync" in event.title.lower():
+            logger.info(f"Detected standup/sync event. Using standup-specific step creation.")
+            return EventHelpers.create_standard_standup_steps(event, status, db)
+
         steps = []
 
         # If process has steps, use those
@@ -464,7 +495,7 @@ class EventHelpers:
                 else:
                     step_completed = False
 
-                step = Step(id=str(uuid.uuid4()), content=process_step.content, completed=step_completed, order=i + 1, event_id=event.id)
+                step = Step(id=str(uuid.uuid4()), content=process_step.content, completed=step_completed, order=i + 1, process_id=process.id)
                 db.add(step)
                 steps.append(step)
 
@@ -484,7 +515,7 @@ class EventHelpers:
         else:
             # Create default steps based on event type and complexity
             if "standup" in event.title.lower() or "sync" in event.title.lower():
-                steps = EventHelpers.create_standard_standup_steps(event.id, status, db)
+                steps = EventHelpers.create_standard_standup_steps(event, status, db)
             else:
                 default_steps = EventHelpers.get_default_steps_by_event_type(event.title)
 
@@ -499,7 +530,7 @@ class EventHelpers:
                         step_completed = False
 
                     # Create main step
-                    step = Step(id=str(uuid.uuid4()), content=step_data["content"], completed=step_completed, order=i + 1, event_id=event.id)
+                    step = Step(id=str(uuid.uuid4()), content=step_data["content"], completed=step_completed, order=i + 1, process_id=process.id)
                     db.add(step)
                     db.flush()  # Get the ID
 
@@ -770,6 +801,8 @@ class EventHelpers:
             )
 
             if existing_instance:
+                log = logging.getLogger(__name__)
+                log.info(f"Using existing process instance {existing_instance.id} for template {template_process.id}")
                 return existing_instance
 
             # Create a new process instance based on the template
@@ -798,9 +831,15 @@ class EventHelpers:
             db.add(process_instance)
             db.flush()  # Get ID without committing
 
-            # Clone steps from template
-            if template_process.steps:
-                for i, template_step in enumerate(template_process.steps):
+            # Check if template actually has steps before trying to clone them
+            template_steps = list(template_process.steps) if template_process.steps else []
+
+            if template_steps:
+                log = logging.getLogger(__name__)
+                log.info(f"Cloning {len(template_steps)} steps from template {template_process.id} to instance {process_instance.id}")
+
+                # Clone steps from template
+                for i, template_step in enumerate(template_steps):
                     # Create a new step based on the template step
                     step = Step(
                         id=str(uuid.uuid4()),
@@ -814,7 +853,7 @@ class EventHelpers:
                     db.flush()
 
                     # Clone sub-steps if any
-                    if template_step.sub_steps:
+                    if hasattr(template_step, "sub_steps") and template_step.sub_steps:
                         for sub_step in template_step.sub_steps:
                             new_sub_step = SubStep(
                                 id=str(uuid.uuid4()),
@@ -828,6 +867,7 @@ class EventHelpers:
             return process_instance
 
         except Exception as e:
+            logger = logging.getLogger(__name__)
             logger.error(f"Error creating process from template: {e}")
             return None
 

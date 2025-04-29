@@ -4,91 +4,73 @@ from typing import List
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 
 from api.schemas.events import SchemaStepCreate, SchemaStepOut, SchemaSubStepOut
 from db.models import Event, EventParticipant, Step, SubStep, User
 
 
 def get_event_steps(db: Session, event_id: str, current_user: User) -> List[SchemaStepOut]:
-    """Get all steps for an event."""
+    """Get all steps for an event.
+
+    This function redirects to the process steps endpoint since all event steps
+    should now be stored in the linked process.
+    """
     # Check if the event exists
     event = db.query(Event).filter(Event.id == event_id).first()
     if not event:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
 
-    # Get steps with sub-steps
-    steps = db.query(Step).options(joinedload(Step.sub_steps)).filter(
-        Step.event_id == event_id).order_by(Step.order).all()
+    # If event has no linked process, create one to ensure proper architecture
+    if not event.process_id:
+        import uuid
+        from datetime import datetime
 
-    # Debug: Check if substeps are loaded
-    print(f"Event {event_id} has {len(steps)} steps")
+        from db.models import Process
 
-    # If no steps found, return default steps for better UX
-    if not steps:
-        # Create default steps based on event type
-        from api.lib.events.helpers import generate_substeps_for_step
+        print(f"Event {event_id} has no linked process - creating one for it")
 
-        # Create a default step list
-        default_steps = []
-        default_titles = [
-            "Preparation",
-            "Execution",
-            "Follow-up"
-        ]
+        # Create a new process linked to this event
+        new_process = Process(
+            id=str(uuid.uuid4()),
+            title=event.title,
+            description=event.description or f"Process for event: {event.title}",
+            color=event.color or "blue",
+            last_updated=datetime.utcnow().isoformat(),
+            favorite=False,
+            category="event",
+            created_by_id=event.created_by_id,
+            process_metadata={"created_from_event": True, "event_id": str(event_id)},
+        )
+        db.add(new_process)
+        db.flush()  # Get ID without committing yet
 
-        # Generate default steps with UUIDs
-        for i, title in enumerate(default_titles):
-            step_out = SchemaStepOut(
-                id=f"step-default-{i}",
-                content=title,
-                completed=False,
-                order=i + 1,
-                dueDate=None,
-                eventId=str(event_id),
-                processId=None,
-                createdAt=None,
-                updatedAt=None,
-                completedAt=None,
-                subSteps=[],
-            )
+        # Link process to the event
+        event.process_id = new_process.id
 
-            # Generate substeps for this default step
-            substeps = generate_substeps_for_step(title)
-            step_substeps = []
+        # Note: Step.event_id has been removed from the schema
+        # Legacy step migration is no longer needed as steps can only be associated with processes
 
-            for j, substep_content in enumerate(substeps):  # No longer limiting substeps
-                substep_out = SchemaSubStepOut(
-                    id=f"substep-default-{i}-{j}",
-                    content=substep_content,
-                    completed=False,
-                    order=j + 1,
-                    stepId=step_out.id,
-                    createdAt=None,
-                    updatedAt=None,
-                    completedAt=None,
-                )
-                step_substeps.append(substep_out)
+        # Commit all changes
+        db.commit()
 
-            step_out.subSteps = step_substeps
-            default_steps.append(step_out)
+    # Use the process steps helper
+    from api.routes.processes import get_process_steps_internal
 
-        print(f"Returning {len(default_steps)} default steps for empty event {event_id}")
-        return default_steps
+    # Call the process steps function with the process ID from the event
+    steps = get_process_steps_internal(db, event.process_id, current_user)
 
-    # Use the well-tested formatting helper function from api.lib.events.helpers
-    from api.lib.events.helpers import format_steps_with_substeps
-    formatted_steps = format_steps_with_substeps(steps)
+    print(f"Retrieved {len(steps)} steps from process {event.process_id} for event {event_id}")
 
-    if not formatted_steps:
-        print(f"Warning: Event {event_id} has {len(steps)} steps but no formatted steps were returned")
-
-    return formatted_steps
+    return steps
 
 
 def create_event_step(db: Session, event_id: UUID, step: SchemaStepCreate, current_user: User) -> SchemaStepOut:
-    """Create a new step for an event."""
+    """Create a new step for an event.
+
+    This function ensures the event has a linked process and then creates the step in that process.
+    """
     # Check if the event exists
     event = db.query(Event).filter(Event.id == event_id).first()
     if not event:
@@ -112,9 +94,46 @@ def create_event_step(db: Session, event_id: UUID, step: SchemaStepCreate, curre
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="You don't have permission to add steps to this event")
 
-    # Create the step
-    new_step = Step(content=step.content, completed=step.completed,
-                    order=step.order, due_date=step.dueDate, event_id=event_id)
+    # If event has no linked process, create one
+    if not event.process_id:
+        # Similar process creation logic as in get_event_steps
+        import uuid
+        from datetime import datetime
+
+        from db.models import Process
+
+        print(f"Event {event_id} has no linked process - creating one for it")
+
+        new_process = Process(
+            id=str(uuid.uuid4()),
+            title=event.title,
+            description=event.description or f"Process for event: {event.title}",
+            color=event.color or "blue",
+            last_updated=datetime.utcnow().isoformat(),
+            favorite=False,
+            category="event",
+            created_by_id=event.created_by_id,
+            process_metadata={"created_from_event": True, "event_id": str(event_id)},
+        )
+        db.add(new_process)
+        db.commit()
+        db.refresh(new_process)
+
+        # Link process to the event
+        event.process_id = new_process.id
+        db.commit()
+
+    print(f"Creating step in process {event.process_id} for event {event_id}")
+
+    # Create the step in the process
+    new_step = Step(
+        content=step.content,
+        completed=step.completed,
+        order=step.order,
+        due_date=step.dueDate,
+        process_id=event.process_id
+    )
+
     db.add(new_step)
     db.commit()
     db.refresh(new_step)
@@ -146,8 +165,7 @@ def create_event_step(db: Session, event_id: UUID, step: SchemaStepCreate, curre
         completed=new_step.completed,
         order=new_step.order,
         dueDate=new_step.due_date,
-        eventId=str(new_step.event_id),
-        processId=None,
+        processId=str(event.process_id),
         createdAt=new_step.created_at,
         updatedAt=new_step.updated_at,
         completedAt=new_step.completed_at,
