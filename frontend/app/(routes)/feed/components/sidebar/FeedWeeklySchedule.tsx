@@ -2,7 +2,6 @@
 
 import { useApp } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
-import { Divider } from '@/app/components/ui/dividers/Divider';
 import StatusBadge from '@/app/components/ui/status/StatusBadge';
 import { EventService } from '@/app/services/eventService';
 import { EventSchema } from '@/app/types/schema';
@@ -289,20 +288,6 @@ export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProp
           })}
         </div>
       )}
-
-      <div className='mt-auto pt-6'>
-        <Divider className='opacity-50' />
-        <button
-          className='mt-5 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition-all hover:from-blue-700 hover:to-indigo-700 hover:shadow focus:ring-2 focus:ring-blue-300'
-          onClick={() => {
-            app.setMainView(AppRoute.SCHEDULE);
-            router.push('/schedule');
-          }}
-        >
-          <CalendarDaysIcon className='mr-2 h-4 w-4' />
-          Schedule New Event
-        </button>
-      </div>
     </div>
   );
 }

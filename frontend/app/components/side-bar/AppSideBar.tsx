@@ -102,16 +102,16 @@ const NAV_ITEMS: SideBarNavItem[] = [
     icon: <MapIcon className='size-5' />,
   },
   {
-    label: 'Insight',
-    route: '/insight',
-    appRoute: AppRoute.INSIGHT,
-    icon: <ChartBarIcon className='size-5' />,
-  },
-  {
     label: 'Library',
     route: '/library',
     appRoute: AppRoute.LIBRARY,
     icon: <GlobeAltIcon className='size-5' />,
+  },
+  {
+    label: 'Insight',
+    route: '/insight',
+    appRoute: AppRoute.INSIGHT,
+    icon: <ChartBarIcon className='size-5' />,
   },
 ];
 
@@ -127,13 +127,31 @@ const NAV_ITEMS: SideBarNavItem[] = [
  * of its container, with items arranged in a vertical column.
  */
 export function AppSideBarView({ className = '' }: AppSideBarProps) {
+  // Add a custom click handler for Process navigation
+  const handleProcessClick = () => {
+    // If we're in the Library view, try to find and reset the LibraryContext
+    if (typeof window !== 'undefined') {
+      const libraryContext = (window as any).__LIBRARY_CONTEXT__;
+      if (libraryContext && typeof libraryContext.setSelectedCollection === 'function') {
+        libraryContext.setSelectedCollection(null);
+      }
+    }
+  };
+
   return (
     <div className={`flex h-full w-[6rem] flex-shrink-0 flex-col items-center justify-between border-r-1 border-slate-200 py-4 ${className}`}>
       <div className='flex flex-col items-center space-y-[1rem]'>
         <AppSideBarToggle />
         {/* Render navigation items from the centralized array */}
         {NAV_ITEMS.map((item) => (
-          <SideBarNavButton key={item.label} onClick={() => {}} label={item.label} route={item.route} appRoute={item.appRoute} title={item.title || item.label}>
+          <SideBarNavButton
+            key={item.label}
+            onClick={item.label === 'Process' ? handleProcessClick : () => {}}
+            label={item.label}
+            route={item.route}
+            appRoute={item.appRoute}
+            title={item.title || item.label}
+          >
             {item.icon}
           </SideBarNavButton>
         ))}

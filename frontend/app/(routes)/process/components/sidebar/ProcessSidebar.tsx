@@ -67,6 +67,9 @@ export function ProcessSidebar() {
 
   // Handle back to directories
   const handleBackToDirectories = () => {
+    // First unselect the process
+    handleProcessesSelect('');
+    // Then unselect the directory
     setSelectedDirectoryId(null);
   };
 

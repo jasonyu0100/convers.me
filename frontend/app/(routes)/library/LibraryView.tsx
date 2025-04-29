@@ -1,16 +1,14 @@
 import { AppHeader } from '@/app/components/app/AppHeader';
 import { ErrorDisplay } from '@/app/components/ui/errors';
 import { PageLoading } from '@/app/components/ui/loading';
-import { LibraryCategories } from './components/LibraryCategories';
-import { LibraryCollectionDetail } from './components/LibraryCollectionDetail';
-import { LibraryCollectionsList } from './components/LibraryCollectionsList';
+import { LibrarySidebar, LibraryContent } from './components';
 import { useLibrary } from './hooks/useLibrary';
 import { useLibraryHeader } from './hooks/useLibraryHeader';
 
 export function LibraryView() {
   // Get header configuration
   const headerProps = useLibraryHeader();
-  const { isLoading, error, clearError, selectedCollection } = useLibrary();
+  const { isLoading, error, clearError } = useLibrary();
 
   // Handle loading state
   if (isLoading) {
@@ -47,10 +45,10 @@ export function LibraryView() {
         onSearchSubmit={headerProps.onSearchSubmit}
       />
 
-      {/* Main content area */}
+      {/* Main content area with sidebar and process content */}
       <div className='flex flex-1 overflow-hidden'>
-        <LibraryCategories />
-        {selectedCollection ? <LibraryCollectionDetail /> : <LibraryCollectionsList />}
+        <LibrarySidebar />
+        <LibraryContent />
       </div>
     </div>
   );
