@@ -2,14 +2,14 @@
 
 import { useApp } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
-import { ProcessService } from '@/app/services';
-import { Process } from '@/app/types/process';
-import { CalendarDaysIcon, DocumentTextIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { CalendarService } from '@/app/services';
+import { EventSchema } from '@/app/types/schema';
+import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Divider } from '../../ui';
-import { SidePanelActionButton, SidePanelLayout, SidePanelSection } from '../common';
+import { SidePanelActionButton, SidePanelLayout } from '../common';
 import { DefaultSidePanelProps } from '../types';
 
 /**
@@ -39,150 +39,204 @@ function ActionButtons() {
 }
 
 /**
- * Section displaying favorite processes
+ * Mini calendar component that redirects to the calendar page with the selected date
+ * Uses CalendarService directly to fetch events and show event indicators
  */
-function FavoriteProcesses() {
+function MiniCalendar() {
   const router = useRouter();
   const app = useApp();
-  const [isLoading, setIsLoading] = useState(true);
+  const [currentDate, setCurrentDate] = useState(new Date());
 
-  // Fetch favorited template processes with React Query
-  const { data: processes = [], isLoading: isFetchingProcesses } = useQuery({
-    queryKey: ['favoriteTemplates'],
+  // Get month name and year
+  const monthName = currentDate.toLocaleString('default', { month: 'long' });
+  const year = currentDate.getFullYear();
+
+  // Calculate date range for the current month view
+  const dateRange = useMemo(() => {
+    const month = currentDate.getMonth();
+
+    // Start date is first day of current month
+    const startDate = new Date(year, month, 1);
+
+    // End date is last day of current month
+    const endDate = new Date(year, month + 1, 0);
+
+    // Format dates for API
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+
+    return { startDateStr, endDateStr };
+  }, [currentDate, year]);
+
+  // Fetch events with React Query
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ['miniCalendarEvents', dateRange.startDateStr, dateRange.endDateStr],
     queryFn: async () => {
-      // Use getTemplates instead of getProcesses to ensure we only get templates
-      // and pass favorite=true parameter to filter for favorites
-      const result = await ProcessService.getTemplates({
-        skip: 0,
-        limit: 3,
-        favorite: true,
-      });
+      const result = await CalendarService.getCalendarEvents(dateRange.startDateStr, dateRange.endDateStr);
+
       if (result.error) {
-        throw new Error(result.error);
+        console.error('Error fetching calendar events:', result.error);
+        return [];
       }
+
       return result.data || [];
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
-  const calculateCompletion = (process: Process) => {
-    if (!process.steps || process.steps.length === 0) return 0;
+  // Create a set of dates that have events
+  const eventDates = useMemo(() => {
+    const dateSet = new Set<string>();
 
-    let totalItems = process.steps.length;
-    let completedItems = process.steps.filter((step) => step.completed).length;
-
-    // Count substeps
-    process.steps.forEach((step) => {
-      if (step.subSteps && step.subSteps.length > 0) {
-        totalItems += step.subSteps.length;
-        completedItems += step.subSteps.filter((subStep) => subStep.completed).length;
+    events.forEach((event: EventSchema) => {
+      // Use startTime if available, otherwise fall back to date
+      const eventDate = event.startTime ? new Date(event.startTime) : event.date ? new Date(event.date) : null;
+      if (eventDate) {
+        const dateKey = `${eventDate.getFullYear()}-${eventDate.getMonth()}-${eventDate.getDate()}`;
+        dateSet.add(dateKey);
       }
     });
 
-    return totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-  };
+    return dateSet;
+  }, [events]);
 
-  const handleSchedule = (processId: string) => {
-    app.setMainView(AppRoute.SCHEDULE);
-    router.push(`/schedule?processId=${processId}`);
-  };
+  // Helper function to check if a specific date has events
+  const hasEventsForDate = useCallback(
+    (day: number): boolean => {
+      if (!day) return false;
 
-  if (isFetchingProcesses) {
-    return (
-      <SidePanelSection title='FAVORITE TEMPLATES'>
-        <div className='py-4 text-center text-gray-500'>
-          <div className='inline-block h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600'></div>
-          <p className='mt-2 text-sm'>Loading templates...</p>
-        </div>
-      </SidePanelSection>
-    );
-  }
+      const dateKey = `${year}-${currentDate.getMonth()}-${day}`;
+      return eventDates.has(dateKey);
+    },
+    [currentDate, year, eventDates],
+  );
 
-  if (processes.length === 0) {
-    return (
-      <SidePanelSection title='FAVORITE TEMPLATES'>
-        <div className='py-4 text-center text-gray-500'>
-          <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50'>
-            <DocumentTextIcon className='h-6 w-6 text-blue-400' />
-          </div>
-          <p className='text-sm'>No favorite templates</p>
-          <p className='mx-auto mt-1 max-w-[220px] text-xs text-slate-500'>Add process templates to favorites to track them here</p>
-          <button
-            className='mt-3 rounded-full bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow'
-            onClick={() => {
-              app.setMainView(AppRoute.PROCESS);
-              router.push('/process');
-            }}
-          >
-            Browse processes
-          </button>
-        </div>
-      </SidePanelSection>
-    );
-  }
+  // Month navigation handlers
+  const nextMonth = useCallback(() => {
+    const nextMonthIndex = currentDate.getMonth() + 1;
+    const yearToUse = nextMonthIndex > 11 ? year + 1 : year;
+    const monthToUse = nextMonthIndex > 11 ? 0 : nextMonthIndex;
+
+    // Always set to first day of month
+    setCurrentDate(new Date(yearToUse, monthToUse, 1));
+  }, [currentDate, year]);
+
+  const prevMonth = useCallback(() => {
+    const prevMonthIndex = currentDate.getMonth() - 1;
+    const yearToUse = prevMonthIndex < 0 ? year - 1 : year;
+    const monthToUse = prevMonthIndex < 0 ? 11 : prevMonthIndex;
+
+    // Always set to first day of month
+    setCurrentDate(new Date(yearToUse, monthToUse, 1));
+  }, [currentDate, year]);
+
+  // Check if a date is today
+  const isToday = useCallback(
+    (day: number) => {
+      if (!day) return false;
+      const today = new Date();
+      return day === today.getDate() && currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear();
+    },
+    [currentDate],
+  );
+
+  // Handle day click to navigate to calendar page with selected date in WEEK mode
+  const handleDayClick = useCallback(
+    (day: number | null) => {
+      if (day === null) return;
+
+      // Create date object for the selected day with time set to noon to avoid timezone issues
+      // Using noon ensures we're in the middle of the day and won't accidentally shift to another day
+      const selectedDate = new Date(Date.UTC(currentDate.getFullYear(), currentDate.getMonth(), day, 12, 0, 0));
+
+      // Format date manually to ensure the correct day
+      const year = selectedDate.getUTCFullYear();
+      const month = String(selectedDate.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-based
+      const dayStr = String(selectedDate.getUTCDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${dayStr}`;
+
+      // Navigate to calendar page with the selected date and set to WEEK mode
+      // This ensures the user sees the week containing the day they clicked
+      app.setMainView(AppRoute.CALENDAR);
+      router.push(`/calendar?date=${formattedDate}&mode=WEEK`);
+    },
+    [app, router, currentDate],
+  );
+
+  // Generate calendar data
+  const { calendarDays } = useMemo(() => {
+    // Generate days for the current month
+    const daysInMonth = new Date(year, currentDate.getMonth() + 1, 0).getDate();
+    const firstDayOfMonth = new Date(year, currentDate.getMonth(), 1).getDay();
+
+    // Generate calendar days including empty spots for proper alignment
+    const calendarDays = Array.from({ length: firstDayOfMonth }, (_, i) => null).concat(Array.from({ length: daysInMonth }, (_, i) => i + 1));
+
+    return { calendarDays, firstDayOfMonth, daysInMonth };
+  }, [currentDate, year]);
 
   return (
-    <SidePanelSection title='FAVORITE TEMPLATES'>
-      <div className='space-y-3'>
-        {processes.map((process) => {
-          const stepCount = process.steps?.length || 0;
-          const completion = calculateCompletion(process);
+    <div className='rounded-xl bg-white/80 p-4 shadow-sm'>
+      {/* Month selector with transitions */}
+      <div className='mb-4 flex items-center justify-between'>
+        <button
+          onClick={prevMonth}
+          className='rounded-full p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700'
+          aria-label='Previous month'
+        >
+          <ChevronLeftIcon className='size-5' />
+        </button>
 
-          return (
-            <div
-              key={process.id}
-              className='group flex cursor-pointer flex-col rounded-xl border border-slate-200/60 bg-white/80 p-3 transition-all hover:translate-y-[-1px] hover:border-blue-200 hover:shadow-md'
-              onClick={() => handleSchedule(process.id)}
-            >
-              <div className='mb-1.5 flex items-center justify-between'>
-                <div className='flex w-[80%] items-center gap-2'>
-                  <div className={`h-3 w-3 flex-shrink-0 rounded-full ${process.color || 'bg-gradient-to-r from-blue-500 to-indigo-500'}`}></div>
-                  <h3 className='truncate text-sm font-medium text-slate-700'>{process.title}</h3>
-                </div>
-
-                <div className='flex gap-1'>
-                  <button
-                    className='flex items-center justify-center rounded-full bg-blue-50 p-1 text-blue-600 transition-all group-hover:scale-105 hover:bg-blue-100 hover:text-blue-700'
-                    title='Schedule Event'
-                    aria-label='Schedule Event'
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSchedule(process.id);
-                    }}
-                  >
-                    <CalendarDaysIcon className='h-3.5 w-3.5' />
-                  </button>
-                </div>
-              </div>
-
-              <div className='mb-0.5 flex items-center gap-2'>
-                <div className='flex items-center rounded-full bg-slate-50 px-2 py-0.5 text-xs text-slate-500'>
-                  <DocumentTextIcon className='mr-1 h-2.5 w-2.5' />
-                  {stepCount} {stepCount === 1 ? 'step' : 'steps'}
-                </div>
-
-                <div className={`h-1.5 w-1.5 rounded-full ${completion === 100 ? 'bg-green-500' : 'bg-amber-400'}`}></div>
-              </div>
-
-              <div className='mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-100'>
-                <div className='h-1 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all' style={{ width: `${completion}%` }}></div>
-              </div>
-            </div>
-          );
-        })}
-
-        <div className='mt-1 flex justify-end'>
-          <button
-            onClick={() => {
-              app.setMainView(AppRoute.PROCESS);
-              router.push('/process');
-            }}
-            className='text-xs text-blue-600 hover:text-blue-800 hover:underline'
-          >
-            View all
-          </button>
+        <div className='relative h-7 flex-1 overflow-hidden text-center'>
+          <h2 className='text-base font-semibold text-slate-800 transition-opacity duration-200'>
+            {monthName} {year}
+          </h2>
         </div>
+
+        <button
+          onClick={nextMonth}
+          className='rounded-full p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700'
+          aria-label='Next month'
+        >
+          <ChevronRightIcon className='size-5' />
+        </button>
       </div>
-    </SidePanelSection>
+
+      {/* Weekday headers */}
+      <div className='mb-2 grid grid-cols-7'>
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+          <div key={i} className='text-center text-xs font-medium text-slate-500'>
+            {day}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar grid with transition effects */}
+      <div className='grid grid-cols-7 gap-1.5 transition-opacity duration-150'>
+        {calendarDays.map((day, i) => (
+          <div
+            key={i}
+            className={`relative flex h-8 w-8 transform items-center justify-center rounded-full text-sm transition-all duration-150 ${
+              day === null ? 'pointer-events-none opacity-0' : 'cursor-pointer hover:bg-slate-100'
+            } ${
+              isToday(day as number)
+                ? 'bg-blue-100 font-bold text-blue-700 shadow-sm'
+                : hasEventsForDate(day as number)
+                ? 'font-medium text-slate-800'
+                : 'text-slate-500'
+            } `}
+            onClick={() => handleDayClick(day)}
+          >
+            {day}
+            {/* Event indicator - blue dot for days with events */}
+            {day !== null && hasEventsForDate(day) && (
+              <div className='absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 transform rounded-full bg-blue-500'></div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -196,7 +250,7 @@ export function DefaultSidePanel({ title }: DefaultSidePanelProps) {
       {title && <h2 className='mb-4 text-lg font-bold text-slate-700'>{title}</h2>}
       <ActionButtons />
       <Divider />
-      <FavoriteProcesses />
+      <MiniCalendar />
     </SidePanelLayout>
   );
 }

@@ -164,19 +164,17 @@ export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProp
   };
 
   return (
-    <div className='flex w-[360px] flex-shrink-0 flex-col border-l border-slate-200/50 bg-white/80 p-6 shadow-sm backdrop-blur-xl' style={{ height: '100%' }}>
-      <div className='mb-6 flex items-center justify-between'>
-        <h2 className='text-sm font-semibold tracking-wider text-slate-700 uppercase'>
-          <span className='bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'>Weekly Schedule</span>
-        </h2>
+    <div className='flex h-full w-[360px] flex-shrink-0 flex-col border-l border-slate-100 bg-white/95'>
+      <div className='flex items-center justify-between p-4 pb-3'>
+        <h2 className='text-sm font-medium text-slate-800'>Weekly Schedule</h2>
         <button
-          className='flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium text-slate-600 transition-all hover:bg-blue-50 hover:text-blue-600'
+          className='flex items-center gap-1 text-xs text-slate-500 transition-all hover:text-blue-600'
           onClick={() => {
             app.setMainView(AppRoute.CALENDAR);
             router.push('/calendar');
           }}
         >
-          All Events
+          View all
           <svg
             xmlns='http://www.w3.org/2000/svg'
             width='16'
@@ -195,19 +193,16 @@ export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProp
       </div>
 
       {isLoading ? (
-        <div className='py-4 text-center text-gray-500'>
-          <div className='inline-block h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600'></div>
-          <p className='mt-2 text-sm'>Loading schedule...</p>
+        <div className='flex items-center justify-center py-4 text-slate-400'>
+          <div className='h-4 w-4 animate-spin rounded-full border border-slate-300 border-t-blue-500'></div>
+          <span className='ml-2 text-xs'>Loading</span>
         </div>
       ) : upcomingEvents.length === 0 ? (
-        <div className='flex flex-col items-center justify-center py-10 text-center'>
-          <div className='mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50'>
-            <CalendarDaysIcon className='h-8 w-8 text-blue-400' />
-          </div>
-          <p className='text-sm font-medium text-slate-600'>No upcoming events this week</p>
-          <p className='mt-1.5 mb-3 max-w-[220px] text-xs text-slate-500'>Schedule new events to fill your week</p>
+        <div className='flex flex-col items-center justify-center py-8 text-center'>
+          <CalendarDaysIcon className='h-6 w-6 text-slate-300' />
+          <p className='mt-2 text-sm text-slate-500'>No upcoming events</p>
           <button
-            className='mt-1 rounded-full bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow'
+            className='mt-3 text-xs text-blue-600 hover:text-blue-700'
             onClick={() => {
               app.setMainView(AppRoute.SCHEDULE);
               router.push('/schedule');
@@ -217,75 +212,63 @@ export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProp
           </button>
         </div>
       ) : (
-        <div className='space-y-4 overflow-auto' style={{ maxHeight: 'calc(100% - 160px)' }}>
-          {/* Week Overview */}
-          {Array.from({ length: 7 }).map((_, dayIndex) => {
-            const dayEvents = groupedEvents[dayIndex] || [];
-            if (dayEvents.length === 0) return null;
+        <div className='flex-1 overflow-auto pr-1'>
+          <div className='space-y-5 pb-4 pl-4'>
+            {Array.from({ length: 7 }).map((_, dayIndex) => {
+              const dayEvents = groupedEvents[dayIndex] || [];
+              if (dayEvents.length === 0) return null;
 
-            const dateStr = dayEvents[0]?.date || '';
-            const isCurrentDay = dayIndex === currentDayOfWeek;
+              const dateStr = dayEvents[0]?.date || '';
+              const isCurrentDay = dayIndex === currentDayOfWeek;
 
-            return (
-              <div className='flex' key={dayIndex}>
-                <div className='mr-4 flex flex-col items-center'>
-                  <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-full text-white ${
-                      isCurrentDay
-                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 ring-4 ring-blue-100'
-                        : dayIndex < currentDayOfWeek
-                        ? 'bg-slate-400'
-                        : 'bg-gradient-to-r from-blue-500 to-blue-600'
-                    }`}
-                  >
-                    <span className='text-xs font-medium'>{getDayLetter(dayIndex)}</span>
+              return (
+                <div className='flex' key={dayIndex}>
+                  <div className='mr-3 flex flex-col items-center'>
+                    <div
+                      className={`flex h-6 w-6 items-center justify-center rounded-full ${
+                        isCurrentDay ? 'bg-blue-500 text-white' : dayIndex < currentDayOfWeek ? 'bg-slate-100 text-slate-400' : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      <span className='text-xs'>{getDayLetter(dayIndex)}</span>
+                    </div>
+                    {dayIndex < 6 && <div className='my-1 h-full w-px bg-slate-100'></div>}
                   </div>
-                  {dayIndex < 6 && <div className='h-full w-0.5 bg-slate-200'></div>}
-                </div>
 
-                <div className='flex-1'>
-                  <div className={`rounded-xl p-4 ${isCurrentDay ? 'bg-white shadow-md' : 'bg-white shadow-sm'}`}>
-                    <div className='mb-2 flex items-center'>
-                      <span className={`text-sm font-medium ${isCurrentDay ? 'text-blue-700' : 'text-slate-700'}`}>{formatDate(dateStr)}</span>
-                      {isCurrentDay && (
-                        <span className='ml-auto rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700'>
-                          <span className='flex items-center'>
-                            <span className='mr-1 flex h-2 w-2 rounded-full bg-amber-500'></span>
-                            Today
-                          </span>
-                        </span>
-                      )}
+                  <div className='flex-1 pr-3'>
+                    <div className='mb-2'>
+                      <span className={`text-xs ${isCurrentDay ? 'font-medium text-blue-600' : 'text-slate-500'}`}>
+                        {formatDate(dateStr)}
+                        {isCurrentDay && <span className='ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-blue-500'></span>}
+                      </span>
                     </div>
 
-                    <div className='space-y-2'>
+                    <div className='space-y-1.5'>
                       {dayEvents.map((event) => (
                         <div
                           key={event.id}
-                          className='group flex cursor-pointer items-center rounded-lg border border-slate-200 bg-white/90 p-3 transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md active:translate-y-[1px]'
+                          className='cursor-pointer rounded border-l-2 border-l-blue-500 bg-slate-50 px-3 py-2 transition-all hover:bg-white hover:shadow-sm'
                           onClick={() => {
                             router.push(`/room?id=${event.id}`);
                             app.setMainView(AppRoute.ROOM);
                           }}
                         >
-                          <div className='flex-1'>
-                            <div className='flex items-center justify-between'>
-                              <span className='text-sm font-medium text-slate-700 group-hover:text-blue-700'>{event.title}</span>
-                              <span className='text-xs text-slate-500'>{event.time}</span>
-                            </div>
-                            {event.status && (
-                              <div className='mt-1.5'>
-                                <StatusBadge status={event.status as any} size='xs' />
-                              </div>
-                            )}
+                          <div className='flex items-center justify-between'>
+                            <span className='text-xs font-medium text-slate-700'>{event.title}</span>
+                            <span className='text-xs text-slate-400'>{event.time}</span>
                           </div>
+                          {event.status && (
+                            <div className='mt-1'>
+                              <StatusBadge status={event.status as any} size='xs' />
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
