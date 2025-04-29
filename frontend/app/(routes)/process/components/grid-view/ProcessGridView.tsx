@@ -109,7 +109,7 @@ export function ProcessGridView({
   if (!selectedDirectoryId) {
     return (
       <div className='flex h-full w-full flex-col overflow-hidden'>
-        <ProcessHeader directoryName='Process Directories' onBack={onBackFromDirectory} isDetailView={!!onBackFromDirectory} />
+        <ProcessHeader directoryName='Process Directories' isDetailView={!!onBackFromDirectory} />
 
         <div className='flex-1 overflow-auto p-6'>
           <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>

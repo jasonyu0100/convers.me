@@ -1,6 +1,6 @@
 'use client';
 
-import { BookmarkIcon, FolderIcon, PlusIcon, UserIcon } from '@heroicons/react/24/outline';
+import { BookmarkIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { formatDistanceToNow } from 'date-fns';
 import { useLibrary } from '../../hooks/useLibrary';
 import { LibraryCollection } from '../../types';
@@ -23,8 +23,6 @@ export function CollectionsList({ collections }: CollectionsListProps) {
 
   return (
     <div className='flex-1 overflow-auto p-6'>
-      <h2 className='mb-6 text-2xl font-bold text-slate-800'>Library Collections</h2>
-
       <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
         {collections.map((collection) => (
           <CollectionCard key={collection.id} collection={collection} onSelect={() => setSelectedCollection(collection.id)} formatDate={formatDate} />
