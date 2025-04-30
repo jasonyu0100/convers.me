@@ -12,9 +12,9 @@ export function CalendarEventsList() {
   const { mode } = useCalendar();
 
   return (
-    <div className='relative flex h-full w-full flex-col'>
+    <div className='relative flex h-full w-full flex-col bg-white'>
       <CalendarHeader />
-      <div className='relative flex flex-1 flex-col overflow-hidden px-6 pt-6'>
+      <div className='relative flex flex-1 flex-col overflow-hidden'>
         {mode === CalendarMode.MONTH && <CalendarMonthView />}
         {mode === CalendarMode.WEEK && <CalendarWeekView />}
       </div>

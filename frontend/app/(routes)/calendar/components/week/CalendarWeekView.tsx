@@ -40,10 +40,10 @@ export function CalendarWeekView() {
     setCurrentDate(date);
   };
 
-  // Generate the time ruler hours (7 AM to 9 PM)
-  const timeRulerHours = Array.from({ length: 15 }, (_, i) => {
-    const hour = i + 7; // Start at 7 AM
-    const hourFormatted = hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`;
+  // Generate the time ruler hours (6 AM to 12 AM)
+  const timeRulerHours = Array.from({ length: 19 }, (_, i) => {
+    const hour = i + 6; // Start at 6 AM
+    const hourFormatted = hour === 12 ? '12 PM' : hour === 24 ? '12 AM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`;
     return { hour, hourFormatted };
   });
 
@@ -53,57 +53,57 @@ export function CalendarWeekView() {
     const hours = now.getHours();
     const minutes = now.getMinutes();
 
-    // Only show time indicator during visible hours (7 AM to 9 PM)
-    if (hours < 7 || hours > 21) return null;
+    // Only show time indicator during visible hours (6 AM to 12 AM)
+    if (hours < 6 || hours >= 24) return null;
 
-    // Calculate position (each hour block is 56px in height)
-    const hoursSince7am = hours - 7;
+    // Calculate position (each hour block is 48px in height)
+    const hoursSince6am = hours - 6;
     const minutePercentage = minutes / 60;
 
-    // Position in pixels (14px per hour = 56px)
-    const position = (hoursSince7am + minutePercentage) * 56;
+    // Position in pixels (hourly height is 48px)
+    const position = (hoursSince6am + minutePercentage) * 48;
 
     return {
-      top: `${position + 76}px`, // 76px for the header
+      top: `${position + 10}px`, // 10px for the header
     };
   };
 
   const currentTimePosition = getCurrentTimePosition();
 
   return (
-    <div className='flex h-full w-full flex-1 flex-row overflow-hidden rounded-t-[2rem] shadow-md'>
+    <div className='flex h-full w-full flex-1 flex-row overflow-hidden'>
       {/* Time ruler */}
-      <div className='flex min-h-[900px] w-16 flex-col border-r border-slate-100 bg-slate-100'>
+      <div className='flex min-h-[912px] w-12 flex-col border-r border-slate-100 bg-white'>
         {/* Empty header cell to align with day headers */}
-        <div className='h-[76px] border-b border-slate-100'></div>
+        <div className='h-10 border-b border-slate-100'></div>
 
         {/* Time labels */}
         <div className='flex flex-1 flex-col overflow-auto'>
           {timeRulerHours.map(({ hour, hourFormatted }) => (
-            <div key={hour} className='relative flex h-14 items-start justify-end border-b border-slate-100 pt-1 pr-2'>
-              <span className='text-xs font-medium text-slate-500'>{hourFormatted}</span>
+            <div key={hour} className='relative flex h-12 items-start justify-end border-b border-slate-100 pt-1 pr-2'>
+              <span className='text-[10px] text-slate-400'>{hourFormatted}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Week days grid with current time indicator */}
-      <div className='relative grid h-full min-h-[900px] w-full flex-1 grid-cols-7 bg-white/80'>
+      <div className='relative grid h-full min-h-[912px] w-full flex-1 grid-cols-7 bg-white'>
         {/* Hour gridlines */}
         <div className='pointer-events-none absolute inset-0 z-10 w-full'>
           {/* Skip header space */}
-          <div className='h-[76px]'></div>
+          <div className='h-10'></div>
 
           {/* Hour lines */}
           {timeRulerHours.map(({ hour }) => (
-            <div key={hour} className='h-14 w-full border-b border-slate-100'></div>
+            <div key={hour} className='h-12 w-full border-b border-slate-100'></div>
           ))}
         </div>
 
         {/* Current time indicator line */}
         {currentTimePosition && (
-          <div className='absolute right-0 left-0 z-20 border-t border-red-400' style={{ top: currentTimePosition.top }}>
-            <div className='absolute -top-1.5 -left-2 h-3 w-3 rounded-full bg-red-500'></div>
+          <div className='absolute right-0 left-0 z-20 border-t border-blue-400' style={{ top: currentTimePosition.top }}>
+            <div className='absolute -top-1 -left-1.5 h-2 w-2 rounded-full bg-blue-500'></div>
           </div>
         )}
 

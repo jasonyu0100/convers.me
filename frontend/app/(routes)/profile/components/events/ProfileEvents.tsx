@@ -1,41 +1,47 @@
 import { EventCard } from '@/app/components/ui/events';
-import { useProfile } from '../../hooks/useProfile';
+import { useProfile } from '../../hooks';
+
+/**
+ * Empty state component for when there are no events
+ */
+function EmptyEventsState() {
+  return (
+    <div className='flex flex-col items-center justify-center px-4 py-12 text-center'>
+      <div className='mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50'>
+        <svg xmlns='http://www.w3.org/2000/svg' className='h-8 w-8 text-blue-500' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={2}
+            d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+          />
+        </svg>
+      </div>
+      <h3 className='mb-1 text-lg font-medium text-gray-900'>No Events Found</h3>
+      <p className='max-w-md text-sm text-gray-500'>
+        You don't have any events for the selected time period. Try selecting a different time period or create a new event.
+      </p>
+    </div>
+  );
+}
 
 /**
  * Component for displaying events in the profile
  * To be shown when the Events tab is selected
  */
 export function ProfileEvents() {
-  const { events, selectedYear, selectedQuarter, selectedWeek, handleEventClick, handleTagClick } = useProfile();
+  const { events, selectedYear, selectedQuarter, selectedMonth, selectedWeek, handleEventClick, handleTagClick } = useProfile();
 
-  // Create period string for showing timeframe
-  const getPeriodText = () => {
-    let periodText = `Q${selectedQuarter} ${selectedYear}`;
-    if (selectedWeek) {
-      periodText += ` - Week ${selectedWeek}`;
-    }
-    return periodText;
-  };
+  if (events.length === 0) {
+    return <EmptyEventsState />;
+  }
 
   return (
-    <div className='flex flex-col space-y-5'>
-      <div className='flex items-center justify-between'>
-        <h2 className='text-lg font-medium text-slate-800'>Events</h2>
-        <span className='rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-600'>{getPeriodText()}</span>
-      </div>
-
-      {events.length === 0 ? (
-        <div className='flex h-40 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white/80 p-6 text-center'>
-          <div>
-            <p className='text-gray-500'>No events found for this period</p>
-            <p className='mt-1 text-sm text-gray-400'>Try selecting a different time period</p>
-          </div>
-        </div>
-      ) : (
-        <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
-          {events.map((event) => (
+    <div className='px-8 py-5'>
+      <div className='grid grid-cols-1 gap-5 md:grid-cols-2'>
+        {events.map((event) => (
+          <div key={event.id} className='rounded-lg border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md'>
             <EventCard
-              key={event.id}
               id={event.id}
               title={event.title}
               date={event.date}
@@ -47,9 +53,9 @@ export function ProfileEvents() {
               onEventClick={handleEventClick}
               onTagClick={handleTagClick}
             />
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

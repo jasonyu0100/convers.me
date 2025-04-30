@@ -40,9 +40,7 @@ export function ProcessSubStepItem({ subStep, listId, stepId }: ProcessSubStepIt
 
   return (
     <div
-      className={`group flex items-center rounded-lg px-3 py-2 transition-all ${
-        isHovered ? 'bg-slate-50' : subStep.completed ? 'bg-slate-50/40' : 'bg-white/80'
-      }`}
+      className={`group flex items-center rounded-lg px-3 py-2 transition-all ${isHovered ? 'bg-slate-50' : subStep.completed ? 'bg-slate-50/30' : 'bg-white'}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

@@ -1,6 +1,28 @@
 import { useState } from 'react';
 import { ProfileReport } from '../../../../types/profile';
-import { useProfile } from '../../hooks/useProfile';
+import { useProfile } from '../../hooks';
+
+/**
+ * Empty state component for when there are no reports
+ */
+function EmptyReportsState() {
+  return (
+    <div className='flex flex-col items-center justify-center px-4 py-12 text-center'>
+      <div className='mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50'>
+        <svg xmlns='http://www.w3.org/2000/svg' className='h-8 w-8 text-blue-500' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={2}
+            d='M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'
+          />
+        </svg>
+      </div>
+      <h3 className='mb-1 text-lg font-medium text-gray-900'>No Reports Found</h3>
+      <p className='max-w-md text-sm text-gray-500'>No performance reports have been generated for this time period. Try selecting a different time period.</p>
+    </div>
+  );
+}
 
 /**
  * Report card component for individual reports
@@ -24,9 +46,9 @@ function ReportCard({ report }: { report: ProfileReport }) {
 
   return (
     <div
-      className={`rounded-lg border ${
-        isCurrentPeriod ? 'border-slate-200 bg-blue-50/40' : 'border-gray-200 bg-white/80'
-      } overflow-hidden transition-all duration-200 ${expanded ? 'shadow-md' : ''}`}
+      className={`rounded-lg border border-slate-200 ${
+        isCurrentPeriod ? 'bg-blue-50/40' : 'bg-white'
+      } overflow-hidden shadow-sm transition-shadow hover:shadow-md`}
     >
       {/* Card Header */}
       <div className='bg-white/80 p-4'>
@@ -139,152 +161,67 @@ function ReportCard({ report }: { report: ProfileReport }) {
 }
 
 /**
- * Quarterly Summary Card component
- */
-function QuarterlySummaryCard({ report }: { report: ProfileReport }) {
-  const metrics = report.metrics;
-
-  if (!report || !metrics) return null;
-
-  return (
-    <div className='mb-6 rounded-xl border border-blue-100 bg-white/80 p-6'>
-      <div className='flex items-start'>
-        <div className='mr-6 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100'>
-          <svg className='h-7 w-7 text-blue-600' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              d='M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'
-            />
-          </svg>
-        </div>
-
-        <div className='flex-1'>
-          <h3 className='text-xl font-semibold text-gray-800'>{report.title}</h3>
-          <p className='text-sm text-gray-600'>Summary of all activity from {report.period}</p>
-
-          <div className='mt-4 grid grid-cols-4 gap-6'>
-            <div>
-              <div className='text-3xl font-bold text-gray-900'>{metrics.eventCount}</div>
-              <div className='text-sm font-medium text-gray-600'>Events</div>
-            </div>
-
-            <div>
-              <div className='text-3xl font-bold text-gray-900'>{metrics.processesDone}</div>
-              <div className='text-sm font-medium text-gray-600'>Processes</div>
-            </div>
-
-            <div>
-              <div className='text-3xl font-bold text-gray-900'>{metrics.hoursSpent}</div>
-              <div className='text-sm font-medium text-gray-600'>Hours</div>
-            </div>
-
-            <div>
-              <div className='text-3xl font-bold text-gray-900'>{metrics.efficiency}%</div>
-              <div className='text-sm font-medium text-gray-600'>Efficiency</div>
-            </div>
-          </div>
-        </div>
-
-        <a
-          href={report.downloadUrl}
-          className='flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700'
-          download={`performance-report-${report.period.toLowerCase().replace(' ', '-')}.pdf`}
-        >
-          <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4' />
-          </svg>
-          Download Full Report
-        </a>
-      </div>
-    </div>
-  );
-}
-
-/**
  * Component for displaying performance reports
+ * Shows a linear list of all reports fetched from the backend
  */
 export function ProfileReports() {
-  const { reports, selectedYear, selectedQuarter, selectedWeek } = useProfile();
+  const { reports, selectedYear, selectedQuarter, selectedMonth, selectedWeek } = useProfile();
 
   if (!reports || reports.length === 0) {
-    return (
-      <div className='flex h-64 flex-col items-center justify-center p-6 text-center'>
-        <svg className='mb-4 h-16 w-16 text-gray-300' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-          <path
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            strokeWidth='1.5'
-            d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-          />
-        </svg>
-        <h3 className='mb-2 text-lg font-medium text-gray-700'>No Reports Available</h3>
-        <p className='text-gray-500'>No performance reports have been generated for this period.</p>
-      </div>
-    );
+    return <EmptyReportsState />;
   }
-
-  // Create period string for display
-  const getPeriodText = () => {
-    let periodText = `Q${selectedQuarter} ${selectedYear}`;
-    if (selectedWeek) {
-      periodText += ` - Week ${selectedWeek}`;
-    }
-    return periodText;
-  };
 
   // Filter reports by selected time period
   const filteredReports = reports.filter((report) => {
     // Match year and quarter
     const matchesQuarter = report.year === selectedYear && report.quarter === selectedQuarter;
 
+    // If month is selected, also check that
+    if (selectedMonth && matchesQuarter) {
+      return report.month === selectedMonth;
+    }
+
     // If week is selected, also check that
     if (selectedWeek && matchesQuarter) {
-      // Weekly reports should match the selected week
-      if (report.periodType === 'week') {
+      if (report.week) {
         return report.week === selectedWeek;
       }
-      // Show quarterly reports regardless of selected week
-      return report.periodType === 'quarter';
     }
 
     return matchesQuarter;
   });
 
-  // Separate quarterly and weekly reports
-  const quarterlyReport = filteredReports.find((report) => report.periodType === 'quarter');
-  const weeklyReports = filteredReports.filter((report) => report.periodType === 'week').sort((a, b) => (b.week || 0) - (a.week || 0)); // Sort by week number, most recent first
+  // Sort reports by date (newest first)
+  const sortedReports = [...filteredReports].sort((a, b) => {
+    // First sort by year (descending)
+    if (a.year !== b.year) return b.year - a.year;
+
+    // Then by quarter (descending)
+    if (a.quarter !== b.quarter) return b.quarter - a.quarter;
+
+    // Then by month if available (descending)
+    if (a.month && b.month && a.month !== b.month) return b.month - a.month;
+
+    // Then by week if available (descending)
+    if (a.week && b.week && a.week !== b.week) return b.week - a.week;
+
+    // If all else is equal, put quarterly reports before weekly/monthly
+    if (a.periodType === 'quarter' && b.periodType !== 'quarter') return -1;
+    if (a.periodType !== 'quarter' && b.periodType === 'quarter') return 1;
+
+    return 0;
+  });
+
+  if (sortedReports.length === 0) {
+    return <EmptyReportsState />;
+  }
 
   return (
-    <div className='flex flex-col space-y-6'>
-      {/* Time period indicator */}
-      <div className='flex items-center justify-between'>
-        <h2 className='text-lg font-medium text-slate-800'>Reports</h2>
-        <span className='rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-600'>{getPeriodText()}</span>
-      </div>
-
-      {/* Featured Quarterly Report */}
-      {quarterlyReport && <QuarterlySummaryCard report={quarterlyReport} />}
-
-      {/* Weekly Reports Section */}
-      <div className='space-y-3'>
-        {weeklyReports.length > 0 ? (
-          weeklyReports.map((report) => <ReportCard key={report.id} report={report} />)
-        ) : (
-          <div className='rounded-lg border-1 border-dashed border-gray-300 bg-white/80 p-6 text-center'>
-            <svg className='mx-auto mb-3 h-10 w-10 text-gray-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth='1.5'
-                d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-              />
-            </svg>
-            <h3 className='mb-1 text-base font-medium text-gray-700'>No Weekly Reports Available</h3>
-            <p className='text-sm text-gray-500'>No weekly reports have been generated for this quarter yet.</p>
-          </div>
-        )}
+    <div className='px-8 py-5'>
+      <div className='space-y-4'>
+        {sortedReports.map((report) => (
+          <ReportCard key={report.id} report={report} />
+        ))}
       </div>
     </div>
   );

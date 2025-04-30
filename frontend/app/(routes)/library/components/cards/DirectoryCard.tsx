@@ -17,10 +17,7 @@ export function DirectoryCard({ process, onSelect }: DirectoryCardProps) {
   const ProcessIcon = DocumentTextIcon;
 
   return (
-    <div
-      onClick={onSelect}
-      className='relative flex aspect-[4/3] cursor-pointer flex-col rounded-lg border border-slate-200 bg-white shadow-sm transition-all hover:border-blue-300 hover:shadow-md'
-    >
+    <div onClick={onSelect} className='relative flex aspect-[4/3] cursor-pointer flex-col rounded-lg bg-white transition-all hover:bg-slate-50'>
       {/* Card content with padding */}
       <div className='flex flex-1 flex-col p-3'>
         {/* Card header */}

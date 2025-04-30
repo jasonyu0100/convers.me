@@ -47,7 +47,7 @@ export function ProcessStepItem({ step, listId }: ProcessStepItemProps) {
   return (
     <>
       <div
-        className={`group rounded-lg px-3 py-2.5 transition-all ${isHovered ? 'bg-slate-50' : step.completed ? 'bg-slate-50/50' : 'bg-white/80'}`}
+        className={`group rounded-lg px-3 py-2 transition-all ${isHovered ? 'bg-slate-50' : 'bg-white'}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >

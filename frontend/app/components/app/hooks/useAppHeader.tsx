@@ -105,9 +105,9 @@ export function useAppHeader(route: AppRoute) {
     router.push('/settings');
   }, [app, router]);
 
-  const handleInsightsClick = useCallback(() => {
-    app.setMainView(AppRoute.INSIGHT);
-    router.push('/insight');
+  const handleProgressClick = useCallback(() => {
+    app.setMainView(AppRoute.PROGRESS);
+    router.push('/progress');
   }, [app, router]);
 
   return {
@@ -119,6 +119,6 @@ export function useAppHeader(route: AppRoute) {
     onSearchSubmit: handleSearchSubmit,
     handleProfileClick,
     handleSettingsClick,
-    handleInsightsClick,
+    handleInsightsClick: handleProgressClick,
   };
 }

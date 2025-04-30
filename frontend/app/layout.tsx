@@ -1,6 +1,6 @@
 'use client';
 import { Analytics } from '@vercel/analytics/react';
-import { Router } from 'next/router';
+import { usePathname, useSearchParams } from 'next/navigation';
 import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import { useEffect } from 'react';
@@ -22,15 +22,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         maskAllInputs: true,
       },
       capture_pageview: false,
+      loaded: (posthog) => {
+        // Enable web vitals tracking once PostHog is loaded
+        if (process.env.NODE_ENV === 'production') {
+          posthog.startWebVitalsTracking({ reportWebVitalsToPostHog: true });
+        }
+      },
     });
 
-    const handleRouteChange = () => posthog?.capture('$pageview');
-    Router.events.on('routeChangeComplete', handleRouteChange);
-
-    return () => {
-      Router.events.off('routeChangeComplete', handleRouteChange);
-    };
+    // Return early if posthog is not initialized yet
+    if (!posthog) return;
   }, []);
+
+  // Track pageviews with the App Router
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Track page views
+    if (pathname) {
+      let url = window.origin + pathname;
+      if (searchParams?.toString()) {
+        url = `${url}?${searchParams.toString()}`;
+      }
+      posthog.capture('$pageview', {
+        $current_url: url,
+      });
+    }
+  }, [pathname, searchParams]);
 
   return (
     <html lang='en'>

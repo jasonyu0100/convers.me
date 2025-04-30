@@ -87,7 +87,7 @@ export interface ProfileHighlight {
   conversationId: string;
 }
 
-export type ProfileViewType = 'activity' | 'events' | 'reports';
+export type ProfileViewType = 'activity' | 'events' | 'reports' | 'timeline';
 
 /**
  * Profile-specific event type with additional metadata

@@ -2,7 +2,7 @@
 
 import { useApp } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
-import { BuildingLibraryIcon, CalendarDaysIcon, GlobeAltIcon, HomeIcon, MapIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, CalendarDaysIcon, GlobeAltIcon, InboxIcon, MapIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { AppSideBarProfile } from './AppSideBarProfile';
 import { AppSideBarToggle } from './AppSideBarToggle';
@@ -84,10 +84,16 @@ export function SideBarNavButton({ children, onClick, label, route, appRoute, ti
  */
 const NAV_ITEMS: SideBarNavItem[] = [
   {
-    label: 'Home',
+    label: 'Review',
+    route: '/review',
+    appRoute: AppRoute.REVIEW,
+    icon: <ArrowPathIcon className='size-5' />,
+  },
+  {
+    label: 'Feed',
     route: '/feed',
     appRoute: AppRoute.FEED,
-    icon: <HomeIcon className='size-5' />,
+    icon: <InboxIcon className='size-5' />,
   },
   {
     label: 'Process',
@@ -100,12 +106,6 @@ const NAV_ITEMS: SideBarNavItem[] = [
     route: '/library',
     appRoute: AppRoute.LIBRARY,
     icon: <GlobeAltIcon className='size-5' />,
-  },
-  {
-    label: 'Base',
-    route: '/base',
-    appRoute: AppRoute.INSIGHT,
-    icon: <BuildingLibraryIcon className='size-5' />,
   },
   {
     label: 'Calendar',

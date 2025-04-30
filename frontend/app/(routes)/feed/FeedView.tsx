@@ -23,11 +23,9 @@ function FeedBody() {
   }
 
   return (
-    <div className='flex h-full w-full flex-row overflow-auto'>
-      {/* Sidebar with weekly schedule in Google Maps style */}
-      <FeedWeeklySchedule />
-      {/* Main feed content */}
+    <div className='flex h-full w-full flex-row overflow-hidden'>
       <FeedContentView />
+      <FeedWeeklySchedule />
     </div>
   );
 }

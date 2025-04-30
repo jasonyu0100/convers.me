@@ -31,26 +31,18 @@ const ProcessCard = ({ process, onClick }: { process: ProcessSchema; onClick: ()
   const cardColor = process.color || 'from-blue-500 to-indigo-500';
 
   return (
-    <div
-      className={`relative cursor-pointer rounded-lg border bg-white shadow-sm transition-all hover:border-blue-300 hover:shadow-md ${
-        isTemplate ? 'border-blue-200' : 'border-slate-200'
-      } flex aspect-[4/3] flex-col`}
-      onClick={onClick}
-    >
-      {/* Top colored bar */}
-      <div className={`h-1.5 w-full rounded-t-lg bg-gradient-to-r ${cardColor}`}></div>
-
+    <div className='relative flex aspect-[4/3] cursor-pointer flex-col rounded-lg bg-white transition-all hover:bg-slate-50' onClick={onClick}>
       {/* Card content with padding */}
-      <div className='flex flex-1 flex-col p-4'>
+      <div className='flex flex-1 flex-col p-3'>
         {/* Card header */}
-        <div className='mb-2 flex items-center justify-between'>
-          <h3 className='truncate font-medium text-slate-800'>{process.title}</h3>
-          {isTemplate && <span className='ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800'>Template</span>}
+        <div className='mb-1 flex items-center justify-between'>
+          <h3 className='truncate text-sm font-medium text-slate-800'>{process.title}</h3>
+          {isTemplate && <span className='ml-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-800'>Template</span>}
         </div>
 
         {/* Description - grows to fill available space */}
         {process.description ? (
-          <p className='mb-auto line-clamp-2 text-sm text-slate-500' title={process.description}>
+          <p className='mb-auto line-clamp-2 text-xs text-slate-500' title={process.description}>
             {process.description}
           </p>
         ) : (
@@ -60,15 +52,14 @@ const ProcessCard = ({ process, onClick }: { process: ProcessSchema; onClick: ()
         {/* Progress section - stays at bottom */}
         {process.steps && process.steps.length > 0 && (
           <div className='mt-2'>
-            <div className='flex items-center justify-between text-xs'>
-              <span className='text-gray-500'>Progress</span>
-              <span className='font-medium'>{progress}%</span>
+            <div className='flex items-center justify-between text-xs text-slate-400'>
+              <span>
+                {process.steps.length} {process.steps.length === 1 ? 'step' : 'steps'}
+              </span>
+              <span>{progress}% complete</span>
             </div>
-            <div className='mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100'>
-              <div className='h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all' style={{ width: `${progress}%` }}></div>
-            </div>
-            <div className='mt-1 text-xs text-slate-500'>
-              {process.steps.length} {process.steps.length === 1 ? 'step' : 'steps'}
+            <div className='mt-1 h-1 w-full overflow-hidden rounded-full bg-slate-100'>
+              <div className='h-full rounded-full bg-blue-500 transition-all' style={{ width: `${progress}%` }}></div>
             </div>
           </div>
         )}
@@ -122,31 +113,30 @@ export function ProcessGridView({
               return (
                 <div
                   key={directory.id}
-                  className='relative flex aspect-[3/2] cursor-pointer flex-col rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md'
+                  className='relative flex aspect-[4/3] cursor-pointer flex-col rounded-lg bg-white transition-all hover:bg-slate-50'
                   onClick={() => onSelectDirectory(directory.id)}
                 >
-                  {/* Top colored bar */}
-                  <div className={`h-1.5 w-full rounded-t-xl bg-gradient-to-r ${directoryColor}`}></div>
-
                   {/* Content */}
-                  <div className='flex flex-1 flex-col p-5'>
-                    <h3 className='mb-2 text-lg font-semibold text-slate-800'>{directory.name}</h3>
+                  <div className='flex flex-1 flex-col p-3'>
+                    <div className='mb-1 flex items-center'>
+                      <h3 className='truncate text-sm font-medium text-slate-800'>{directory.name}</h3>
+                    </div>
 
                     {directory.description ? (
-                      <p className='mb-auto line-clamp-3 text-sm text-slate-600'>{directory.description}</p>
+                      <p className='mb-auto line-clamp-2 text-xs text-slate-500'>{directory.description}</p>
                     ) : (
                       <div className='mb-auto'></div>
                     )}
 
-                    <div className='mt-2 flex items-center justify-between text-sm text-slate-500'>
+                    <div className='mt-2 flex items-center justify-between text-xs text-slate-400'>
                       <div className='flex items-center'>
-                        <FolderIcon className='mr-1.5 h-4 w-4 text-slate-400' />
+                        <FolderIcon className='mr-1.5 h-3.5 w-3.5' />
                         <span>
                           {directoryProcesses.length} {directoryProcesses.length === 1 ? 'process' : 'processes'}
                         </span>
                       </div>
                       {templateCount > 0 && (
-                        <span className='rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700'>
+                        <span className='rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-800'>
                           {templateCount} {templateCount === 1 ? 'template' : 'templates'}
                         </span>
                       )}
@@ -158,7 +148,7 @@ export function ProcessGridView({
 
             {/* Add directory button */}
             <div
-              className='flex aspect-[3/2] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/50 hover:bg-slate-50'
+              className='flex aspect-[4/3] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white/50 hover:bg-slate-50'
               onClick={() => {
                 /* Add directory creation logic here */
               }}
@@ -177,27 +167,24 @@ export function ProcessGridView({
   // If a directory is selected, show its details and processes
   return (
     <div className='flex h-full w-full flex-col overflow-hidden'>
-      <ProcessHeader
-        directoryName={selectedDirectory?.name}
-        onBack={() => onSelectDirectory('')}
-        isDetailView={true}
-        color={selectedDirectory?.color || 'from-blue-500 to-indigo-500'}
-      />
+      <ProcessHeader directoryName={selectedDirectory?.name} isDetailView={true} color={selectedDirectory?.color || 'from-blue-500 to-indigo-500'} />
 
       <div className='flex-1 overflow-auto p-6'>
         {/* Directory summary */}
-        <div className='mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm'>
-          <div className='mb-4 border-b border-slate-100 pb-4'>
-            <h1 className='mb-1 text-2xl font-bold text-slate-800'>{selectedDirectory?.name}</h1>
-            {selectedDirectory?.description && <p className='text-slate-600'>{selectedDirectory.description}</p>}
-          </div>
+        <div className='mb-8 rounded-lg bg-white'>
+          <div className='p-4'>
+            <div className='mb-3 border-b border-slate-100 pb-3'>
+              <h1 className='mb-1 text-lg font-medium text-slate-800'>{selectedDirectory?.name}</h1>
+              {selectedDirectory?.description && <p className='text-sm text-slate-500'>{selectedDirectory.description}</p>}
+            </div>
 
-          <div className='flex items-center text-sm text-slate-500'>
-            <span>
-              {filteredProcesses.length} {filteredProcesses.length === 1 ? 'process' : 'processes'}
-            </span>
-            <span className='mx-2'>•</span>
-            <span>{filteredProcesses.filter((p) => p.isTemplate).length} templates</span>
+            <div className='flex items-center text-xs text-slate-400'>
+              <span>
+                {filteredProcesses.length} {filteredProcesses.length === 1 ? 'process' : 'processes'}
+              </span>
+              <span className='mx-2'>•</span>
+              <span>{filteredProcesses.filter((p) => p.isTemplate).length} templates</span>
+            </div>
           </div>
         </div>
 

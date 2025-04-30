@@ -89,8 +89,8 @@ Potential AI extensions:
 The insights module already processes user activity data and can be extended with AI:
 
 ```
-/backend/api/routes/insights/
-/backend/api/lib/insights/
+/backend/api/routes/progress/
+/backend/api/lib/progress/
 ```
 
 AI enhancement opportunities:

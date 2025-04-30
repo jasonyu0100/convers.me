@@ -2,17 +2,22 @@
 
 import { useApp } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
+import { Divider } from '@/app/components/ui/dividers/Divider';
 import StatusBadge from '@/app/components/ui/status/StatusBadge';
 import { EventService } from '@/app/services/eventService';
 import { EventSchema } from '@/app/types/schema';
 import { CalendarDaysIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface WeeklyScheduleProps {
   events?: EventSchema[];
 }
 
+/**
+ * Weekly schedule component for the feed sidebar
+ * Shows upcoming events grouped by day
+ */
 export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProps) {
   const router = useRouter();
   const app = useApp();
@@ -31,15 +36,20 @@ export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProp
 
         // Get today's date
         const today = new Date();
-        const todayFormatted = today.toISOString().split('T')[0];
 
-        // Set end date as 7 days from today
+        // Set date range to 7 days before and 7 days after today (15 days total)
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() - 7);
+
         const endDate = new Date(today);
         endDate.setDate(today.getDate() + 7);
-        const endDateFormatted = endDate.toISOString().split('T')[0];
+
+        // Format dates as YYYY-MM-DD for API
+        const startDateString = startDate.toISOString().split('T')[0];
+        const endDateString = endDate.toISOString().split('T')[0];
 
         // Fetch events from the API
-        const result = await EventService.getCalendarEvents(todayFormatted, endDateFormatted);
+        const result = await EventService.getCalendarEvents(startDateString, endDateString);
 
         if (result.error) {
           console.error('Error fetching events:', result.error);
@@ -67,9 +77,12 @@ export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProp
             }
             eventDate.setHours(0, 0, 0, 0);
 
-            // Calculate if event is today or in future
-            const isToday = eventDate.getTime() === today.getTime();
-            const isFuture = eventDate.getTime() > today.getTime();
+            // Calculate if event is today or in future using ISO date strings
+            // This avoids timezone issues when comparing dates
+            const eventDateISO = eventDate.toISOString().split('T')[0];
+            const todayISO = today.toISOString().split('T')[0];
+            const isToday = eventDateISO === todayISO;
+            const isFuture = eventDateISO > todayISO;
 
             // Skip past events
             if (!isToday && !isFuture) return;
@@ -96,10 +109,10 @@ export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProp
 
             // If same day, try to use startTime for more precise sorting
             if (a.startTime && b.startTime) {
-              const aTime = new Date(a.startTime);
-              const bTime = new Date(b.startTime);
-              if (aTime < bTime) return -1;
-              if (aTime > bTime) return 1;
+              // Using Date constructor directly can lead to timezone issues
+              // Directly compare ISO time strings instead
+              if (a.startTime < b.startTime) return -1;
+              if (a.startTime > b.startTime) return 1;
             }
 
             // Fall back to time string
@@ -121,24 +134,56 @@ export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProp
     fetchEvents();
   }, [initialEvents]);
 
-  // Group events by day
+  // Create a ref for the today's events container
+  const todayRef = useRef<HTMLDivElement>(null);
+
+  // Group events by date (today and 7 days in advance)
   const groupedEvents = upcomingEvents.reduce((acc, event) => {
-    const date = new Date(event.date);
-    const dayOfWeek = date.getDay();
-    if (!acc[dayOfWeek]) {
-      acc[dayOfWeek] = [];
+    let date;
+    if (event.startTime) {
+      date = new Date(event.startTime);
+    } else if (event.date) {
+      date = new Date(event.date);
+    } else {
+      // Skip events without a date
+      return acc;
     }
-    acc[dayOfWeek].push(event);
+    // Reset time part to get just the date for grouping
+    date.setHours(0, 0, 0, 0);
+    const dateKey = date.toISOString().split('T')[0]; // use YYYY-MM-DD as key
+
+    // Only include today and upcoming 7 days
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Get date 7 days from today
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
+
+    // Skip if the event is in the past or more than 7 days in the future
+    if (date < today || date > nextWeek) {
+      return acc;
+    }
+
+    if (!acc[dateKey]) {
+      acc[dateKey] = [];
+    }
+    acc[dateKey].push(event);
     return acc;
   }, {} as Record);
 
-  // Get the current day of the week
+  // Get today's date key - ensure we're using local timezone
   const today = new Date();
-  const currentDayOfWeek = today.getDay();
+  today.setHours(0, 0, 0, 0);
+  const todayKey = today.toISOString().split('T')[0];
 
-  // Get the day letter for display
-  const getDayLetter = (day: number) => {
-    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  // Sort the date keys to ensure chronological order
+  const sortedDateKeys = Object.keys(groupedEvents).sort();
+
+  // Get the full day name for display
+  const getDayName = (date: Date) => {
+    const day = date.getDay();
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     return days[day];
   };
 
@@ -154,9 +199,14 @@ export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProp
     const dateDay = date.getDate();
     const month = date.toLocaleString('default', { month: 'short' });
 
-    if (date.getTime() === today.getTime()) {
+    // Compare using ISO date strings to avoid time zone issues
+    const dateISOString = date.toISOString().split('T')[0];
+    const todayISOString = today.toISOString().split('T')[0];
+    const tomorrowISOString = tomorrow.toISOString().split('T')[0];
+
+    if (dateISOString === todayISOString) {
       return 'Today';
-    } else if (date.getTime() === tomorrow.getTime()) {
+    } else if (dateISOString === tomorrowISOString) {
       return 'Tomorrow';
     } else {
       return `${month} ${dateDay}`;
@@ -164,97 +214,83 @@ export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProp
   };
 
   return (
-    <div className='flex h-full w-[360px] flex-shrink-0 flex-col bg-white/80'>
-      <div className='flex items-center justify-between p-4 pb-3'>
-        <h2 className='text-sm font-medium text-slate-800'>Weekly Schedule</h2>
-        <button
-          className='flex items-center gap-1 text-xs text-slate-500 transition-all hover:text-blue-600'
-          onClick={() => {
-            app.setMainView(AppRoute.CALENDAR);
-            router.push('/calendar');
-          }}
-        >
-          View all
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            width='16'
-            height='16'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            className='h-3 w-3'
-          >
-            <path d='m9 18 6-6-6-6' />
-          </svg>
-        </button>
-      </div>
-
-      {isLoading ? (
-        <div className='flex items-center justify-center py-4 text-slate-400'>
-          <div className='h-4 w-4 animate-spin rounded-full border border-slate-300 border-t-blue-500'></div>
-          <span className='ml-2 text-xs'>Loading</span>
-        </div>
-      ) : upcomingEvents.length === 0 ? (
-        <div className='flex flex-col items-center justify-center py-8 text-center'>
-          <CalendarDaysIcon className='h-6 w-6 text-slate-300' />
-          <p className='mt-2 text-sm text-slate-500'>No upcoming events</p>
+    <div className='flex w-[360px] flex-shrink-0 flex-col border-r-1 border-slate-200 bg-white/80 p-6 backdrop-blur-xl'>
+      {/* Header section */}
+      <div className='mb-4'>
+        <h2 className='mb-1 text-base font-semibold text-gray-900'>Upcoming Schedule</h2>
+        <div className='flex justify-between'>
+          <p className='text-sm text-slate-500'>Events for the next 7 days</p>
           <button
-            className='mt-3 text-xs text-blue-600 hover:text-blue-700'
+            className='text-sm font-medium text-blue-600 hover:text-blue-700'
             onClick={() => {
-              app.setMainView(AppRoute.SCHEDULE);
-              router.push('/schedule');
+              app.setMainView(AppRoute.CALENDAR);
+              router.push('/calendar');
             }}
           >
-            Schedule an event
+            View calendar
           </button>
         </div>
-      ) : (
-        <div className='flex-1 overflow-auto pr-1'>
-          <div className='space-y-5 pb-4 pl-4'>
-            {Array.from({ length: 7 }).map((_, dayIndex) => {
-              const dayEvents = groupedEvents[dayIndex] || [];
-              if (dayEvents.length === 0) return null;
+      </div>
 
-              const dateStr = dayEvents[0]?.date || '';
-              const isCurrentDay = dayIndex === currentDayOfWeek;
+      {/* Events section */}
+      <div className='flex-1 overflow-y-auto pr-2'>
+        {isLoading ? (
+          <div className='flex items-center justify-center py-8 text-slate-400'>
+            <div className='h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-blue-500'></div>
+            <span className='ml-3 text-sm'>Loading events</span>
+          </div>
+        ) : upcomingEvents.length === 0 || Object.keys(groupedEvents).length === 0 ? (
+          <div className='flex flex-col items-center justify-center py-12 text-center'>
+            <div className='mb-3 rounded-full bg-slate-100 p-3'>
+              <CalendarDaysIcon className='h-6 w-6 text-slate-400' />
+            </div>
+            <span className='text-sm font-medium text-slate-600'>No upcoming events</span>
+            <p className='mt-1 text-xs text-slate-400'>Your schedule is clear for the next 7 days</p>
+          </div>
+        ) : (
+          <div className='space-y-4'>
+            {sortedDateKeys.map((dateKey) => {
+              const dateEvents = groupedEvents[dateKey] || [];
+              if (dateEvents.length === 0) return null;
+
+              const date = new Date(dateKey);
+              const dayOfWeek = date.getDay();
+              const isCurrentDay = dateKey === todayKey;
 
               return (
-                <div className='flex' key={dayIndex}>
-                  <div className='mr-3 flex flex-col items-center'>
-                    <div
-                      className={`flex h-6 w-6 items-center justify-center rounded-full ${
-                        isCurrentDay ? 'bg-blue-500 text-white' : dayIndex < currentDayOfWeek ? 'bg-slate-100 text-slate-400' : 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      <span className='text-xs'>{getDayLetter(dayIndex)}</span>
-                    </div>
-                    {dayIndex < 6 && <div className='my-1 h-full w-px bg-slate-100'></div>}
-                  </div>
+                <div
+                  key={dateKey}
+                  ref={isCurrentDay ? todayRef : null}
+                  className={`rounded-lg border bg-white shadow-sm transition-all ${
+                    isCurrentDay ? 'border-blue-300 ring-2 ring-blue-100' : 'border-slate-200'
+                  }`}
+                >
+                  {/* Top colored bar */}
+                  <div
+                    className={`h-1.5 w-full rounded-t-lg bg-gradient-to-r ${isCurrentDay ? 'from-blue-600 to-indigo-600' : 'from-slate-300 to-slate-400'}`}
+                  ></div>
 
-                  <div className='flex-1 pr-3'>
-                    <div className='mb-2'>
-                      <span className={`text-xs ${isCurrentDay ? 'font-medium text-blue-600' : 'text-slate-500'}`}>
-                        {formatDate(dateStr)}
-                        {isCurrentDay && <span className='ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-blue-500'></span>}
-                      </span>
+                  <div className='p-3'>
+                    <div className='mb-2 flex items-center'>
+                      <div className={`mr-2 flex items-center justify-center font-medium ${isCurrentDay ? 'text-blue-600' : 'text-slate-600'}`}>
+                        {getDayName(date)}:
+                      </div>
+                      <span className={`text-sm font-medium ${isCurrentDay ? 'text-blue-600' : 'text-slate-600'}`}>{formatDate(dateKey)}</span>
                     </div>
 
-                    <div className='space-y-1.5'>
-                      {dayEvents.map((event) => (
+                    <div className='space-y-2 pl-2'>
+                      {dateEvents.map((event) => (
                         <div
                           key={event.id}
-                          className='cursor-pointer rounded border-l-2 border-l-blue-500 bg-slate-50 px-3 py-2 transition-all hover:bg-white hover:shadow-sm'
+                          className='group cursor-pointer rounded-md border border-slate-100 p-2 transition-all hover:border-blue-100 hover:bg-blue-50'
                           onClick={() => {
                             router.push(`/room?id=${event.id}`);
                             app.setMainView(AppRoute.ROOM);
                           }}
                         >
                           <div className='flex items-center justify-between'>
-                            <span className='text-xs font-medium text-slate-700'>{event.title}</span>
-                            <span className='text-xs text-slate-400'>{event.time}</span>
+                            <span className='text-sm font-medium text-slate-700 group-hover:text-blue-700'>{event.title}</span>
+                            {event.time && <span className='text-xs text-slate-500'>{event.time}</span>}
                           </div>
                           {event.status && (
                             <div className='mt-1'>
@@ -269,8 +305,23 @@ export function FeedWeeklySchedule({ events: initialEvents }: WeeklyScheduleProp
               );
             })}
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* Action buttons */}
+      <div className='mt-6'>
+        <Divider className='mb-5 opacity-50' />
+        <button
+          onClick={() => {
+            app.setMainView(AppRoute.SCHEDULE);
+            router.push('/schedule');
+          }}
+          className='flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:from-blue-700 hover:to-indigo-700 hover:shadow'
+        >
+          <CalendarDaysIcon className='mr-2 h-4 w-4' />
+          Schedule New Event
+        </button>
+      </div>
     </div>
   );
 }

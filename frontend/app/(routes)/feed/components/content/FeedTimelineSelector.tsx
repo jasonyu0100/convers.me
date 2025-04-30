@@ -82,6 +82,26 @@ export function FeedTimelineSelector() {
     setSelectedPeriod({ year, quarter, week: undefined });
   };
 
+  // Handle month selection
+  const handleMonthSelect = (monthNumber: number) => {
+    // Toggle month selection
+    if (selectedPeriod?.month === monthNumber) {
+      setSelectedPeriod({
+        year: currentYear,
+        quarter: currentQuarter,
+        month: undefined,
+        week: undefined,
+      });
+    } else {
+      setSelectedPeriod({
+        year: currentYear,
+        quarter: currentQuarter,
+        month: monthNumber,
+        week: undefined,
+      });
+    }
+  };
+
   // Handle week selection
   const handleWeekSelect = (weekNumber: number) => {
     setSelectedPeriod({ year: currentYear, quarter: currentQuarter, week: weekNumber });
@@ -93,6 +113,15 @@ export function FeedTimelineSelector() {
       year: currentYear,
       quarter: currentQuarter,
       week: undefined,
+    });
+  };
+
+  // Clear month selection
+  const clearMonthSelection = () => {
+    setSelectedPeriod({
+      year: currentYear,
+      quarter: currentQuarter,
+      month: undefined,
     });
   };
 
@@ -168,9 +197,46 @@ export function FeedTimelineSelector() {
         </div>
       </div>
 
+      {/* Month selection if a quarter is selected and has months */}
+      {currentQuarterData.months && currentQuarterData.months.length > 0 && (
+        <div className='mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4'>
+          <div className='mb-2 w-full'>
+            <span className='text-xs font-medium text-slate-600'>Months of {currentYear}</span>
+          </div>
+          {currentQuarterData.months.map((month) => {
+            const isSelected = selectedPeriod?.month === month.monthNumber;
+            return (
+              <button
+                key={`Month-${month.monthNumber}`}
+                className={`relative rounded-md px-3 py-1 text-xs font-medium transition-all duration-150 ${
+                  isSelected ? 'bg-blue-100 text-blue-700 shadow-sm' : 'border border-slate-100 hover:bg-slate-50 hover:text-blue-600'
+                }`}
+                onClick={() => handleMonthSelect(month.monthNumber)}
+                aria-pressed={isSelected}
+              >
+                <span className='relative z-10'>
+                  {month.label} {currentYear}
+                </span>
+                {month.activityCount > 0 && (
+                  <span className='ml-1 inline-block rounded-full bg-blue-50 px-1.5 text-xs text-blue-600'>{month.activityCount}</span>
+                )}
+              </button>
+            );
+          })}
+          {selectedPeriod?.month && (
+            <button className='text-xs text-slate-500 hover:text-slate-700' onClick={clearMonthSelection}>
+              Clear month selection
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Week selection if a quarter is selected and has weeks */}
       {currentQuarterData.weeks && currentQuarterData.weeks.length > 0 && (
         <div className='mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4'>
+          <div className='mb-2 w-full'>
+            <span className='text-xs font-medium text-slate-600'>Weeks</span>
+          </div>
           {currentQuarterData.weeks.map((week) => {
             const isSelected = currentWeek === week.weekNumber;
             return (

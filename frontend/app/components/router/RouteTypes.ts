@@ -7,12 +7,13 @@
  */
 export enum AppRoute {
   LOGIN = 'login',
-  BASE = 'base',
+  REVIEW = 'review',
   FEED = 'feed',
   LIBRARY = 'library',
   CALENDAR = 'calendar',
   PROFILE = 'profile',
   INSIGHT = 'insight',
+  PROGRESS = 'progress',
   PROCESS = 'process',
   SETTINGS = 'settings',
   LIVE = 'live',

@@ -54,7 +54,9 @@ export function CalendarView() {
     return (
       <div className='flex h-full w-full flex-col'>
         <AppHeader title='Calendar' />
-        <PageLoading />
+        <div className='flex flex-1 items-center justify-center bg-gradient-to-br from-white to-slate-50/80'>
+          <PageLoading />
+        </div>
       </div>
     );
   }
@@ -63,13 +65,15 @@ export function CalendarView() {
     return (
       <div className='flex h-full w-full flex-col'>
         <AppHeader title='Calendar' />
-        <ErrorDisplay error={error} title='Calendar Error' onRetry={clearError} />
+        <div className='flex flex-1 items-center justify-center bg-gradient-to-br from-white to-slate-50/80'>
+          <ErrorDisplay error={error} title='Calendar Error' onRetry={clearError} />
+        </div>
       </div>
     );
   }
 
   return (
-    <>
+    <div className='flex h-full w-full flex-col'>
       {/* Process URL parameters */}
       <URLParamsHandler />
 
@@ -80,9 +84,9 @@ export function CalendarView() {
         onSearchChange={(e) => setFilter((e.target as HTMLInputElement).value)}
       />
 
-      <div className='flex flex-1 overflow-auto bg-white/80'>
+      <div className='flex flex-1 overflow-hidden'>
         <CalendarEventsList />
       </div>
-    </>
+    </div>
   );
 }

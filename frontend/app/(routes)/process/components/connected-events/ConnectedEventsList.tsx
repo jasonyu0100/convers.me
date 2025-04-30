@@ -18,8 +18,8 @@ export function ConnectedEventsList({ events }: ConnectedEventsListProps) {
           <h3 className='text-sm font-medium text-slate-700'>Events Based on This Process</h3>
         </div>
 
-        <div className='rounded-lg bg-slate-50 p-6 text-center'>
-          <p className='text-sm text-slate-600'>No events have been created from this template yet.</p>
+        <div className='rounded-lg bg-white p-4 text-center'>
+          <p className='text-xs text-slate-500'>No events have been created from this template yet.</p>
         </div>
       </div>
     );

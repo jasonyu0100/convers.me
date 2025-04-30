@@ -64,6 +64,49 @@ export interface CreateMediaData {
  */
 export class PostService {
   /**
+   * Get feed posts with room filtering
+   * @param roomId - Filter posts by room/event ID (optional)
+   * @param skip - Number of posts to skip (pagination, default: 0)
+   * @param limit - Maximum number of posts to return (default: 20)
+   * @returns Promise with API result containing enhanced posts array
+   */
+  static async getFeedPosts(roomId?: string, skip: number = 0, limit: number = 20): Promise {
+    try {
+      // Build query parameters
+      const params: Record = {};
+      if (roomId) params.event_id = roomId;
+      if (skip) params.skip = skip;
+      if (limit) params.limit = limit;
+
+      // Add feed=true parameter to indicate this is for the feed view
+      params.feed = true;
+
+      console.log('PostService.getFeedPosts - Requesting with params:', params);
+
+      const result = await ApiClient.get<EnhancedPostResponse[]>('/posts', { params });
+
+      if (result.error) {
+        console.warn(`Error fetching feed posts: ${result.error}`);
+        return {
+          data: [],
+          status: result.status || 500,
+          error: result.error,
+        };
+      }
+
+      console.log('PostService.getFeedPosts - Got response with posts:', result.data?.length);
+      return result;
+    } catch (error) {
+      console.error('Error in PostService.getFeedPosts:', error);
+      return {
+        data: [],
+        status: 500,
+        error: 'An error occurred while fetching feed posts',
+      };
+    }
+  }
+
+  /**
    * Create a new post
    * @param postData - Post data to create
    * @returns Promise with API result containing created post data

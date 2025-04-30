@@ -29,7 +29,7 @@ export function FeedPostMedia({ post, onClick }: FeedPostMediaProps) {
 
   return (
     <div
-      className='flex w-full max-w-[360px] cursor-pointer flex-col overflow-hidden rounded-xl shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md'
+      className='flex w-full cursor-pointer flex-col overflow-hidden rounded border border-slate-100 transition-all hover:border-slate-200'
       onClick={onClick}
     >
       <div className={`${aspectRatioClass} relative w-full overflow-hidden`}>
@@ -37,9 +37,9 @@ export function FeedPostMedia({ post, onClick }: FeedPostMediaProps) {
 
         {/* Overlay for video content */}
         {media.type === 'video' && (
-          <div className='bg-opacity-20 absolute inset-0 flex items-center justify-center bg-black'>
-            <div className='bg-opacity-80 rounded-full bg-white/80 p-3 shadow-lg'>
-              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='h-6 w-6 text-blue-600'>
+          <div className='absolute inset-0 flex items-center justify-center bg-black/10'>
+            <div className='rounded-full bg-white/70 p-2'>
+              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='h-5 w-5 text-blue-500'>
                 <path
                   strokeLinecap='round'
                   strokeLinejoin='round'
@@ -51,18 +51,18 @@ export function FeedPostMedia({ post, onClick }: FeedPostMediaProps) {
         )}
 
         {/* Type badge */}
-        <div className='bg-opacity-60 absolute top-2 left-2 rounded-full bg-black px-2 py-0.5 text-xs font-medium text-white'>
+        <div className='absolute top-2 left-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white'>
           {typeLabel}
           {durationLabel && <span className='ml-1'>• {durationLabel}</span>}
         </div>
       </div>
 
-      <div className='flex w-full flex-1 flex-col justify-center p-4'>
-        {media.title && <h3 className='mb-2 text-base leading-tight font-bold text-gray-800'>{media.title}</h3>}
+      <div className='flex w-full flex-1 flex-col justify-center p-3'>
+        {media.title && <h3 className='mb-1 text-xs leading-tight font-medium text-slate-700'>{media.title}</h3>}
 
         {media.participants && media.participants.length > 0 && (
-          <div className='mt-2 flex flex-row items-center space-x-2'>
-            <div className='flex -space-x-2'>
+          <div className='mt-1 flex flex-row items-center space-x-1.5'>
+            <div className='flex -space-x-1.5'>
               {media.participants.slice(0, 3).map((participant, index) => (
                 <UserAvatar
                   key={participant.id}
@@ -71,22 +71,22 @@ export function FeedPostMedia({ post, onClick }: FeedPostMediaProps) {
                     name: participant.name,
                     profileImage: participant.profileImage,
                   }}
-                  size='sm'
+                  size='xs'
                 />
               ))}
             </div>
-            <p className='text-xs font-medium text-gray-600'>
+            <p className='text-[10px] text-slate-500'>
               {media.participants[0].name}
-              {media.participants.length > 1 && ` + ${media.participants.length - 1} more`}
+              {media.participants.length > 1 && ` + ${media.participants.length - 1}`}
             </p>
           </div>
         )}
 
         {/* Additional metadata for developer context - only shown for videos/technical demos */}
         {media.type && (
-          <div className='mt-3 flex items-center justify-between text-xs text-gray-500'>
-            <div className='flex items-center space-x-2'>
-              <span className='rounded-full bg-blue-100 px-2 py-0.5 text-blue-700'>{media.type === 'video' ? 'Code Walkthrough' : 'Technical Demo'}</span>
+          <div className='mt-2 flex items-center justify-between text-[10px] text-slate-400'>
+            <div className='flex items-center'>
+              <span className='rounded-full bg-blue-50 px-1.5 py-0.5 text-blue-500'>{media.type === 'video' ? 'Code Demo' : 'Tech Demo'}</span>
             </div>
             {/* Time indicator only shown for media with date info */}
             {media.date && <span>{media.date}</span>}

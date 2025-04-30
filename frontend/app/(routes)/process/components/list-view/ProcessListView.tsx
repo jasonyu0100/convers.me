@@ -61,21 +61,15 @@ function CompletedStateDisplay() {
  */
 function ProgressHeader({ progress }) {
   return (
-    <div className='border-b border-slate-100 bg-white/80 px-6 py-5'>
-      <div className='mb-3 flex items-center justify-between'>
-        <div>
-          <span className='text-sm font-semibold text-slate-700'>Progress</span>
-          <span className='ml-2 text-xs text-slate-500'>
-            ({progress.completed} of {progress.total} {progress.total === 1 ? 'item' : 'items'} complete)
-          </span>
+    <div className='border-b border-slate-100 bg-white/80 px-4 py-3'>
+      <div className='mb-2 flex items-center justify-between'>
+        <div className='text-xs text-slate-500'>
+          {progress.completed} of {progress.total} {progress.total === 1 ? 'item' : 'items'} complete
         </div>
-        <span className='text-sm font-semibold text-blue-600'>{progress.percent}%</span>
+        <span className='text-xs font-medium text-slate-700'>{progress.percent}%</span>
       </div>
-      <div className='h-2.5 w-full overflow-hidden rounded-full bg-slate-100'>
-        <div
-          className='h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-300'
-          style={{ width: `${progress.percent}%` }}
-        ></div>
+      <div className='h-1 w-full overflow-hidden rounded-full bg-slate-100'>
+        <div className='h-full rounded-full bg-blue-500 transition-all duration-300' style={{ width: `${progress.percent}%` }}></div>
       </div>
     </div>
   );
@@ -99,6 +93,9 @@ export function ProcessListView() {
   // Split into completed and incomplete steps
   const completedSteps = steps.filter((step) => step.completed);
   const incompleteSteps = steps.filter((step) => !step.completed);
+
+  // Get color from the selectedList if available or use a default
+  const cardColor = selectedList.color || 'from-blue-500 to-indigo-500';
 
   return (
     <div className='rounded-lg bg-white'>

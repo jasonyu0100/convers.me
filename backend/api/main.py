@@ -22,7 +22,6 @@ from api.routes import (
     directories,
     events,
     feed,
-    insights,
     library,
     live,
     media,
@@ -30,6 +29,7 @@ from api.routes import (
     plan,
     posts,
     processes,
+    progress,
     reports,
     search,
     settings,
@@ -434,7 +434,7 @@ app.include_router(feed.router)
 app.include_router(media.router)
 app.include_router(settings.router)
 app.include_router(notifications.router)
-app.include_router(insights.router)
+app.include_router(progress.router)  # New progress router
 app.include_router(reports.router)
 app.include_router(live.router)  # Live router for handling real-time conversation contexts
 app.include_router(plan.router)

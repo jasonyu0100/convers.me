@@ -31,26 +31,26 @@ function ProcessDetail({ selectedList, onToggleFavorite, onCreateEvent, onAddSte
       </div>
 
       {/* Description */}
-      <div className='mb-8 rounded-xl border border-slate-200/70 bg-white/80 p-6 shadow-sm'>
+      <div className='mb-8'>
         <p className='text-slate-700'>{selectedList?.description || 'No description provided for this process template.'}</p>
       </div>
 
       {/* Steps */}
       <div className='mb-8'>
         <div className='mb-4 flex items-center justify-between'>
-          <div className='flex items-center text-lg font-semibold text-gray-800'>
+          <div className='flex items-center text-lg font-medium text-slate-700'>
             <span className='mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-medium text-blue-600'>
               {selectedList?.steps?.length || 0}
             </span>
             Process Steps
           </div>
-          <button className='flex items-center rounded-full border border-blue-200 px-4 py-1.5 text-sm font-medium text-blue-600' onClick={onAddStep}>
+          <button className='flex items-center rounded px-4 py-1.5 text-sm text-blue-600 hover:bg-blue-50' onClick={onAddStep}>
             <PlusIcon className='mr-1.5 h-4 w-4' />
             Add Step
           </button>
         </div>
 
-        <div className='rounded-xl border border-slate-200/70 bg-white/80 shadow-sm'>
+        <div>
           <ProcessListView />
         </div>
       </div>

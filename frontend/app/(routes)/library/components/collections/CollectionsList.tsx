@@ -63,7 +63,7 @@ export function CollectionsList({ collections }: CollectionsListProps) {
             ))}
 
             {/* Add collection button */}
-            <div className='flex aspect-[3/2] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/50 hover:bg-slate-50'>
+            <div className='flex aspect-[3/2] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-100 bg-white/50 hover:bg-slate-50'>
               <div className='mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100'>
                 <PlusIcon className='h-6 w-6 text-slate-400' />
               </div>
@@ -115,10 +115,7 @@ function CollectionCard({ collection, onSelect, formatDate }: CollectionCardProp
   };
 
   return (
-    <div
-      onClick={onSelect}
-      className='relative flex aspect-[3/2] cursor-pointer flex-col rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-blue-300 hover:shadow-md'
-    >
+    <div onClick={onSelect} className='relative flex aspect-[3/2] cursor-pointer flex-col rounded-lg bg-white transition-all hover:bg-slate-50'>
       {/* Top color band */}
       <div className={`h-1.5 w-full rounded-t-xl bg-gradient-to-r ${getCollectionColor(collection.categories)}`}></div>
 

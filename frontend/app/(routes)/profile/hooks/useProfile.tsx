@@ -198,12 +198,27 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     const endMonth = startMonth + 3;
     const endDate = new Date(year, endMonth, 0);
 
-    // If month is selected, further refine the date range
-    if (selectedMonth && selectedMonthData) {
-      return {
-        startDate: selectedMonthData.startDate,
-        endDate: selectedMonthData.endDate,
-      };
+    // If month is selected, calculate the month's date range even if no selectedMonthData
+    if (selectedMonth) {
+      if (selectedMonthData) {
+        // Use data from API if available
+        return {
+          startDate: selectedMonthData.startDate,
+          endDate: selectedMonthData.endDate,
+        };
+      } else {
+        // Calculate month range manually
+        const monthIndex = selectedMonth - 1; // 0-indexed month
+        const monthStartDate = new Date(year, monthIndex, 1);
+
+        // Get last day of month
+        const monthEndDate = new Date(year, monthIndex + 1, 0);
+
+        return {
+          startDate: monthStartDate.toISOString().split('T')[0],
+          endDate: monthEndDate.toISOString().split('T')[0],
+        };
+      }
     }
 
     return {

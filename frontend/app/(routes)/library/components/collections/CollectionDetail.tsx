@@ -76,10 +76,10 @@ export function CollectionDetail({ collection }: CollectionDetailProps) {
   return (
     <div className='flex-1 overflow-auto p-6'>
       {/* Collection header with title, description and tags */}
-      <div className='mb-8 rounded-xl border border-slate-200/70 bg-white/80 p-6 shadow-sm'>
+      <div className='mb-8'>
         <div className='mb-4 flex items-center justify-between'>
           <div className='flex items-center'>
-            <h1 className='text-2xl font-bold text-slate-800'>{collection.title}</h1>
+            <h1 className='text-xl font-medium text-slate-700'>{collection.title}</h1>
             <button className='ml-2 text-slate-400 hover:text-yellow-500'>
               <StarIconSolid className='h-5 w-5 text-yellow-500' />
             </button>
@@ -88,22 +88,18 @@ export function CollectionDetail({ collection }: CollectionDetailProps) {
           <button
             onClick={handleSave}
             disabled={isSaved || isSaving}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-all ${
-              isSaved
-                ? 'cursor-default bg-blue-100 text-blue-700'
-                : isSaving
-                ? 'cursor-wait bg-gray-100 text-gray-500'
-                : 'bg-white text-blue-700 hover:bg-gray-50'
+            className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+              isSaved ? 'cursor-default bg-blue-50 text-blue-600' : isSaving ? 'cursor-wait text-slate-500' : 'text-blue-600 hover:bg-blue-50'
             }`}
           >
             {isSaved ? (
               <>
-                <BookmarkSolid className='h-4 w-4 text-blue-700' />
+                <BookmarkSolid className='h-4 w-4 text-blue-600' />
                 Added to Library
               </>
             ) : isSaving ? (
               <>
-                <div className='h-4 w-4 animate-spin rounded-full border-2 border-gray-500 border-t-blue-500' />
+                <div className='h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-blue-500' />
                 Saving...
               </>
             ) : (
@@ -115,7 +111,7 @@ export function CollectionDetail({ collection }: CollectionDetailProps) {
           </button>
         </div>
 
-        <p className='mb-4 text-slate-700'>{collection.description}</p>
+        <p className='mb-4 text-sm text-slate-600'>{collection.description}</p>
 
         <div className='flex flex-wrap gap-2'>
           {collection.categories &&
@@ -178,30 +174,30 @@ export function CollectionDetail({ collection }: CollectionDetailProps) {
       {/* Directories section */}
       <div className='mb-8'>
         <div className='mb-4'>
-          <h2 className='text-lg font-semibold text-gray-800'>Directories & Processes</h2>
+          <h2 className='text-base font-medium text-slate-700'>Directories & Processes</h2>
         </div>
 
-        <div className='space-y-8'>
+        <div className='space-y-6'>
           {collection.directories.map((directory) => (
-            <div key={directory.id} className='rounded-xl border border-slate-200/70 bg-white/80 shadow-sm'>
+            <div key={directory.id} className='mb-6'>
               {/* Directory header */}
-              <div className='flex items-center justify-between border-b border-slate-100 px-6 py-4'>
+              <div className='mb-4 flex items-center justify-between border-b border-slate-100 pb-1'>
                 <div className='flex items-center gap-3'>
-                  <div className='relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg'>
-                    <div className={`h-10 w-10 bg-gradient-to-r ${directory.color}`}></div>
+                  <div className='relative flex h-8 w-8 items-center justify-center overflow-hidden rounded'>
+                    <div className={`h-8 w-8 bg-gradient-to-r ${directory.color}`}></div>
                     <div className='absolute inset-0 flex items-center justify-center'>
-                      <DocumentTextIcon className='h-5 w-5 text-white' />
+                      <DocumentTextIcon className='h-4 w-4 text-white' />
                     </div>
                   </div>
                   <div>
-                    <h3 className='font-semibold text-slate-800'>{directory.name}</h3>
-                    <p className='text-sm text-slate-500'>{directory.description}</p>
+                    <h3 className='font-medium text-slate-700'>{directory.name}</h3>
+                    <p className='text-xs text-slate-500'>{directory.description}</p>
                   </div>
                 </div>
               </div>
 
               {/* Process grid */}
-              <div className='grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
+              <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
                 {directory.processes.map((process) => (
                   <DirectoryCard key={process.id} process={process} onSelect={() => handleProcessSelect(process.id)} />
                 ))}

@@ -34,7 +34,7 @@ def get_auth_headers():
 
 def test_insights_health_endpoint():
     """Test the insights health check endpoint."""
-    response = client.get("/insights/health")
+    response = client.get("/progress/health")
     assert response.status_code == 200
     data = response.json()
 
@@ -55,7 +55,7 @@ def test_insights_test_endpoint():
     # Create a request for weekly insights data
     request_data = {"timeFrame": TimeFrameType.WEEK, "tab": "kpi", "tag": None}
 
-    response = client.post("/insights/test", json=request_data)
+    response = client.post("/progress/test", json=request_data)
     assert response.status_code == 200
     data = response.json()
 
@@ -93,7 +93,7 @@ def test_authenticated_insights_endpoint():
     # Create a request for weekly insights data
     request_data = {"timeFrame": TimeFrameType.WEEK, "tab": "kpi", "tag": None}
 
-    response = client.post("/insights", json=request_data, headers=auth_headers)
+    response = client.post("/progress", json=request_data, headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
 
@@ -123,7 +123,7 @@ def test_insights_monthly_view():
     # Create a request for monthly insights data
     request_data = {"timeFrame": TimeFrameType.MONTH, "tab": "work", "tag": None}
 
-    response = client.post("/insights", json=request_data, headers=auth_headers)
+    response = client.post("/progress", json=request_data, headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
 
@@ -161,7 +161,7 @@ def test_insights_custom_date_range():
         "endDate": end_date.isoformat(),
     }
 
-    response = client.post("/insights", json=request_data, headers=auth_headers)
+    response = client.post("/progress", json=request_data, headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
 

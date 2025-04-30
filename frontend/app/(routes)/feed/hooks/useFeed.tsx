@@ -4,7 +4,7 @@ import { useApp } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
 import { createRouteContext } from '@/app/components/router/createRouteContext';
 import { useRouteComponent } from '@/app/components/router/useRouteComponent';
-import { MediaService, PostService, ProcessService, UserService } from '@/app/services';
+import { MediaService, PostService, ProcessService } from '@/app/services';
 import { getProfileTimeline } from '@/app/services/profileService';
 import { MediaUploadResponse } from '@/app/services/mediaService';
 import { MediaSchema, PostSchema, ProcessSchema, UserSchema } from '@/app/types/schema';
@@ -15,9 +15,18 @@ import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tansta
 interface SelectedPeriod {
   year: number;
   quarter?: number;
+  month?: number;
   week?: number;
   startDate?: string;
   endDate?: string;
+}
+
+interface RoomEvent {
+  id: string;
+  title: string;
+  date: Date;
+  status: string;
+  type: string;
 }
 
 interface FeedContextType {
@@ -26,6 +35,8 @@ interface FeedContextType {
   feedPosts: PostSchema[];
   processes: ProcessSchema[];
   selectedPeriod: SelectedPeriod | null;
+  roomEvents: RoomEvent[];
+  selectedRoomId: string | null;
 
   // State
   isLoadingMore: boolean;
@@ -38,6 +49,7 @@ interface FeedContextType {
   handleEventClick: (eventId: string) => void;
   clearError: () => void;
   setSelectedPeriod: (period: SelectedPeriod) => void;
+  setSelectedRoomId: (roomId: string | null) => void;
 }
 
 // Create context with common pattern
@@ -46,6 +58,8 @@ const { Provider, useRouteContext } = createRouteContext<FeedContextType>('Feed'
   feedPosts: [],
   processes: [],
   selectedPeriod: null,
+  roomEvents: [],
+  selectedRoomId: null,
   isLoadingMore: false,
   error: null,
   handleCreatePost: async () => {},
@@ -54,6 +68,7 @@ const { Provider, useRouteContext } = createRouteContext<FeedContextType>('Feed'
   handleEventClick: () => {},
   clearError: () => {},
   setSelectedPeriod: () => {},
+  setSelectedRoomId: () => {},
 });
 
 interface FeedProviderProps {
@@ -81,6 +96,10 @@ export function FeedProvider({ children }: FeedProviderProps) {
     year: currentYear,
     quarter: currentQuarter,
   });
+
+  // Room events state
+  const [roomEvents, setRoomEvents] = useState<RoomEvent[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null); // Null means "All Posts" is selected
 
   // Get current user from app context instead of making a separate API call
   const currentUser = app.currentUser;
@@ -125,6 +144,27 @@ export function FeedProvider({ children }: FeedProviderProps) {
         // If explicit dates are provided, use them
         startDate = selectedPeriod.startDate;
         endDate = selectedPeriod.endDate;
+      } else if (selectedPeriod.month && selectedPeriod.quarter) {
+        // For a specific month within a quarter
+        const yearData = timelineData.find((y) => y.year === selectedPeriod.year);
+        const quarterData = yearData?.quarters.find((q) => q.quarter === selectedPeriod.quarter);
+        const monthData = quarterData?.months?.find((m) => m.monthNumber === selectedPeriod.month);
+
+        if (monthData) {
+          // Use the month's specific date range
+          startDate = monthData.startDate;
+          endDate = monthData.endDate;
+        } else {
+          // Fallback: calculate from month number
+          const monthIndex = selectedPeriod.month - 1; // 0-indexed month
+
+          // First day of the month
+          startDate = `${selectedPeriod.year}-${String(selectedPeriod.month).padStart(2, '0')}-01`;
+
+          // Last day of the month (first day of next month minus one)
+          const lastDay = new Date(selectedPeriod.year, monthIndex + 1, 0);
+          endDate = `${selectedPeriod.year}-${String(selectedPeriod.month).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
+        }
       } else if (selectedPeriod.week && selectedPeriod.quarter) {
         // For a specific week within a quarter, find dates from timeline data
         const yearData = timelineData.find((y) => y.year === selectedPeriod.year);
@@ -173,14 +213,23 @@ export function FeedProvider({ children }: FeedProviderProps) {
 
   // Fetch posts with useInfiniteQuery
   const postsQuery = useInfiniteQuery({
-    queryKey: ['posts', app.currentUser?.id, selectedPeriod],
+    queryKey: ['posts', app.currentUser?.id, selectedPeriod, selectedRoomId],
     queryFn: async ({ pageParam = 0 }) => {
       if (!app.currentUser?.id) {
         return { data: [], nextPage: null };
       }
 
       const limit = 10;
-      const result = await PostService.getPosts(undefined, app.currentUser.id, pageParam, limit);
+
+      // Use the new getFeedPosts method if we have a selectedRoomId
+      let result;
+      if (selectedRoomId) {
+        // When a room is selected, use the room-filtered feed posts endpoint
+        result = await PostService.getFeedPosts(selectedRoomId, pageParam, limit);
+      } else {
+        // Otherwise, get posts for the current user
+        result = await PostService.getPosts(undefined, app.currentUser.id, pageParam, limit);
+      }
 
       if (result.error) {
         throw new Error(result.error);
@@ -337,12 +386,79 @@ export function FeedProvider({ children }: FeedProviderProps) {
     [queryClient],
   );
 
+  // Handle room selection
+  const handleSetSelectedRoomId = useCallback(
+    (roomId: string | null) => {
+      console.log('Setting selected room ID in useFeed:', roomId);
+      setSelectedRoomId(roomId);
+      // Invalidate and refetch the posts with the new room filter
+      queryClient.invalidateQueries({
+        queryKey: ['posts', app.currentUser?.id, selectedPeriod, roomId],
+      });
+    },
+    [queryClient, app.currentUser?.id, selectedPeriod],
+  );
+
+  // Fetch real room events data
+  const { data: calendarEvents = [] } = useQuery({
+    queryKey: ['feed-calendar-events'],
+    queryFn: async () => {
+      // Get today's date
+      const today = new Date();
+
+      // Set date range to 7 days before and 7 days after today (15 days total)
+      const startDate = new Date(today);
+      startDate.setDate(today.getDate() - 7);
+
+      const endDate = new Date(today);
+      endDate.setDate(today.getDate() + 7);
+
+      // Format dates as YYYY-MM-DD for API
+      const startDateString = startDate.toISOString().split('T')[0];
+      const endDateString = endDate.toISOString().split('T')[0];
+
+      // Fetch calendar events
+      const { EventService } = await import('@/app/services');
+      const result = await EventService.getCalendarEvents(startDateString, endDateString);
+
+      if (result.error || !result.data) {
+        console.error('Error fetching calendar events:', result.error);
+        return [];
+      }
+
+      // Map events to RoomEvent format
+      const mappedEvents = result.data.map((event) => ({
+        id: event.id,
+        title: event.title,
+        date: new Date(event.date || event.startTime || Date.now()),
+        status: event.status?.toLowerCase() || 'scheduled',
+        type: event.metadata?.type || 'event',
+      }));
+
+      console.log('Fetched calendar events:', mappedEvents);
+      return mappedEvents;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Update room events when calendar events change
+  useEffect(() => {
+    if (calendarEvents && calendarEvents.length > 0) {
+      setRoomEvents(calendarEvents);
+
+      // Don't auto-select any room - keep "All Posts" selected by default
+      // This ensures the "All Posts" option is initially selected
+    }
+  }, [calendarEvents]);
+
   // Context value
   const value = {
     currentUser: app.currentUser || null,
     feedPosts,
     processes,
     selectedPeriod,
+    roomEvents,
+    selectedRoomId,
     isLoadingMore,
     error,
     handleCreatePost,
@@ -351,6 +467,7 @@ export function FeedProvider({ children }: FeedProviderProps) {
     handleEventClick,
     clearError,
     setSelectedPeriod: handleSetSelectedPeriod,
+    setSelectedRoomId: handleSetSelectedRoomId,
   };
 
   return <Provider value={value}>{children}</Provider>;

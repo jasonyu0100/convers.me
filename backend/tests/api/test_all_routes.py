@@ -658,13 +658,13 @@ class ApiTestSuite:
         result = TestResult("Insights")
 
         # Test main insights endpoint
-        success, data, status, time_taken = self.client.get("/insights")
+        success, data, status, time_taken = self.client.get("/progress")
         result.add_result("Get insights data", success, f"Status: {status}", time_taken)
 
         # Test specific insight types if applicable
         for insight_type in ["performance", "activity", "progress"]:
             try:
-                success, data, status, time_taken = self.client.get(f"/insights/{insight_type}")
+                success, data, status, time_taken = self.client.get(f"/progress/{insight_type}")
                 result.add_result(f"Get {insight_type} insights", success, f"Status: {status}", time_taken)
             except:
                 # This might not be implemented

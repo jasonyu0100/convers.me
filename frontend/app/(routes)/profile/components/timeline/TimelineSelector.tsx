@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { useProfile } from '../../hooks/useProfile';
+import { useTimelineFilter } from '../../hooks/useTimelineFilter';
+import { useProfile } from '../../hooks';
 
 /**
  * TimelineSelector component for the profile page
@@ -12,20 +13,9 @@ interface TimelineSelectorProps {
 }
 
 export function TimelineSelector({ horizontal = false }: TimelineSelectorProps) {
-  const {
-    timelineData,
-    selectedYear,
-    selectedQuarter,
-    selectedMonth,
-    dateRange,
-    selectYear,
-    selectQuarter,
-    selectMonth,
-    viewType,
-    reports,
-    activities,
-    events,
-  } = useProfile();
+  const { timelineData, selectedYear, selectedQuarter, selectedMonth, dateRange, selectYear, selectQuarter, selectMonth } = useTimelineFilter();
+
+  const { viewType, reports, activities, events } = useProfile();
 
   // Add animation states
   const [animatingYear, setAnimatingYear] = useState<number | null>(null);
@@ -100,19 +90,17 @@ export function TimelineSelector({ horizontal = false }: TimelineSelectorProps) 
     selectMonth(monthNumber);
   };
 
-  // Modern airy horizontal timeline
+  // Month-focused horizontal timeline
   if (horizontal) {
     return (
-      <div className='flex flex-col justify-between rounded-lg border border-slate-100 bg-white/80 px-5 py-4 shadow-sm sm:flex-row sm:items-center'>
+      <div className='flex flex-col justify-between bg-white py-2 sm:flex-row sm:items-center'>
         <div className='flex flex-wrap items-center'>
-          <span className='mr-4 text-sm font-medium tracking-wide text-slate-700'>Timeline</span>
-
-          {/* Year selector with modern styling */}
-          <div className='relative'>
+          {/* Year selector */}
+          <div className='relative mr-2'>
             <select
-              className='cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white/80 px-4 py-2 pr-9 text-sm font-medium shadow-sm transition-all hover:border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400 focus:outline-none'
+              className='cursor-pointer appearance-none rounded-md bg-white py-1 pr-6 text-sm'
               value={selectedYear}
-              onChange={(e) => handleYearSelect(Number(e.target.value))}
+              onChange={(e) => selectYear(Number(e.target.value))}
               aria-label='Select year'
             >
               {timelineData.map((year) => (
@@ -121,227 +109,162 @@ export function TimelineSelector({ horizontal = false }: TimelineSelectorProps) 
                 </option>
               ))}
             </select>
-            <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-blue-500'>
-              <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor' aria-hidden='true'>
+            <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-1 text-slate-400'>
+              <svg className='h-3 w-3' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
               </svg>
             </div>
           </div>
 
-          {/* Quarter pills with vibrant blue-500/600 */}
-          <div className='mt-3 ml-4 flex flex-wrap gap-2 sm:mt-0'>
-            {currentYearData.quarters.map((quarter) => {
-              const isSelected = selectedQuarter === quarter.quarter && selectedYear === quarter.year;
+          {/* All months directly */}
+          <div className='flex flex-wrap gap-1'>
+            {/* Standard month array */}
+            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((monthName, i) => {
+              const monthNumber = i + 1;
+              const isMonthSelected = selectedMonth === monthNumber && selectedYear === currentYearData.year;
+
+              // Find the corresponding month data to check if it exists
+              let monthExists = false;
+              let associatedQuarter = Math.floor(i / 3) + 1;
+
+              // Always enable all months since we want to allow selection even without data
+              monthExists = true;
+
+              // Determine style based on selection
+              const buttonStyle = isMonthSelected ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-100';
+
               return (
                 <button
-                  key={`${quarter.year}-Q${quarter.quarter}`}
-                  className={`relative rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 focus:ring-2 focus:ring-offset-1 focus:outline-none ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md hover:from-blue-600 hover:to-blue-700'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                  onClick={() => handleQuarterSelect(quarter.year, quarter.quarter)}
-                  aria-pressed={isSelected}
+                  key={`Month-${monthNumber}`}
+                  className={`rounded-md px-2 py-0.5 text-xs ${buttonStyle}`}
+                  onClick={() => {
+                    if (monthExists) {
+                      // Direct selection of the month and its associated quarter
+                      const quarterToSelect = associatedQuarter;
+                      selectQuarter(currentYearData.year, quarterToSelect);
+                      selectMonth(monthNumber);
+                    }
+                  }}
+                  disabled={!monthExists}
                 >
-                  {/* Add a subtle pulse animation for the active quarter */}
-                  {isSelected && <span className='absolute inset-0 animate-pulse rounded-full bg-blue-400 opacity-30'></span>}
-                  <span className='relative z-10'>Q{quarter.quarter}</span>
+                  {monthName}
                 </button>
               );
             })}
-            {dateRange && (
-              <div className='mt-1 ml-2 hidden text-xs text-slate-500 sm:inline-block'>
-                <span>
-                  {dateRange.startDate} to {dateRange.endDate}
-                </span>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Count indicator with blue-500 accent */}
-        <div className='mt-3 self-start sm:mt-0 sm:self-auto'>
-          <span className='inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-3.5 py-1.5 text-xs font-medium text-blue-600 shadow-sm'>
-            <span className='mr-2 inline-block h-2 w-2 rounded-full bg-blue-500'></span>
-            {viewType === 'events'
-              ? `${events.length} events`
-              : viewType === 'reports'
-              ? `${
-                  reports?.filter((r) => {
-                    if (selectedMonth) {
-                      return r.year === selectedYear && r.quarter === selectedQuarter && r.month === selectedMonth;
-                    }
-                    return r.year === selectedYear && r.quarter === selectedQuarter;
-                  }).length || 0
-                } reports`
-              : `${activities.length} posts`}
-          </span>
+        {/* Count indicator */}
+        <div className='mt-1 text-xs text-slate-500 sm:mt-0'>
+          {viewType === 'events'
+            ? `${events.length} events`
+            : viewType === 'reports'
+            ? `${
+                reports?.filter((r) => {
+                  if (selectedMonth) return r.year === selectedYear && r.month === selectedMonth;
+                  return r.year === selectedYear;
+                }).length || 0
+              } reports`
+            : `${activities.length} posts`}
         </div>
       </div>
     );
   }
 
-  // Modern airy vertical timeline with vibrant blue accents
+  // Month-focused vertical timeline
   return (
-    <div className='flex h-full w-[380px] flex-shrink-0 flex-col border-l border-slate-200 bg-white/80 shadow-sm'>
-      {/* Timeline header - clean, airy with vibrant blue */}
-      <div className='border-b border-slate-100 bg-white/80 px-5 py-5'>
-        <h3 className='text-md flex items-center font-medium text-slate-700'>
-          <svg xmlns='http://www.w3.org/2000/svg' className='mr-2 h-5 w-5 text-blue-500' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
-            <path
-              fillRule='evenodd'
-              d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
-              clipRule='evenodd'
-            />
-          </svg>
-          <span className='tracking-wide'>Timeline</span>
-        </h3>
-      </div>
-
-      {/* Current period indicator with clean design and popping blue */}
-      <div className='border-b border-slate-100 bg-slate-50/50 px-5 py-5'>
-        <div className='flex items-center justify-between'>
-          <div className='flex flex-col'>
-            <span className='mb-0.5 text-sm font-medium tracking-wide text-blue-400'>Current Period</span>
-            <div className='flex items-baseline gap-2'>
-              <span className='text-xl font-semibold tracking-tight text-slate-800'>
-                {selectedMonth ? 'Month ' + selectedMonth : `Q${selectedQuarter}`} {selectedYear}
-              </span>
-            </div>
-            {dateRange && (
-              <div className='mt-1 text-xs text-slate-500'>
-                <span>
-                  {dateRange.startDate} to {dateRange.endDate}
-                </span>
-              </div>
-            )}
-          </div>
-          <div className='flex flex-col items-end gap-2'>
-            <span className='rounded-full bg-blue-500 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm'>
+    <div className='flex h-full w-[280px] flex-shrink-0 flex-col border-l border-slate-100 bg-white'>
+      {/* Current period header */}
+      <div className='border-b border-slate-100 px-3 py-2'>
+        <div className='flex flex-col'>
+          <span className='text-sm font-medium text-slate-700'>
+            {selectedMonth
+              ? selectedMonthData
+                ? `${selectedMonthData.label} ${selectedYear}`
+                : `${
+                    ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][
+                      selectedMonth - 1
+                    ]
+                  } ${selectedYear}`
+              : `${selectedYear}`}
+          </span>
+          <div className='mt-1 flex items-center justify-between'>
+            <span className='text-xs text-slate-500'>
               {viewType === 'events'
-                ? events.length
+                ? events.length + ' events'
                 : viewType === 'reports'
                 ? reports?.filter((r) => {
-                    if (selectedMonth) {
-                      return r.year === selectedYear && r.quarter === selectedQuarter && r.month === selectedMonth;
-                    }
-                    return r.year === selectedYear && r.quarter === selectedQuarter;
-                  }).length || 0
-                : activities.length}{' '}
-              {viewType === 'events' ? 'events' : viewType === 'reports' ? 'reports' : 'posts'}
+                    if (selectedMonth) return r.year === selectedYear && r.month === selectedMonth;
+                    return r.year === selectedYear;
+                  }).length + ' reports'
+                : activities.length + ' posts'}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Years and quarters with airy, modern styling */}
-      <div className='scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent flex-grow overflow-y-auto'>
-        <div className='space-y-3 px-4 py-4'>
+      {/* Years and months */}
+      <div className='overflow-y-auto'>
+        <div className='px-2 py-1'>
           {timelineData.map((year) => {
             const isYearSelected = year.year === selectedYear;
-            const isAnimating = year.year === animatingYear;
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
             return (
-              <div key={year.year} className='relative'>
-                {/* Year selector with modern styling and hover effects */}
+              <div key={year.year} className='mb-1'>
+                {/* Year selector */}
                 <div
-                  className={`flex cursor-pointer items-center justify-between rounded-xl px-5 py-3.5 transition-all duration-200 ${
-                    isYearSelected ? 'border border-blue-100 bg-blue-50 text-blue-600 shadow-sm' : 'border border-transparent hover:bg-slate-50'
-                  } ${isAnimating ? 'scale-[1.02]' : ''}`}
-                  onClick={() => handleYearSelect(year.year)}
-                  role='button'
-                  aria-expanded={isYearSelected}
-                  aria-controls={`quarters-${year.year}`}
+                  className={`flex cursor-pointer items-center px-2 py-1 ${isYearSelected ? 'text-slate-800' : 'text-slate-500'}`}
+                  onClick={() => selectYear(year.year)}
                 >
-                  <div className='flex items-center'>
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      className={`mr-2.5 h-4 w-4 transition-transform duration-300 ease-out ${
-                        isYearSelected ? 'rotate-90 transform text-blue-500' : 'text-slate-400'
-                      }`}
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                      aria-hidden='true'
-                    >
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
-                    </svg>
-                    <span className='text-sm font-semibold tracking-wide'>{year.year}</span>
-                  </div>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    className={`mr-1 h-3 w-3 transition-transform ${isYearSelected ? 'rotate-90 text-slate-600' : 'text-slate-400'}`}
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
+                  >
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
+                  </svg>
+                  <span className='text-sm'>{year.year}</span>
                 </div>
 
-                {/* Quarters with smooth transitions and airy spacing */}
-                <div
-                  id={`quarters-${year.year}`}
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    isYearSelected ? 'my-3 max-h-[500px] opacity-100' : 'my-0 max-h-0 opacity-0'
-                  }`}
-                >
-                  <div className='ml-7 space-y-2.5 border-l-2 border-blue-200 py-1 pl-5'>
-                    {year.quarters.map((quarter) => {
-                      const isQuarterSelected = selectedYear === year.year && selectedQuarter === quarter.quarter;
+                {/* Months grid */}
+                {isYearSelected && (
+                  <div className='ml-4 border-l border-slate-100 pl-2'>
+                    <div className='grid grid-cols-2 gap-1 py-1'>
+                      {/* All 12 months */}
+                      {Array.from({ length: 12 }, (_, i) => {
+                        const monthNumber = i + 1;
+                        const isMonthSelected = selectedMonth === monthNumber && selectedYear === year.year;
 
-                      return (
-                        <div key={`${year.year}-Q${quarter.quarter !== undefined ? quarter.quarter : ''}`}>
-                          <div
-                            className={`relative flex cursor-pointer items-center justify-between rounded-xl px-4 py-3 transition-all duration-200 ${
-                              isQuarterSelected
-                                ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md'
-                                : 'border border-transparent hover:bg-slate-50'
-                            }`}
-                            onClick={() => handleQuarterSelect(year.year, quarter.quarter)}
-                            role='button'
-                            aria-pressed={isQuarterSelected}
-                            aria-expanded={isQuarterSelected}
-                            aria-controls={`months-${year.year}-Q${quarter.quarter}`}
+                        // Always enable all months
+                        let monthExists = true;
+                        let associatedQuarter = Math.floor(i / 3) + 1;
+
+                        // Button styling based on selection only
+                        const monthStyle = isMonthSelected ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50';
+
+                        return (
+                          <button
+                            key={`${year.year}-M${monthNumber}`}
+                            className={`rounded px-2 py-1 text-left text-xs ${monthStyle}`}
+                            onClick={() => {
+                              if (monthExists) {
+                                // Direct month selection with appropriate quarter context
+                                selectQuarter(year.year, associatedQuarter);
+                                selectMonth(monthNumber);
+                              }
+                            }}
+                            disabled={!monthExists}
                           >
-                            {/* Quarter marker with pulse animation for selected item */}
-                            <div className='absolute -left-[28px] flex items-center justify-center'>
-                              <span
-                                className={`h-4 w-4 rounded-full ${
-                                  isQuarterSelected ? 'bg-blue-500 ring-4 ring-blue-200' : 'border-2 border-blue-200 bg-white/80'
-                                }`}
-                              ></span>
-                              {isQuarterSelected && <span className='absolute h-5 w-5 animate-ping rounded-full bg-blue-400 opacity-40'></span>}
-                            </div>
-
-                            {/* Quarter content with modern styling */}
-                            <div className='flex items-center'>
-                              <span className={`text-sm font-medium tracking-wide ${isQuarterSelected ? 'text-white' : 'text-slate-700'}`}>
-                                {quarter.label}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Months section - only show for selected quarter */}
-                          {isQuarterSelected && quarter.months && quarter.months.length > 0 && (
-                            <div id={`months-${year.year}-Q${quarter.quarter}`} className='mt-2 ml-4 space-y-1.5'>
-                              {[...quarter.months].reverse().map((month) => {
-                                const isMonthSelected = selectedMonth === month.monthNumber;
-
-                                return (
-                                  <div
-                                    key={`${year.year}-M${month.monthNumber}`}
-                                    className={`relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 transition-all duration-150 ${
-                                      isMonthSelected ? 'bg-blue-100 text-blue-700 shadow-sm' : 'border border-transparent hover:bg-blue-50 hover:text-blue-600'
-                                    }`}
-                                    onClick={() => handleMonthSelect(month.monthNumber)}
-                                    role='button'
-                                    aria-pressed={isMonthSelected}
-                                  >
-                                    <div className='flex items-center'>
-                                      <span className='text-xs font-medium'>{month.label}</span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                            {monthNames[i].substring(0, 3)}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             );
           })}

@@ -64,8 +64,9 @@ async def create_post(post: SchemaPostCreate, current_user: Annotated[User, Depe
 async def get_posts(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Session = Depends(get_db),
-    event_id: Optional[UUID] = None,
+    event_id: Optional[str] = None,
     author_id: Optional[str] = None,
+    feed: bool = False,
     skip: int = 0,
     limit: int = 20,
 ):
@@ -74,7 +75,14 @@ async def get_posts(
 
     # Filter by event_id if provided
     if event_id:
-        query = query.filter(Post.event_id == event_id)
+        try:
+            # Try to convert to UUID if it's a valid format
+            uuid_event_id = UUID(event_id)
+            query = query.filter(Post.event_id == uuid_event_id)
+        except ValueError:
+            # If not a valid UUID, return empty result
+            # This prevents database errors when non-UUID values are passed
+            return []
 
     # Filter by author_id if provided
     if author_id:

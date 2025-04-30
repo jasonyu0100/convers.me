@@ -327,6 +327,15 @@ export class EventService {
 
       // Use the process service to get steps from the linked process
       const processId = eventResult.data.processId;
+
+      // If processId is null or undefined, return an empty steps array
+      if (!processId) {
+        return {
+          data: [],
+          status: 200,
+        };
+      }
+
       const processService = (await import('./processService')).ProcessService;
       return processService.getProcessSteps(processId);
     } catch (error) {

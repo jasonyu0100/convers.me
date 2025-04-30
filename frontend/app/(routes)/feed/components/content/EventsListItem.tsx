@@ -94,9 +94,7 @@ const EventsListItem = React.memo(({ event }: EventsListItemProps) => {
 
   return (
     <div
-      className={`flex flex-col rounded-xl border ${statusStyles.border} bg-white/80 p-4 shadow-sm transition-all duration-200 ${
-        isHovered ? 'scale-[1.01] shadow-md' : 'shadow-sm'
-      }`}
+      className={`flex flex-col rounded-lg border-0 p-4 transition-all duration-200 ${isHovered ? 'bg-slate-50' : 'bg-white/80'}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}

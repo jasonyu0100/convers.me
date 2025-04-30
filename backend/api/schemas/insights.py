@@ -9,23 +9,17 @@ from api.schemas.base import APIBaseModel
 
 
 class SchemaTimeFrameType(str, Enum):
-    """Time frame type enum."""
+    """Time frame type enum (simplified to only support weekly view)."""
 
     WEEK = "week"
-    MONTH = "month"
-    QUARTER = "quarter"
-    YEAR = "year"
-    CUSTOM = "custom"
 
 
 class SchemaPerformanceTabType(str, Enum):
-    """Performance tab type enum."""
+    """Performance tab type enum (removed KPI and HELP)."""
 
-    KPI = "kpi"
     WORK = "work"
     TIME = "time"
     EFFORT = "effort"
-    HELP = "help"
 
 
 class SchemaPerformanceMetric(APIBaseModel):
@@ -104,12 +98,7 @@ class SchemaEffortMetric(APIBaseModel):
     color: str
 
 
-class SchemaHelpTopic(APIBaseModel):
-    """Help topic schema."""
-
-    term: str
-    description: str
-    category: str  # 'kpi', 'work', 'time', 'effort', 'general'
+# SchemaHelpTopic removed
 
 
 class SchemaDailyBurnup(APIBaseModel):
@@ -138,7 +127,7 @@ class SchemaInsightResponse(APIBaseModel):
     completedProcesses: List[SchemaProcessMetric] = Field()
     tagDistribution: List[Dict[str, Any]] = Field(default_factory=list)
     effortDistribution: List[SchemaEffortMetric] = Field()
-    helpTopics: List[SchemaHelpTopic] = Field()
+    # helpTopics removed
     dailyBurnup: List[SchemaDailyBurnup] = Field()
     quarterlyBurnup: List[SchemaWeeklyBurnup] = Field()
     insightMetadata: Optional[Dict[str, Any]] = Field(default=None)

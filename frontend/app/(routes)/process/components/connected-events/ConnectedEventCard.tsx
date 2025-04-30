@@ -132,10 +132,7 @@ export function ConnectedEventCard({ event }: ConnectedEventCardProps) {
   const status = getStatusInfo();
 
   return (
-    <Link
-      href={`/room?id=${event.id}`}
-      className='group flex h-full flex-col overflow-hidden rounded-lg border border-slate-200 bg-white/80 transition-all hover:border-blue-200 hover:shadow-sm'
-    >
+    <Link href={`/room?id=${event.id}`} className='group flex aspect-[4/3] flex-col overflow-hidden rounded-lg bg-white transition-all hover:bg-slate-50'>
       <div className='h-1 w-full bg-slate-100'>
         <div className={`h-full ${status.color} transition-all`} style={{ width: `${progressPercentage}%` }} />
       </div>

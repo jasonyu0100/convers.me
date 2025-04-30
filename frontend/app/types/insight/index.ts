@@ -3,9 +3,9 @@
  */
 
 /**
- * Time frame selection options
+ * Time frame selection options (simplified to only support weekly view)
  */
-export type TimeFrameType = 'week' | 'month' | 'quarter' | 'year' | 'custom';
+export type TimeFrameType = 'week';
 
 export interface PerformanceMetric {
   id: string;
@@ -71,13 +71,9 @@ export interface EffortMetric {
 /**
  * Available performance dashboard tabs
  */
-export type PerformanceTabType = 'kpi' | 'work' | 'time' | 'effort' | 'help';
+export type PerformanceTabType = 'work' | 'time' | 'effort';
 
-export interface HelpTopic {
-  term: string;
-  description: string;
-  category: 'kpi' | 'work' | 'time' | 'effort' | 'general';
-}
+// HelpTopic removed
 
 export interface DailyBurnup {
   day: string;
@@ -114,12 +110,10 @@ export interface PerformanceContextType {
   dailyBurnup?: DailyBurnup[];
   quarterlyBurnup?: WeeklyBurnup[];
 
-  // Help topics
-  helpTopics: HelpTopic[];
+  // Help topics removed
 
-  // Time period
+  // Time period (fixed to weekly)
   selectedTimeFrame: TimeFrameType;
-  setSelectedTimeFrame: (timeFrame: TimeFrameType) => void;
 
   // Tab selection
   selectedTab: PerformanceTabType;
