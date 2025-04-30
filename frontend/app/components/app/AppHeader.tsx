@@ -4,7 +4,7 @@ import { useApp } from '@/app/components/app/hooks/useApp';
 import { useAppHeader } from '@/app/components/app/hooks/useAppHeader';
 import { UserAvatar } from '@/app/components/ui/avatars/UserAvatar';
 import { BookingLink } from '@/app/components/ui/booking/BookingLink';
-import { Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { ChartBarIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { NotificationBell } from '../ui/notifications';
 import { SearchBar } from '../ui/search';
@@ -71,6 +71,13 @@ export function AppHeader({ route, title, searchPlaceholder, searchValue, isSear
           aria-label='Settings'
         >
           <Cog6ToothIcon className='h-6 w-6' />
+        </button>
+        <button
+          className='rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700'
+          onClick={header.handleInsightsClick}
+          aria-label='Insights'
+        >
+          <ChartBarIcon className='h-6 w-6' />
         </button>
         <UserAvatar
           user={{

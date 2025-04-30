@@ -23,6 +23,7 @@ export function ProcessSidebar() {
     setIsCreatingNewDirectory,
     handleCreateDirectory,
     handleProcessesSelect,
+    isLoading,
   } = useProcess();
 
   const router = useRouter();
@@ -73,12 +74,24 @@ export function ProcessSidebar() {
     setSelectedDirectoryId(null);
   };
 
+  // Get process count for each directory
+  const getDirectoryProcessCount = (directory) => {
+    // First check if directory.processes is an array
+    if (directory.processes && Array.isArray(directory.processes)) {
+      // Count actual processes that exist in allProcesses
+      const existingProcesses = directory.processes.filter((processId) => allProcesses.some((p) => p.id === processId));
+      return existingProcesses.length;
+    }
+
+    // Fallback to any processCount that might be available
+    return directory.processCount || 0;
+  };
+
   // Render directory cards in a consistent style with the grid view
   const renderDirectoryItem = (directory, isSubdirectory = false) => {
-    const hasProcesses = directory.processes && Array.isArray(directory.processes) && directory.processes.length > 0;
     const isSelected = selectedDirectoryId === directory.id;
     const dirColor = directory.color || 'from-blue-500 to-indigo-500';
-    const processCount = directory.processCount ?? (Array.isArray(directory.processes) ? directory.processes.length : 0);
+    const processCount = getDirectoryProcessCount(directory);
 
     return (
       <button
@@ -129,28 +142,46 @@ export function ProcessSidebar() {
 
           <div className='space-y-1'>
             {/* Render top-level directories */}
-            {allDirectories
-              .filter((dir) => !dir.parentId)
-              .map((directory) => {
-                // Check if this directory has subdirectories
-                const hasSubDirs = allDirectories.some((dir) => dir.parentId === directory.id);
+            {!isLoading &&
+              allDirectories
+                .filter((dir) => !dir.parentId)
+                .map((directory) => {
+                  // Check if this directory has subdirectories
+                  const hasSubDirs = allDirectories.some((dir) => dir.parentId === directory.id);
 
-                return (
-                  <div key={directory.id}>
-                    {/* Parent directory */}
-                    {renderDirectoryItem(directory)}
+                  return (
+                    <div key={directory.id}>
+                      {/* Parent directory */}
+                      {renderDirectoryItem(directory)}
 
-                    {/* Subdirectories */}
-                    {hasSubDirs && (
-                      <div className='ml-4'>
-                        {allDirectories.filter((dir) => dir.parentId === directory.id).map((subDir) => renderDirectoryItem(subDir, true))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                      {/* Subdirectories */}
+                      {hasSubDirs && (
+                        <div className='ml-4'>
+                          {allDirectories.filter((dir) => dir.parentId === directory.id).map((subDir) => renderDirectoryItem(subDir, true))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
 
-            {allDirectories.length === 0 && (
+            {/* Loading indicator */}
+            {isLoading && (
+              <div className='my-4 rounded-xl bg-slate-50 p-4 text-center'>
+                <div className='mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50'>
+                  <svg className='h-5 w-5 animate-spin text-blue-600' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
+                    <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
+                    <path
+                      className='opacity-75'
+                      fill='currentColor'
+                      d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                    ></path>
+                  </svg>
+                </div>
+                <p className='text-sm font-medium text-slate-600'>Loading directories...</p>
+              </div>
+            )}
+
+            {!isLoading && allDirectories.length === 0 && (
               <div className='my-4 rounded-xl bg-slate-50 p-4 text-center'>
                 <div className='mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50'>
                   <FolderPlusIcon className='h-6 w-6 text-blue-400' />
@@ -196,6 +227,15 @@ export function ProcessSidebar() {
           <div className='mb-4'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center'>
+                <button className='mr-2 text-slate-400 hover:text-slate-600' onClick={handleBackToDirectories} title='Back to directories'>
+                  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' className='h-5 w-5'>
+                    <path
+                      fillRule='evenodd'
+                      d='M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z'
+                      clipRule='evenodd'
+                    />
+                  </svg>
+                </button>
                 <div className={`h-2 w-2 rounded-full bg-gradient-to-r ${directoryColor} mr-2`}></div>
                 <h3 className='truncate text-lg font-semibold text-slate-800'>{directoryName}</h3>
               </div>
@@ -213,41 +253,60 @@ export function ProcessSidebar() {
             <Divider className='mb-4' />
           </div>
 
-          <div className='space-y-2'>
-            {processes.map((list) => (
-              <ProcessSidebarItem key={list.id} list={list} isSelected={selectedList?.id === list.id} />
-            ))}
-
-            {processes.length === 0 && (
-              <div className='flex flex-col items-center justify-center py-6 text-center'>
-                <div className='mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50'>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    width='24'
-                    height='24'
-                    viewBox='0 0 24 24'
-                    fill='none'
-                    stroke='currentColor'
-                    strokeWidth='1.5'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    className='h-6 w-6 text-blue-400'
-                  >
-                    <path d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2' />
-                    <path d='M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z' />
-                  </svg>
-                </div>
-                <p className='text-sm font-medium text-slate-600'>No processes yet</p>
-                <p className='mt-1 mb-3 max-w-[220px] text-xs text-slate-500'>Create your first process to get started</p>
-                <button
-                  className='rounded-full bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow'
-                  onClick={handleCreateNewList}
-                >
-                  Create process
-                </button>
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className='flex flex-col items-center justify-center py-6 text-center'>
+              <div className='mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50'>
+                <svg className='h-5 w-5 animate-spin text-blue-600' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
+                  <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
+                  <path
+                    className='opacity-75'
+                    fill='currentColor'
+                    d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                  ></path>
+                </svg>
               </div>
-            )}
-          </div>
+              <p className='text-sm font-medium text-slate-600'>Loading processes...</p>
+            </div>
+          )}
+
+          {!isLoading && (
+            <div className='space-y-2'>
+              {processes.map((list) => (
+                <ProcessSidebarItem key={list.id} list={list} isSelected={selectedList?.id === list.id} />
+              ))}
+
+              {processes.length === 0 && (
+                <div className='flex flex-col items-center justify-center py-6 text-center'>
+                  <div className='mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50'>
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      width='24'
+                      height='24'
+                      viewBox='0 0 24 24'
+                      fill='none'
+                      stroke='currentColor'
+                      strokeWidth='1.5'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      className='h-6 w-6 text-blue-400'
+                    >
+                      <path d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2' />
+                      <path d='M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z' />
+                    </svg>
+                  </div>
+                  <p className='text-sm font-medium text-slate-600'>No processes yet</p>
+                  <p className='mt-1 mb-3 max-w-[220px] text-xs text-slate-500'>Create your first process to get started</p>
+                  <button
+                    className='rounded-full bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow'
+                    onClick={handleCreateNewList}
+                  >
+                    Create process
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Action buttons */}

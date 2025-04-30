@@ -7,7 +7,7 @@ import { useLibrary } from '../../hooks/useLibrary';
  * Component that displays a list of categories for filtering library collections
  */
 export function CategoryList() {
-  const { categories, selectedCategory, setSelectedCategory, setSelectedCollection } = useLibrary();
+  const { categories, selectedCategory, setSelectedCategory, setSelectedCollection, collections, isLoading } = useLibrary();
 
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -16,13 +16,29 @@ export function CategoryList() {
     setSelectedCollection(null);
   };
 
-  // Calculate category counts
+  // Calculate category counts from collections data
   const getCategoryCount = (categoryId: string) => {
-    // In a real implementation, this would be dynamic based on actual data
-    if (categoryId === 'all') return '7';
-    if (['project-management', 'management', 'engineering'].includes(categoryId)) return '3';
-    if (['design', 'research', 'product'].includes(categoryId)) return '2';
-    return '1';
+    // Show a loading indicator when collections are being fetched
+    if (isLoading) {
+      return '...';
+    }
+
+    // Make sure collections exists and is an array
+    if (!collections || !Array.isArray(collections)) {
+      return '0';
+    }
+
+    // For "all" category and currently selected category, we can just use the current collections
+    if (categoryId === 'all' || categoryId === selectedCategory) {
+      return collections.length.toString();
+    }
+
+    // For other categories, filter from the current visible collections
+    const categoryCollections = collections.filter(
+      (collection) => collection.categories && Array.isArray(collection.categories) && collection.categories.includes(categoryId),
+    );
+
+    return categoryCollections.length.toString();
   };
 
   return (

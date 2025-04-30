@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
+import { LibraryService } from '@/app/services/libraryService';
 import { LibraryContextType } from '../types';
 
 /**
@@ -48,13 +49,33 @@ export function LibraryProvider({ children }: LibraryProviderProps) {
 
   /**
    * Save a collection to the user's library
-   * In a real implementation, this would call an API
+   * Calls the API to duplicate the collection with all its content
+   * and creates a full copy in the user's library
    */
-  const saveCollection = useCallback((id: string) => {
-    // This would call an API to save the collection
-    console.log('Saving collection', id);
-    // For now, just show a message
-    alert('Collection saved to your library!');
+  const saveCollection = useCallback(async (id: string) => {
+    try {
+      setIsLoading(true);
+      // Call the save endpoint to duplicate the collection
+      const response = await LibraryService.saveCollection(id);
+
+      if (response.data) {
+        // Get the duplicated collection
+        const collection = response.data;
+
+        // Show success message with the new collection's title
+        alert(`${collection.title} saved to your library!`);
+
+        // Here we could navigate to the newly saved collection
+        // router.push(`/library?collection=${collection.id}`);
+      } else {
+        throw new Error(response.error || 'Failed to save collection');
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e : new Error('Failed to save collection'));
+      console.error('Error saving collection:', e);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   /**
@@ -66,7 +87,7 @@ export function LibraryProvider({ children }: LibraryProviderProps) {
 
   const contextValue: LibraryContextType = {
     isLoading,
-    error,
+    error: error ? error.message : null,
     selectedCategory,
     selectedCollection,
     collections: [], // This will be populated by useLibrary

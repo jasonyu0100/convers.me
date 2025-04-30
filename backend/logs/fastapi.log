@@ -1,17 +1,77 @@
 INFO:     Will watch for changes in these directories: ['/Users/jasonyu/Documents/github/convers.me/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [83920] using WatchFiles
-2025-04-26 18:51:24,690 - app - INFO - Loading environment variables
-2025-04-26 18:51:24,770 - db.database - INFO - Connecting to database at: localhost:15432/conversme
-2025-04-26 18:51:24,811 - app - INFO - Setting up database
-2025-04-26 18:51:24,811 - db.setup_db - INFO - Connecting to database at: localhost:15432/conversme
-2025-04-26 18:51:24,846 - db.setup_db - INFO - Enum type media_type already exists
-2025-04-26 18:51:24,847 - db.setup_db - INFO - Enum type event_status already exists
-2025-04-26 18:51:24,847 - db.setup_db - INFO - Enum type participant_status already exists
-2025-04-26 18:51:24,862 - db.setup_db - INFO - Tables already exist, skipping migrations
-2025-04-26 18:51:24,863 - app - INFO - Importing FastAPI app
-2025-04-26 18:51:25,461 - api.main - INFO - Sentry initialized for development environment
-INFO:     Started server process [83923]
+INFO:     Started reloader process [90425] using WatchFiles
+2025-04-30 17:26:41,164 - app - INFO - Loading environment variables
+2025-04-30 17:26:41,259 - db.database - INFO - Connecting to database at: localhost:15432/conversme
+2025-04-30 17:26:41,308 - app - INFO - Setting up database
+2025-04-30 17:26:41,308 - db.setup_db - INFO - Connecting to database at: localhost:15432/conversme
+2025-04-30 17:26:41,333 - db.setup_db - INFO - Enum type media_type already exists
+2025-04-30 17:26:41,334 - db.setup_db - INFO - Enum type event_status already exists
+2025-04-30 17:26:41,334 - db.setup_db - INFO - Enum type participant_status already exists
+2025-04-30 17:26:41,348 - db.setup_db - INFO - Tables already exist, skipping migrations
+2025-04-30 17:26:41,349 - app - INFO - Importing FastAPI app
+2025-04-30 17:26:42,356 - api.main - INFO - Sentry initialized for development environment
+INFO:     Started server process [90428]
 INFO:     Waiting for application startup.
-2025-04-26 18:51:25,520 - api.main - INFO - Starting up convers.me API
+2025-04-30 17:26:42,478 - api.main - INFO - Starting up convers.me API
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'services/library/library_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2025-04-30 17:26:54,602 - api.main - INFO - Shutting down convers.me API
+INFO:     Application shutdown complete.
+INFO:     Finished server process [90428]
+2025-04-30 17:26:55,151 - app - INFO - Loading environment variables
+2025-04-30 17:26:55,280 - db.database - INFO - Connecting to database at: localhost:15432/conversme
+2025-04-30 17:26:55,338 - app - INFO - Setting up database
+2025-04-30 17:26:55,338 - db.setup_db - INFO - Connecting to database at: localhost:15432/conversme
+2025-04-30 17:26:55,363 - db.setup_db - INFO - Enum type media_type already exists
+2025-04-30 17:26:55,363 - db.setup_db - INFO - Enum type event_status already exists
+2025-04-30 17:26:55,364 - db.setup_db - INFO - Enum type participant_status already exists
+2025-04-30 17:26:55,377 - db.setup_db - INFO - Tables already exist, skipping migrations
+2025-04-30 17:26:55,378 - app - INFO - Importing FastAPI app
+2025-04-30 17:26:56,512 - api.main - INFO - Sentry initialized for development environment
+INFO:     Started server process [90633]
+INFO:     Waiting for application startup.
+2025-04-30 17:26:56,603 - api.main - INFO - Starting up convers.me API
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'services/library/library_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2025-04-30 17:27:25,101 - api.main - INFO - Shutting down convers.me API
+INFO:     Application shutdown complete.
+INFO:     Finished server process [90633]
+2025-04-30 17:27:25,719 - app - INFO - Loading environment variables
+2025-04-30 17:27:25,854 - db.database - INFO - Connecting to database at: localhost:15432/conversme
+2025-04-30 17:27:25,920 - app - INFO - Setting up database
+2025-04-30 17:27:25,920 - db.setup_db - INFO - Connecting to database at: localhost:15432/conversme
+2025-04-30 17:27:25,939 - db.setup_db - INFO - Enum type media_type already exists
+2025-04-30 17:27:25,940 - db.setup_db - INFO - Enum type event_status already exists
+2025-04-30 17:27:25,940 - db.setup_db - INFO - Enum type participant_status already exists
+2025-04-30 17:27:25,950 - db.setup_db - INFO - Tables already exist, skipping migrations
+2025-04-30 17:27:25,951 - app - INFO - Importing FastAPI app
+2025-04-30 17:27:27,062 - api.main - INFO - Sentry initialized for development environment
+INFO:     Started server process [91033]
+INFO:     Waiting for application startup.
+2025-04-30 17:27:27,183 - api.main - INFO - Starting up convers.me API
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'api/routes/directories.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2025-04-30 17:27:59,382 - api.main - INFO - Shutting down convers.me API
+INFO:     Application shutdown complete.
+INFO:     Finished server process [91033]
+2025-04-30 17:27:59,922 - app - INFO - Loading environment variables
+2025-04-30 17:28:00,039 - db.database - INFO - Connecting to database at: localhost:15432/conversme
+2025-04-30 17:28:00,094 - app - INFO - Setting up database
+2025-04-30 17:28:00,094 - db.setup_db - INFO - Connecting to database at: localhost:15432/conversme
+2025-04-30 17:28:00,120 - db.setup_db - INFO - Enum type media_type already exists
+2025-04-30 17:28:00,121 - db.setup_db - INFO - Enum type event_status already exists
+2025-04-30 17:28:00,121 - db.setup_db - INFO - Enum type participant_status already exists
+2025-04-30 17:28:00,135 - db.setup_db - INFO - Tables already exist, skipping migrations
+2025-04-30 17:28:00,136 - app - INFO - Importing FastAPI app
+2025-04-30 17:28:01,299 - api.main - INFO - Sentry initialized for development environment
+INFO:     Started server process [91490]
+INFO:     Waiting for application startup.
+2025-04-30 17:28:01,415 - api.main - INFO - Starting up convers.me API
 INFO:     Application startup complete.

@@ -296,18 +296,27 @@ class Directory(Base, TimestampMixin):
     color = Column(String)
     icon = Column(String)
     directory_metadata = Column(JSONB, default={})  # Any additional metadata
+    is_template = Column(Boolean, default=False)  # Whether this is a template directory or not
 
     # Foreign keys
     created_by_id = Column(UUID, ForeignKey("users.id", ondelete="SET NULL"))
     parent_id = Column(UUID, ForeignKey("directories.id", ondelete="SET NULL"))  # For nested directories
+    collection_id = Column(UUID, ForeignKey("collections.id", ondelete="SET NULL"), nullable=True)  # For library collection reference
 
     # Relationships
     created_by = relationship("User")
     parent = relationship("Directory", remote_side=[id], backref="subdirectories")
     processes = relationship("Process", back_populates="directory")
+    collection = relationship("Collection", foreign_keys=[collection_id])
 
     # Indices
-    __table_args__ = (Index("idx_directories_created_by_id", created_by_id), Index("idx_directories_parent_id", parent_id), Index("idx_directories_name", name))
+    __table_args__ = (
+        Index("idx_directories_created_by_id", created_by_id),
+        Index("idx_directories_parent_id", parent_id),
+        Index("idx_directories_collection_id", collection_id),
+        Index("idx_directories_name", name),
+        Index("idx_directories_is_template", is_template)
+    )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert Directory object to dictionary."""
@@ -323,8 +332,10 @@ class Directory(Base, TimestampMixin):
             "color": self.color,
             "icon": self.icon,
             "metadata": self.directory_metadata,
+            "isTemplate": self.is_template,
             "createdById": str(self.created_by_id) if self.created_by_id else None,
             "parentId": str(self.parent_id) if self.parent_id else None,
+            "collectionId": str(self.collection_id) if self.collection_id else None,
             "createdAt": self.created_at.isoformat() if self.created_at else None,
             "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
             "processes": process_ids,
@@ -753,6 +764,52 @@ class Report(Base, TimestampMixin):
             "createdAt": self.created_at.isoformat() if self.created_at else None,
             "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
         }
+
+
+class Collection(Base, TimestampMixin):
+    """Collection model for organizing process templates in the library."""
+
+    __tablename__ = "collections"
+
+    id = Column(UUID, primary_key=True, server_default=func.gen_random_uuid())
+    title = Column(String, nullable=False)
+    description = Column(Text)
+    saves = Column(Integer, default=0)
+    collection_metadata = Column(JSONB, default={})  # Author, categories, etc.
+
+    # Foreign keys
+    created_by_id = Column(UUID, ForeignKey("users.id", ondelete="SET NULL"))
+
+    # Relationships
+    created_by = relationship("User")
+    directories = relationship("Directory", foreign_keys="Directory.collection_id", back_populates="collection")
+
+    # Indices
+    __table_args__ = (
+        Index("idx_collections_created_by_id", created_by_id),
+        Index("idx_collections_title", title),
+    )
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert Collection object to dictionary."""
+        metadata = self.collection_metadata or {}
+
+        return {
+            "id": str(self.id),
+            "title": self.title,
+            "description": self.description,
+            "saves": self.saves,
+            "author": metadata.get("author", {}),
+            "categories": metadata.get("categories", []),
+            "createdById": str(self.created_by_id) if self.created_by_id else None,
+            "createdAt": self.created_at.isoformat() if self.created_at else None,
+            "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
+            "directories": [directory.to_dict() for directory in self.directories] if hasattr(self, "directories") and self.directories else [],
+        }
+
+
+
+
 
 
 class LiveContext(Base, TimestampMixin):

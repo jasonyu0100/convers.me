@@ -2,7 +2,7 @@
 
 import { useApp } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
-import { CalendarIcon, ChartBarIcon, GlobeAltIcon, HomeIcon, MapIcon } from '@heroicons/react/24/outline';
+import { BuildingLibraryIcon, CalendarDaysIcon, GlobeAltIcon, HomeIcon, MapIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { AppSideBarProfile } from './AppSideBarProfile';
 import { AppSideBarToggle } from './AppSideBarToggle';
@@ -102,16 +102,16 @@ const NAV_ITEMS: SideBarNavItem[] = [
     icon: <GlobeAltIcon className='size-5' />,
   },
   {
+    label: 'Base',
+    route: '/base',
+    appRoute: AppRoute.INSIGHT,
+    icon: <BuildingLibraryIcon className='size-5' />,
+  },
+  {
     label: 'Calendar',
     route: '/calendar',
     appRoute: AppRoute.CALENDAR,
-    icon: <CalendarIcon className='size-5' />,
-  },
-  {
-    label: 'Insight',
-    route: '/insight',
-    appRoute: AppRoute.INSIGHT,
-    icon: <ChartBarIcon className='size-5' />,
+    icon: <CalendarDaysIcon className='size-5' />,
   },
 ];
 

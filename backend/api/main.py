@@ -23,6 +23,7 @@ from api.routes import (
     events,
     feed,
     insights,
+    library,
     live,
     media,
     notifications,
@@ -129,6 +130,7 @@ async def rate_limit_middleware(request: Request, call_next):
         or path == "/auth/token"  # Allow authentication attempts
         or path == "/auth/refresh"  # Allow token refreshes
         or path == "/admin/initialize"  # Allow initialization without auth
+        or path == "/admin/initialize-library"  # Allow library initialization without auth
         or path.endswith("/health")  # All health check endpoints
         or request.method == "OPTIONS"
     ):
@@ -436,6 +438,7 @@ app.include_router(insights.router)
 app.include_router(reports.router)
 app.include_router(live.router)  # Live router for handling real-time conversation contexts
 app.include_router(plan.router)
+app.include_router(library.router)  # Library router for collections and processes
 
 
 @app.get("/")

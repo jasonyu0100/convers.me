@@ -111,14 +111,21 @@ async def get_directories(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Session = Depends(get_db),
     parent_id: Optional[UUID] = None,
+    include_templates: bool = False,
 ):
     """
     Get all directories for the current user.
 
     If parent_id is provided, returns subdirectories of that directory.
     If parent_id is None, returns top-level directories.
+    By default, directories that are templates (belong to a collection) are excluded.
+    Set include_templates=True to include template directories.
     """
     query = db.query(Directory).filter(Directory.created_by_id == current_user.id)
+
+    # Filter out template directories unless explicitly requested
+    if not include_templates:
+        query = query.filter(Directory.is_template == False)
 
     if parent_id:
         # Get subdirectories of specific parent

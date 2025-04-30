@@ -5,6 +5,9 @@
 
 import { ApiClient, ApiResult } from './api';
 import { TopicSchema } from '../types/schema';
+import { Collection, LibraryProcess, ProcessDirectory, Category } from '../(routes)/library/types';
+import { LIBRARY_ROUTES } from '../(routes)/library/utils/libraryRoutes';
+import logger from '../lib/logger';
 
 /**
  * Interface for a room/event in the library
@@ -222,5 +225,135 @@ export class LibraryService {
     };
 
     return ApiClient.get<RoomSchema[]>('/events', { params });
+  }
+
+  /**
+   * Get all collections available in the library
+   * @param category - Optional category to filter by
+   * @returns Promise with API result containing collections data
+   */
+  static async getCollections(category?: string): Promise {
+    const params: Record = {};
+    if (category && category !== 'all') {
+      params.category = category;
+    }
+    try {
+      return await ApiClient.get<Collection[]>(LIBRARY_ROUTES.COLLECTIONS, { params });
+    } catch (error) {
+      // Log the error with more context
+      logger.error('Failed to fetch library collections', {
+        category,
+        endpoint: LIBRARY_ROUTES.COLLECTIONS,
+        error,
+      });
+      // Re-throw to allow component error handling
+      throw error;
+    }
+  }
+
+  /**
+   * Get a collection by ID
+   * @param collectionId - Collection ID
+   * @returns Promise with API result containing collection data
+   */
+  static async getCollectionById(collectionId: string): Promise {
+    try {
+      return await ApiClient.get<Collection>(LIBRARY_ROUTES.COLLECTION(collectionId));
+    } catch (error) {
+      // Log detailed error information
+      logger.error('Failed to fetch collection by ID', {
+        collectionId,
+        endpoint: LIBRARY_ROUTES.COLLECTION(collectionId),
+        error,
+      });
+      // Re-throw to allow component error handling
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new collection
+   * @param collection - Collection data to create
+   * @returns Promise with API result containing created collection data
+   */
+  static async createCollection(collection: Collection): Promise {
+    return ApiClient.post<Collection>(LIBRARY_ROUTES.COLLECTIONS, collection);
+  }
+
+  /**
+   * Update a collection
+   * @param collectionId - Collection ID
+   * @param updateData - Collection data to update
+   * @returns Promise with API result containing updated collection data
+   */
+  static async updateCollection(collectionId: string, updateData: Partial): Promise {
+    return ApiClient.put<Collection>(LIBRARY_ROUTES.COLLECTION(collectionId), updateData);
+  }
+
+  /**
+   * Delete a collection
+   * @param collectionId - Collection ID
+   * @returns Promise with API result
+   */
+  static async deleteCollection(collectionId: string): Promise {
+    return ApiClient.delete<void>(LIBRARY_ROUTES.COLLECTION(collectionId));
+  }
+
+  /**
+   * Save (duplicate) a collection to the user's library
+   * This creates a complete copy including all directories, processes, steps and substeps
+   * @param collectionId - Collection ID
+   * @returns Promise with API result containing the duplicated collection
+   */
+  static async saveCollection(collectionId: string): Promise {
+    return ApiClient.post<Collection>(`/library/collections/${collectionId}/save`);
+  }
+
+  /**
+   * Initialize site-wide collections from mock data
+   * This is typically used by administrators to set up the initial library
+   * @returns Promise with API result
+   */
+  static async initializeCollections(): Promise {
+    return ApiClient.post<{ success: boolean; message: string }>(LIBRARY_ROUTES.INITIALIZE);
+  }
+
+  /**
+   * Get all directories in the library
+   * @returns Promise with API result containing directories data
+   */
+  static async getDirectories(): Promise {
+    return ApiClient.get<ProcessDirectory[]>(LIBRARY_ROUTES.DIRECTORIES);
+  }
+
+  /**
+   * Get directories associated with a specific collection
+   * @param collectionId - Collection ID to filter directories by
+   * @returns Promise with API result containing directories data
+   */
+  static async getDirectoriesByCollectionId(collectionId: string): Promise {
+    try {
+      return await ApiClient.get<ProcessDirectory[]>(`${LIBRARY_ROUTES.COLLECTIONS}/${collectionId}/directories`);
+    } catch (error) {
+      // Log detailed error information
+      logger.error('Failed to fetch directories by collection', {
+        collectionId,
+        error,
+      });
+      // Re-throw to allow component error handling
+      throw error;
+    }
+  }
+
+  /**
+   * Get all processes in the library
+   * @param category - Optional category to filter by
+   * @returns Promise with API result containing processes data
+   */
+  static async getProcesses(category?: string): Promise {
+    if (category && category !== 'all') {
+      return ApiClient.get<LibraryProcess[]>(LIBRARY_ROUTES.PROCESS_BY_CATEGORY(category));
+    }
+    return ApiClient.get<LibraryProcess[]>(LIBRARY_ROUTES.PROCESSES);
   }
 }

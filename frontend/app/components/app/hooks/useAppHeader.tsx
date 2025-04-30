@@ -105,10 +105,9 @@ export function useAppHeader(route: AppRoute) {
     router.push('/settings');
   }, [app, router]);
 
-  // Handle booking link click - redirect to book route
-  const handleBookingClick = useCallback(() => {
-    app.setMainView(AppRoute.SCHEDULE);
-    router.push('/schedule');
+  const handleInsightsClick = useCallback(() => {
+    app.setMainView(AppRoute.INSIGHT);
+    router.push('/insight');
   }, [app, router]);
 
   return {
@@ -120,6 +119,6 @@ export function useAppHeader(route: AppRoute) {
     onSearchSubmit: handleSearchSubmit,
     handleProfileClick,
     handleSettingsClick,
-    handleBookingClick,
+    handleInsightsClick,
   };
 }

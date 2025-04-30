@@ -5,30 +5,72 @@ import { BookmarkIcon as BookmarkSolid, StarIcon as StarIconSolid } from '@heroi
 import Image from 'next/image';
 import { useState } from 'react';
 import { useLibrary } from '../../hooks/useLibrary';
-import { LibraryCollection } from '../../types';
+import { Collection } from '../../types';
 import { DirectoryCard } from '../cards/DirectoryCard';
+import logger from '@/app/lib/logger';
 
 interface CollectionDetailProps {
-  collection: LibraryCollection;
+  collection: Collection;
 }
 
 /**
  * Component that displays the details of a collection including its directories and processes
  */
 export function CollectionDetail({ collection }: CollectionDetailProps) {
-  const { handleProcessSelect } = useLibrary();
+  const { handleProcessSelect, saveCollection } = useLibrary();
   const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    // In real implementation, this would call an API to save the collection
-    setIsSaved(!isSaved);
+  const handleSave = async () => {
+    if (isSaved || isSaving) return;
+
+    try {
+      setIsSaving(true);
+      // Call the save function from the library context
+      await saveCollection(collection.id);
+      // Mark as saved after successful save
+      setIsSaved(true);
+    } catch (error) {
+      // Enhanced error logging
+      logger.error('Error saving collection', {
+        collectionId: collection.id,
+        collectionTitle: collection.title,
+        error,
+      });
+
+      // Show user-friendly error as alert (could be replaced with a toast notification)
+      alert(`Failed to save collection: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  // Get background color based on collection
-  const getBgColor = (id: string) => {
-    if (id.includes('team')) return 'purple';
-    if (id.includes('personal')) return 'teal';
-    return 'blue';
+  // Get background color based on collection categories
+  const getBgColor = (categories: string[]) => {
+    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+      return 'blue';
+    }
+
+    // Return color based on the first category
+    const mainCategory = categories[0];
+    switch (mainCategory) {
+      case 'project-management':
+        return 'blue';
+      case 'design':
+        return 'purple';
+      case 'research':
+        return 'indigo';
+      case 'engineering':
+        return 'teal';
+      case 'product':
+        return 'orange';
+      case 'marketing':
+        return 'red';
+      case 'management':
+        return 'emerald';
+      default:
+        return 'blue';
+    }
   };
 
   return (
@@ -45,12 +87,24 @@ export function CollectionDetail({ collection }: CollectionDetailProps) {
 
           <button
             onClick={handleSave}
-            className='flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm transition-colors hover:bg-gray-50'
+            disabled={isSaved || isSaving}
+            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-all ${
+              isSaved
+                ? 'cursor-default bg-blue-100 text-blue-700'
+                : isSaving
+                ? 'cursor-wait bg-gray-100 text-gray-500'
+                : 'bg-white text-blue-700 hover:bg-gray-50'
+            }`}
           >
             {isSaved ? (
               <>
                 <BookmarkSolid className='h-4 w-4 text-blue-700' />
-                Saved
+                Added to Library
+              </>
+            ) : isSaving ? (
+              <>
+                <div className='h-4 w-4 animate-spin rounded-full border-2 border-gray-500 border-t-blue-500' />
+                Saving...
               </>
             ) : (
               <>
@@ -64,11 +118,41 @@ export function CollectionDetail({ collection }: CollectionDetailProps) {
         <p className='mb-4 text-slate-700'>{collection.description}</p>
 
         <div className='flex flex-wrap gap-2'>
-          {collection.categories.map((category) => (
-            <span key={category} className='rounded-full border border-blue-100/50 bg-blue-50/80 px-2.5 py-1 text-xs font-medium text-blue-700'>
-              {category.replace('-', ' ')}
-            </span>
-          ))}
+          {collection.categories &&
+            collection.categories.length > 0 &&
+            collection.categories.map((category) => {
+              // Get color variation based on category
+              let colorClass = 'border-blue-100/50 bg-blue-50/80 text-blue-700';
+              switch (category) {
+                case 'project-management':
+                  colorClass = 'border-blue-100/50 bg-blue-50/80 text-blue-700';
+                  break;
+                case 'design':
+                  colorClass = 'border-purple-100/50 bg-purple-50/80 text-purple-700';
+                  break;
+                case 'research':
+                  colorClass = 'border-indigo-100/50 bg-indigo-50/80 text-indigo-700';
+                  break;
+                case 'engineering':
+                  colorClass = 'border-teal-100/50 bg-teal-50/80 text-teal-700';
+                  break;
+                case 'product':
+                  colorClass = 'border-orange-100/50 bg-orange-50/80 text-orange-700';
+                  break;
+                case 'marketing':
+                  colorClass = 'border-red-100/50 bg-red-50/80 text-red-700';
+                  break;
+                case 'management':
+                  colorClass = 'border-emerald-100/50 bg-emerald-50/80 text-emerald-700';
+                  break;
+              }
+
+              return (
+                <span key={category} className={`rounded-full border px-2.5 py-1 text-xs font-medium ${colorClass}`}>
+                  {category.replace(/-/g, ' ')}
+                </span>
+              );
+            })}
         </div>
 
         {/* Collection meta */}
@@ -86,7 +170,7 @@ export function CollectionDetail({ collection }: CollectionDetailProps) {
 
           <div className='flex items-center gap-2'>
             <BookmarkSolid className='h-4 w-4 text-slate-400' />
-            <span>{collection.popularity.toLocaleString()} saves</span>
+            <span>{collection.saves.toLocaleString()} saves</span>
           </div>
         </div>
       </div>

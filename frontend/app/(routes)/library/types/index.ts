@@ -25,19 +25,19 @@ export interface ProcessDirectory {
   description: string;
   processes: LibraryProcess[];
   color?: string;
+  collectionId?: string; // Reference to the collection this directory belongs to
 }
 
-export interface LibraryCollection {
+export interface Collection {
   id: string;
   title: string;
   description: string;
-  coverImage?: string;
   author: {
     name: string;
     avatar?: string;
   };
   categories: string[];
-  popularity: number;
+  saves: number;
   directories: ProcessDirectory[];
   createdAt: string;
 }
@@ -50,10 +50,10 @@ export interface Category {
 // Context type
 export interface LibraryContextType {
   isLoading: boolean;
-  error: Error | null;
+  error: string | null;
   selectedCategory: string;
   selectedCollection: string | null;
-  collections: LibraryCollection[];
+  collections: Collection[];
   setSelectedCategory: (category: string) => void;
   setSelectedCollection: (id: string | null) => void;
   handleProcessSelect: (id: string) => void;

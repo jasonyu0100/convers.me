@@ -10,10 +10,12 @@ from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
 from api.schemas.admin import DatabaseInitResponse, DatabaseResetResponse, UserCreateAdmin, UserResponseAdmin, UserUpdateAdmin
+from api.schemas.library import LibraryInitializeResponse
 from api.security import get_current_user, get_password_hash
 from db.database import get_db
 from db.models import User
 from services.guest_initialization.service import GuestInitializationService
+from services.library.library_service import LibraryService
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -83,6 +85,17 @@ async def initialize_database(
     except Exception as e:
         result["success"] = False
         result["errors"].append(f"Error initializing development data: {str(e)}")
+
+    # Initialize library data
+    try:
+        library_service = LibraryService(db)
+        library_result = library_service.initialize_library()
+        if library_result.success:
+            result["actions"].append(f"Initialized library with {library_result.collections_created} collections, {library_result.directories_created} directories, and {library_result.processes_created} processes")
+        else:
+            result["actions"].append(f"Library initialization message: {library_result.message}")
+    except Exception as e:
+        result["actions"].append(f"Library initialization skipped: {str(e)}")
 
     return result
 
@@ -368,6 +381,26 @@ async def migrate_event_steps_to_processes(current_user: Annotated[User, Depends
         logger.error(f"Error migrating event steps: {str(e)}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                            detail=f"Failed to migrate event steps: {str(e)}")
+
+@router.post("/initialize-library", response_model=LibraryInitializeResponse)
+async def initialize_library(
+    db: Session = Depends(get_db)
+) -> LibraryInitializeResponse:
+    """
+    Initialize the library with predefined collections, directories, and processes.
+    This endpoint doesn't require authentication and is intended for system setup.
+
+    Args:
+        db: The database session
+
+    Returns:
+        Status of the initialization
+    """
+    library_service = LibraryService(db)
+    result = library_service.initialize_library()
+
+    return result
+
 
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(user_id: str, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_db)):
