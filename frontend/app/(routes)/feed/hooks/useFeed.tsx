@@ -4,7 +4,7 @@ import { useApp } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
 import { createRouteContext } from '@/app/components/router/createRouteContext';
 import { useRouteComponent } from '@/app/components/router/useRouteComponent';
-import { MediaService, PostService, ProcessService, ProgressService } from '@/app/services';
+import { MediaService, PostService, ProcessService } from '@/app/services';
 import { MediaUploadResponse } from '@/app/services/mediaService';
 import { MediaSchema, PostSchema, ProcessSchema, UserSchema } from '@/app/types/schema';
 import { useRouter } from 'next/navigation';
@@ -103,18 +103,6 @@ export function FeedProvider({ children }: FeedProviderProps) {
   // Get current user from app context instead of making a separate API call
   const currentUser = app.currentUser;
 
-  // Fetch timeline data with React Query
-  const { data: timelineData = [] } = useQuery({
-    queryKey: ['timeline'],
-    queryFn: async () => {
-      const result = await ProgressService.getTimeline();
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      return result.data || [];
-    },
-  });
-
   // Fetch favorited template processes with React Query
   const { data: processes = [] } = useQuery({
     queryKey: ['favoriteTemplates'],
@@ -145,48 +133,37 @@ export function FeedProvider({ children }: FeedProviderProps) {
         endDate = selectedPeriod.endDate;
       } else if (selectedPeriod.month && selectedPeriod.quarter) {
         // For a specific month within a quarter
-        const yearData = timelineData.find((y) => y.year === selectedPeriod.year);
-        const quarterData = yearData?.quarters.find((q) => q.quarter === selectedPeriod.quarter);
-        const monthData = quarterData?.months?.find((m) => m.monthNumber === selectedPeriod.month);
+        // Calculate from month number
+        const monthIndex = selectedPeriod.month - 1; // 0-indexed month
 
-        if (monthData) {
-          // Use the month's specific date range
-          startDate = monthData.startDate;
-          endDate = monthData.endDate;
-        } else {
-          // Fallback: calculate from month number
-          const monthIndex = selectedPeriod.month - 1; // 0-indexed month
+        // First day of the month
+        startDate = `${selectedPeriod.year}-${String(selectedPeriod.month).padStart(2, '0')}-01`;
 
-          // First day of the month
-          startDate = `${selectedPeriod.year}-${String(selectedPeriod.month).padStart(2, '0')}-01`;
-
-          // Last day of the month (first day of next month minus one)
-          const lastDay = new Date(selectedPeriod.year, monthIndex + 1, 0);
-          endDate = `${selectedPeriod.year}-${String(selectedPeriod.month).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
-        }
+        // Last day of the month (first day of next month minus one)
+        const lastDay = new Date(selectedPeriod.year, monthIndex + 1, 0);
+        endDate = `${selectedPeriod.year}-${String(selectedPeriod.month).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
       } else if (selectedPeriod.week && selectedPeriod.quarter) {
-        // For a specific week within a quarter, find dates from timeline data
-        const yearData = timelineData.find((y) => y.year === selectedPeriod.year);
-        const quarterData = yearData?.quarters.find((q) => q.quarter === selectedPeriod.quarter);
-        const weekData = quarterData?.weeks.find((w) => w.weekNumber === selectedPeriod.week);
+        // For a specific week within a quarter
+        // Since we don't have exact week dates without the timeline data,
+        // we'll use a rough approximation: a week starts on Monday in the quarter
+        const quarterStartMonth = (selectedPeriod.quarter - 1) * 3 + 1;
+        const quarterStartDate = new Date(selectedPeriod.year, quarterStartMonth - 1, 1);
 
-        if (weekData) {
-          startDate = weekData.startDate;
-          endDate = weekData.endDate;
-        } else {
-          // Fallback to quarter start/end
-          const quarterStartMonth = (selectedPeriod.quarter - 1) * 3 + 1;
-          startDate = `${selectedPeriod.year}-${String(quarterStartMonth).padStart(2, '0')}-01`;
+        // Find the first Monday in the quarter if the quarter doesn't start on a Monday
+        const dayOfWeek = quarterStartDate.getDay();
+        const daysToAdd = dayOfWeek === 1 ? 0 : dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+        quarterStartDate.setDate(quarterStartDate.getDate() + daysToAdd);
 
-          // Calculate end date (start of next quarter minus 1 day)
-          const nextQuarterMonth = selectedPeriod.quarter < 4 ? quarterStartMonth + 3 : 1;
-          const nextQuarterYear = selectedPeriod.quarter < 4 ? selectedPeriod.year : selectedPeriod.year + 1;
-          const nextQuarterStart = new Date(nextQuarterYear, nextQuarterMonth - 1, 1);
-          const quarterEnd = new Date(nextQuarterStart);
-          quarterEnd.setDate(quarterEnd.getDate() - 1);
+        // Now add (weekNumber - 1) * 7 days to get to the start of the selected week
+        const weekStartDate = new Date(quarterStartDate);
+        weekStartDate.setDate(weekStartDate.getDate() + (selectedPeriod.week - 1) * 7);
 
-          endDate = quarterEnd.toISOString().split('T')[0];
-        }
+        // End date is 6 days after start date (a complete week)
+        const weekEndDate = new Date(weekStartDate);
+        weekEndDate.setDate(weekStartDate.getDate() + 6);
+
+        startDate = weekStartDate.toISOString().split('T')[0];
+        endDate = weekEndDate.toISOString().split('T')[0];
       } else if (selectedPeriod.quarter) {
         // For a specific quarter
         const quarterStartMonth = (selectedPeriod.quarter - 1) * 3 + 1;
