@@ -1,7 +1,8 @@
 'use client';
 
 import { createRouteContext, useRouteComponent } from '@/app/components/router';
-import { getProfileTimeline, getUserProfile, getProfileReports, getUserPosts, getUserEvents } from '@/app/services/profileService';
+import { getUserProfile, getProfileReports, getUserPosts, getUserEvents } from '@/app/services/profileService';
+import { ProgressService } from '@/app/services/progressService';
 import { useCallback, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ProfileActivity, ProfileConnection, ProfileEvent, ProfileHighlight, ProfileUser, TimelineYear, TimeFrameType } from '../../../types/profile';
@@ -139,7 +140,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const { data: timelineData = defaultTimelineData, isLoading } = useQuery({
     queryKey: ['profileTimeline'],
     queryFn: async () => {
-      const response = await getProfileTimeline();
+      // Using ProgressService.getTimeline instead of the deprecated getProfileTimeline
+      const response = await ProgressService.getTimeline();
 
       if (response.error) {
         throw new Error(response.error);

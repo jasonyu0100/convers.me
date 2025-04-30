@@ -10,9 +10,11 @@ import { User } from '../types/shared';
 
 /**
  * Get the timeline data for the current user's profile
+ * @deprecated Use ProgressService.getTimeline() instead
  */
 export async function getProfileTimeline(): Promise {
-  return ApiClient.get<TimelineYear[]>('insights/timeline');
+  // Switch from deprecated insights/timeline to progress/timeline
+  return ApiClient.get<TimelineYear[]>('progress/timeline');
 }
 
 /**

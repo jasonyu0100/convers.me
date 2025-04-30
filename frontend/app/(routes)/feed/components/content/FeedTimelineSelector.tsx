@@ -1,4 +1,4 @@
-import { getProfileTimeline } from '@/app/services/profileService';
+import { ProgressService } from '@/app/services/progressService';
 import { TimelineYear } from '@/app/types/profile';
 import { useEffect, useState } from 'react';
 import { useFeed } from '../../hooks';
@@ -15,7 +15,7 @@ export function FeedTimelineSelector() {
     const loadTimelineData = async () => {
       setIsLoading(true);
       try {
-        const result = await getProfileTimeline();
+        const result = await ProgressService.getTimeline();
         if (result.data) {
           setTimelineData(result.data);
         }

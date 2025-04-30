@@ -42,7 +42,10 @@ function log(level: LogLevelType, message: string, ...args: any[]) {
 
   switch (level) {
     case LogLevel.ERROR:
-      console.error(`${prefix} ${message}`, ...args);
+      // Only log errors to console in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`${prefix} ${message}`, ...args);
+      }
       // Send errors to Sentry
       try {
         // Check if the first argument is an error object
@@ -59,18 +62,26 @@ function log(level: LogLevelType, message: string, ...args: any[]) {
         }
       } catch (e) {
         // Don't let Sentry reporting break the application
-        console.error('Failed to report error to Sentry', e);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to report error to Sentry', e);
+        }
       }
       break;
     case LogLevel.WARN:
-      console.warn(`${prefix} ${message}`, ...args);
+      if (process.env.NODE_ENV === 'development' || ENABLE_ALL_LOGS) {
+        console.warn(`${prefix} ${message}`, ...args);
+      }
       break;
     case LogLevel.DEBUG:
-      console.debug(`${prefix} ${message}`, ...args);
+      if (process.env.NODE_ENV === 'development' || ENABLE_DEBUG_LOGS) {
+        console.debug(`${prefix} ${message}`, ...args);
+      }
       break;
     case LogLevel.INFO:
     default:
-      console.log(`${prefix} ${message}`, ...args);
+      if (process.env.NODE_ENV === 'development' || ENABLE_ALL_LOGS) {
+        console.log(`${prefix} ${message}`, ...args);
+      }
   }
 }
 

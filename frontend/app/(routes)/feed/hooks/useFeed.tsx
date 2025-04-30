@@ -4,8 +4,7 @@ import { useApp } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
 import { createRouteContext } from '@/app/components/router/createRouteContext';
 import { useRouteComponent } from '@/app/components/router/useRouteComponent';
-import { MediaService, PostService, ProcessService } from '@/app/services';
-import { getProfileTimeline } from '@/app/services/profileService';
+import { MediaService, PostService, ProcessService, ProgressService } from '@/app/services';
 import { MediaUploadResponse } from '@/app/services/mediaService';
 import { MediaSchema, PostSchema, ProcessSchema, UserSchema } from '@/app/types/schema';
 import { useRouter } from 'next/navigation';
@@ -108,7 +107,7 @@ export function FeedProvider({ children }: FeedProviderProps) {
   const { data: timelineData = [] } = useQuery({
     queryKey: ['timeline'],
     queryFn: async () => {
-      const result = await getProfileTimeline();
+      const result = await ProgressService.getTimeline();
       if (result.error) {
         throw new Error(result.error);
       }
