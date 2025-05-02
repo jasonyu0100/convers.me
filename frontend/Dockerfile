@@ -36,8 +36,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Prune unnecessary files before building
 RUN pnpm fly:prune
 
-# Build application with simplified build command to troubleshoot DataCloneError
-RUN NEXT_TELEMETRY_DISABLED=1 pnpm fly:build
+# Build application
+RUN NEXT_TELEMETRY_DISABLED=1 \
+    pnpm fly:build
 
 # Production image
 FROM node:18-alpine AS runner
