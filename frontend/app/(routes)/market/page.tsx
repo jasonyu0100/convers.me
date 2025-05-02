@@ -2,8 +2,8 @@
 
 import { RoutePageTemplate } from '@/app/components/router';
 import { AppRoute } from '@/app/components/router/RouteTypes';
-import { LibraryView } from './LibraryView';
-import { LibraryProvider } from './hooks/useLibraryContext';
+import { MarketView } from './MarketView';
+import { MarketProvider } from './hooks/useMarketContext';
 
 /**
  * Library page component
@@ -11,8 +11,8 @@ import { LibraryProvider } from './hooks/useLibraryContext';
  */
 export default function LibraryPage() {
   return (
-    <LibraryProvider>
-      <RoutePageTemplate routeType={AppRoute.LIBRARY} Component={LibraryView} />
-    </LibraryProvider>
+    <MarketProvider>
+      <RoutePageTemplate routeType={AppRoute.MARKET} Component={MarketView} />
+    </MarketProvider>
   );
 }

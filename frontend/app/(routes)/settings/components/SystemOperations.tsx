@@ -1,7 +1,6 @@
 'use client';
 
 import AdminService from '@/app/services/adminService';
-import { LibraryService } from '@/app/services/libraryService';
 import { useState } from 'react';
 
 export default function SystemOperations() {
@@ -77,7 +76,7 @@ export default function SystemOperations() {
 
       <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
         <div className='rounded-lg border bg-white/80 p-6 shadow-sm'>
-          <h2 className='text-xl font-medium'>Initialize Database</h2>
+          <h2 className='font-medium text-xl'>Initialize Database</h2>
           <p className='mt-2 text-gray-600'>
             Initialize the database with sample data for development. This creates default users, topics, processes, events, and posts.
           </p>
@@ -93,7 +92,7 @@ export default function SystemOperations() {
         </div>
 
         <div className='rounded-lg border bg-white/80 p-6 shadow-sm'>
-          <h2 className='text-xl font-medium'>Reset Database</h2>
+          <h2 className='font-medium text-xl'>Reset Database</h2>
           <p className='mt-2 text-gray-600'>Reset the database to a clean state, removing all data except the admin user. This action cannot be undone.</p>
           <div className='mt-4'>
             <button
@@ -109,8 +108,8 @@ export default function SystemOperations() {
 
       {operationDetails && (
         <div className='rounded-lg border bg-white/80 p-6 shadow-sm'>
-          <h2 className='mb-4 text-xl font-medium'>Operation Details</h2>
-          <pre className='max-h-96 overflow-auto rounded bg-gray-100 p-4 text-sm whitespace-pre-wrap'>{JSON.stringify(operationDetails, null, 2)}</pre>
+          <h2 className='mb-4 font-medium text-xl'>Operation Details</h2>
+          <pre className='max-h-96 overflow-auto whitespace-pre-wrap rounded bg-gray-100 p-4 text-sm'>{JSON.stringify(operationDetails, null, 2)}</pre>
         </div>
       )}
     </div>

@@ -10,12 +10,12 @@ from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
 from api.schemas.admin import DatabaseInitResponse, DatabaseResetResponse, UserCreateAdmin, UserResponseAdmin, UserUpdateAdmin
-from api.schemas.library import LibraryInitializeResponse
+from api.schemas.market import LibraryInitializeResponse
 from api.security import get_current_user, get_password_hash
 from db.database import get_db
 from db.models import User
 from services.guest_initialization.service import GuestInitializationService
-from services.library.library_service import LibraryService
+from services.market.market_service import MarketService
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -88,8 +88,8 @@ async def initialize_database(
 
     # Initialize library data
     try:
-        library_service = LibraryService(db)
-        library_result = library_service.initialize_library()
+        market_service = MarketService(db)
+        library_result = market_service.initialize_library()
         if library_result.success:
             result["actions"].append(f"Initialized library with {library_result.collections_created} collections, {library_result.directories_created} directories, and {library_result.processes_created} processes")
         else:
@@ -396,8 +396,8 @@ async def initialize_library(
     Returns:
         Status of the initialization
     """
-    library_service = LibraryService(db)
-    result = library_service.initialize_library()
+    market_service = MarketService(db)
+    result = market_service.initialize_library()
 
     return result
 

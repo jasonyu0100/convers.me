@@ -6,7 +6,7 @@ export interface ProcessStep {
   description: string;
 }
 
-export interface LibraryProcess {
+export interface MarketProcess {
   id: string;
   title: string;
   description: string;
@@ -23,7 +23,7 @@ export interface ProcessDirectory {
   id: string;
   name: string;
   description: string;
-  processes: LibraryProcess[];
+  processes: MarketProcess[];
   color?: string;
   collectionId?: string; // Reference to the collection this directory belongs to
 }
@@ -48,7 +48,7 @@ export interface Category {
 }
 
 // Context type
-export interface LibraryContextType {
+export interface MarketContextType {
   isLoading: boolean;
   error: string | null;
   selectedCategory: string;

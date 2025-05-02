@@ -74,8 +74,8 @@ export function AppHeader({ route, title, searchPlaceholder, searchValue, isSear
         </button>
         <button
           className='rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700'
-          onClick={header.handleInsightsClick}
-          aria-label='Insights'
+          onClick={header.handleProgressClick}
+          aria-label='Progress'
         >
           <ChartBarIcon className='h-6 w-6' />
         </button>

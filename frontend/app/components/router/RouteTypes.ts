@@ -9,7 +9,7 @@ export enum AppRoute {
   LOGIN = 'login',
   REVIEW = 'review',
   FEED = 'feed',
-  LIBRARY = 'library',
+  MARKET = 'market',
   CALENDAR = 'calendar',
   PROFILE = 'profile',
   INSIGHT = 'insight',

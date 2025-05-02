@@ -71,7 +71,7 @@ export interface EffortMetric {
 /**
  * Available progress dashboard tabs
  */
-export type ProgressTabType = 'work' | 'time' | 'effort';
+export type ProgressTabType = 'progress' | 'time' | 'effort' | 'goals';
 
 export interface DailyBurnup {
   day: string;
@@ -82,6 +82,26 @@ export interface DailyBurnup {
 export interface WeeklyBurnup {
   week: string;
   progress: number;
+}
+
+/**
+ * Simple goal type for user's text-based goals with LLM evaluation
+ */
+export interface Goal {
+  id: string;
+  text: string; // The goal text as entered by the user
+  createdAt: string; // ISO date
+  active: boolean; // Whether the goal is currently active
+}
+
+/**
+ * LLM Evaluation of a goal
+ */
+export interface GoalEvaluation {
+  goalId: string;
+  weekOf: string; // ISO date of week start
+  score: number; // 0-10 adherence score
+  comment: string; // LLM's comment on goal adherence
 }
 
 export interface ProgressContextType {

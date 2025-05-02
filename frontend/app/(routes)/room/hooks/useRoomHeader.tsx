@@ -3,8 +3,8 @@
 import { useAppHeader } from '@/app/components/app/hooks';
 import { AppRoute } from '@/app/components/router';
 import { useRouteComponent } from '@/app/components/router/useRouteComponent';
+import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useRoom } from './useRoom';
 
 /**
@@ -23,7 +23,7 @@ export function useRoomHeader() {
       setLoading(true);
       // Navigate back to library
       console.log('Navigating back from room to library');
-      router.push('/library');
+      router.push('/market');
     } catch (error) {
       handleError(error);
     } finally {

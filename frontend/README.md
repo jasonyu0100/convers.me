@@ -61,7 +61,7 @@ The application includes the following main routes:
 - **/calendar**: View and manage events in month/week views
 - **/feed**: Activity feed with posts and updates
 - **/insight**: Analytics and performance metrics
-- **/library**: Content organization and discovery
+- **/market**: Content organization and discovery
 - **/live**: Real-time collaboration with AI assistance
 - **/login**: Authentication and user registration
 - **/plan**: Create and manage plans

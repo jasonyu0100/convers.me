@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { useLibrary } from '../../hooks/useLibrary';
+import { useMarket } from '../../hooks/useMarket';
 import { CollectionDetail } from './CollectionDetail';
 import { CollectionsList } from './CollectionsList';
 
@@ -24,11 +24,11 @@ function CollectionsHeader({ categoryName, isDetailView = false, onBack, onSave,
           )}
           {isDetailView ? (
             <>
-              <span className='mr-2 text-sm font-medium text-slate-600'>{categoryName} /</span>
-              <span className='text-sm font-medium text-slate-900'>{collectionTitle || 'Collections'}</span>
+              <span className='mr-2 font-medium text-sm text-slate-600'>{categoryName} /</span>
+              <span className='font-medium text-sm text-slate-900'>{collectionTitle || 'Collections'}</span>
             </>
           ) : (
-            <span className='text-sm font-medium text-slate-900'>{categoryName}</span>
+            <span className='font-medium text-sm text-slate-900'>{categoryName}</span>
           )}
         </div>
       </div>
@@ -40,7 +40,7 @@ function CollectionsHeader({ categoryName, isDetailView = false, onBack, onSave,
  * Main content component that displays either a list of collections or a collection detail
  */
 export function CollectionsView() {
-  const { collections, selectedCategory, categories, activeCollection, setSelectedCollection, saveCollection } = useLibrary();
+  const { collections, selectedCategory, categories, activeCollection, setSelectedCollection, saveCollection } = useMarket();
 
   // Get the selected category name
   const categoryName = categories.find((c) => c.id === selectedCategory)?.name || 'All Collections';

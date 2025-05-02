@@ -22,8 +22,8 @@ export function DirectoryCard({ process, onSelect }: DirectoryCardProps) {
       <div className='flex flex-1 flex-col p-3'>
         {/* Card header */}
         <div className='mb-1 flex items-center justify-between'>
-          <h3 className='truncate text-sm font-medium text-slate-800'>{process.title}</h3>
-          <span className='ml-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-800'>Template</span>
+          <h3 className='truncate font-medium text-sm text-slate-800'>{process.title}</h3>
+          <span className='ml-1 rounded-full bg-blue-100 px-1.5 py-0.5 font-medium text-xs text-blue-800'>Template</span>
         </div>
 
         {/* Description - grows to fill available space */}

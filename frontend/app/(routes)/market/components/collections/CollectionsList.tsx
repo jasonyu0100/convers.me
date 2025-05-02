@@ -2,7 +2,7 @@
 
 import { BookmarkIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { formatDistanceToNow } from 'date-fns';
-import { useLibrary } from '../../hooks/useLibrary';
+import { useMarket } from '../../hooks/useMarket';
 import { Collection } from '../../types';
 
 interface CollectionsListProps {
@@ -13,7 +13,7 @@ interface CollectionsListProps {
  * Component that displays a grid of collection cards
  */
 export function CollectionsList({ collections }: CollectionsListProps) {
-  const { setSelectedCollection, error, clearError, isLoading } = useLibrary();
+  const { setSelectedCollection, error, clearError, isLoading } = useMarket();
 
   // Format date to relative time
   const formatDate = (dateString: string) => {
@@ -35,7 +35,7 @@ export function CollectionsList({ collections }: CollectionsListProps) {
         <div className='mb-6 flex flex-col items-center justify-center rounded-lg border border-red-200 bg-red-50 p-8 text-center'>
           <h3 className='mb-2 text-lg font-semibold text-red-700'>Library Collections Error</h3>
           <p className='mb-4 text-red-500'>{error.message || 'Failed to fetch collections'}</p>
-          <button onClick={handleRetry} className='rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200'>
+          <button onClick={handleRetry} className='rounded-md bg-red-100 px-4 py-2 font-medium text-sm text-red-700 hover:bg-red-200'>
             Try Again
           </button>
         </div>
@@ -67,7 +67,7 @@ export function CollectionsList({ collections }: CollectionsListProps) {
               <div className='mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100'>
                 <PlusIcon className='h-6 w-6 text-slate-400' />
               </div>
-              <p className='text-sm font-medium text-slate-500'>Create New Collection</p>
+              <p className='font-medium text-sm text-slate-500'>Create New Collection</p>
             </div>
           </div>
         </>

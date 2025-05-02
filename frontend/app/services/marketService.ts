@@ -1,16 +1,16 @@
 /**
- * Library service for handling room and library-related operations
+ * Market service for handling room and market-related operations
  * This service uses Axios for API requests
  */
 
-import { ApiClient, ApiResult } from './api';
-import { TopicSchema } from '../types/schema';
-import { Collection, LibraryProcess, ProcessDirectory, Category } from '../(routes)/library/types';
-import { LIBRARY_ROUTES } from '../(routes)/library/utils/libraryRoutes';
+import { Collection, MarketProcess, ProcessDirectory } from '../(routes)/market/types';
+import { MARKET_ROUTES } from '../(routes)/market/utils/marketRoutes';
 import logger from '../lib/logger';
+import { TopicSchema } from '../types/schema';
+import { ApiClient } from './api';
 
 /**
- * Interface for a room/event in the library
+ * Interface for a room/event in the market
  */
 export interface RoomSchema {
   id: string;
@@ -92,9 +92,9 @@ export interface UpdateRoomData {
 }
 
 /**
- * Service for library-related operations
+ * Service for market-related operations
  */
-export class LibraryService {
+export class MarketService {
   /**
    * Get rooms with optional filtering
    * @param topic_ids - Filter by topic IDs (optional)
@@ -163,12 +163,12 @@ export class LibraryService {
   }
 
   /**
-   * Get all library rooms with topics for the user
-   * This is a convenience method for the library view
+   * Get all market rooms with topics for the user
+   * This is a convenience method for the market view
    * @returns Promise with API result containing rooms and topics
    */
-  static async getLibraryData(): Promise {
-    return ApiClient.get<{ rooms: RoomSchema[]; topics: TopicSchema[] }>('/library');
+  static async getMarketData(): Promise {
+    return ApiClient.get<{ rooms: RoomSchema[]; topics: TopicSchema[] }>('/market');
   }
 
   /**
@@ -180,7 +180,7 @@ export class LibraryService {
   }
 
   /**
-   * Get events for library by topic
+   * Get events for market by topic
    * @param topicIds - Array of topic IDs to filter by
    * @returns Promise with API result containing rooms/events
    */
@@ -228,7 +228,7 @@ export class LibraryService {
   }
 
   /**
-   * Get all collections available in the library
+   * Get all collections available in the market
    * @param category - Optional category to filter by
    * @returns Promise with API result containing collections data
    */
@@ -238,12 +238,12 @@ export class LibraryService {
       params.category = category;
     }
     try {
-      return await ApiClient.get<Collection[]>(LIBRARY_ROUTES.COLLECTIONS, { params });
+      return await ApiClient.get<Collection[]>(MARKET_ROUTES.COLLECTIONS, { params });
     } catch (error) {
       // Log the error with more context
-      logger.error('Failed to fetch library collections', {
+      logger.error('Failed to fetch market collections', {
         category,
-        endpoint: LIBRARY_ROUTES.COLLECTIONS,
+        endpoint: MARKET_ROUTES.COLLECTIONS,
         error,
       });
       // Re-throw to allow component error handling
@@ -258,12 +258,12 @@ export class LibraryService {
    */
   static async getCollectionById(collectionId: string): Promise {
     try {
-      return await ApiClient.get<Collection>(LIBRARY_ROUTES.COLLECTION(collectionId));
+      return await ApiClient.get<Collection>(MARKET_ROUTES.COLLECTION(collectionId));
     } catch (error) {
       // Log detailed error information
       logger.error('Failed to fetch collection by ID', {
         collectionId,
-        endpoint: LIBRARY_ROUTES.COLLECTION(collectionId),
+        endpoint: MARKET_ROUTES.COLLECTION(collectionId),
         error,
       });
       // Re-throw to allow component error handling
@@ -277,7 +277,7 @@ export class LibraryService {
    * @returns Promise with API result containing created collection data
    */
   static async createCollection(collection: Collection): Promise {
-    return ApiClient.post<Collection>(LIBRARY_ROUTES.COLLECTIONS, collection);
+    return ApiClient.post<Collection>(MARKET_ROUTES.COLLECTIONS, collection);
   }
 
   /**
@@ -287,7 +287,7 @@ export class LibraryService {
    * @returns Promise with API result containing updated collection data
    */
   static async updateCollection(collectionId: string, updateData: Partial): Promise {
-    return ApiClient.put<Collection>(LIBRARY_ROUTES.COLLECTION(collectionId), updateData);
+    return ApiClient.put<Collection>(MARKET_ROUTES.COLLECTION(collectionId), updateData);
   }
 
   /**
@@ -296,34 +296,34 @@ export class LibraryService {
    * @returns Promise with API result
    */
   static async deleteCollection(collectionId: string): Promise {
-    return ApiClient.delete<void>(LIBRARY_ROUTES.COLLECTION(collectionId));
+    return ApiClient.delete<void>(MARKET_ROUTES.COLLECTION(collectionId));
   }
 
   /**
-   * Save (duplicate) a collection to the user's library
+   * Save (duplicate) a collection to the user's market
    * This creates a complete copy including all directories, processes, steps and substeps
    * @param collectionId - Collection ID
    * @returns Promise with API result containing the duplicated collection
    */
   static async saveCollection(collectionId: string): Promise {
-    return ApiClient.post<Collection>(`/library/collections/${collectionId}/save`);
+    return ApiClient.post<Collection>(`/market/collections/${collectionId}/save`);
   }
 
   /**
    * Initialize site-wide collections from mock data
-   * This is typically used by administrators to set up the initial library
+   * This is typically used by administrators to set up the initial market
    * @returns Promise with API result
    */
   static async initializeCollections(): Promise {
-    return ApiClient.post<{ success: boolean; message: string }>(LIBRARY_ROUTES.INITIALIZE);
+    return ApiClient.post<{ success: boolean; message: string }>(MARKET_ROUTES.INITIALIZE);
   }
 
   /**
-   * Get all directories in the library
+   * Get all directories in the market
    * @returns Promise with API result containing directories data
    */
   static async getDirectories(): Promise {
-    return ApiClient.get<ProcessDirectory[]>(LIBRARY_ROUTES.DIRECTORIES);
+    return ApiClient.get<ProcessDirectory[]>(MARKET_ROUTES.DIRECTORIES);
   }
 
   /**
@@ -333,7 +333,7 @@ export class LibraryService {
    */
   static async getDirectoriesByCollectionId(collectionId: string): Promise {
     try {
-      return await ApiClient.get<ProcessDirectory[]>(`${LIBRARY_ROUTES.COLLECTIONS}/${collectionId}/directories`);
+      return await ApiClient.get<ProcessDirectory[]>(`${MARKET_ROUTES.COLLECTIONS}/${collectionId}/directories`);
     } catch (error) {
       // Log detailed error information
       logger.error('Failed to fetch directories by collection', {
@@ -346,14 +346,14 @@ export class LibraryService {
   }
 
   /**
-   * Get all processes in the library
+   * Get all processes in the market
    * @param category - Optional category to filter by
    * @returns Promise with API result containing processes data
    */
   static async getProcesses(category?: string): Promise {
     if (category && category !== 'all') {
-      return ApiClient.get<LibraryProcess[]>(LIBRARY_ROUTES.PROCESS_BY_CATEGORY(category));
+      return ApiClient.get<MarketProcess[]>(MARKET_ROUTES.PROCESS_BY_CATEGORY(category));
     }
-    return ApiClient.get<LibraryProcess[]>(LIBRARY_ROUTES.PROCESSES);
+    return ApiClient.get<MarketProcess[]>(MARKET_ROUTES.PROCESSES);
   }
 }

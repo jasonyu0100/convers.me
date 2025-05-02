@@ -31,7 +31,7 @@ export function useAppHeader(route: AppRoute) {
     case AppRoute.FEED:
       searchPlaceholder = 'Search conversations and people...';
       break;
-    case AppRoute.LIBRARY:
+    case AppRoute.MARKET:
       searchPlaceholder = 'Search your library...';
       break;
     case AppRoute.PROFILE:
@@ -54,9 +54,10 @@ export function useAppHeader(route: AppRoute) {
       isSearchVisible = false;
       break;
     case AppRoute.INSIGHT:
-      searchPlaceholder = 'Search cycles content...';
+    case AppRoute.PROGRESS:
+      searchPlaceholder = 'Search progress data...';
       break;
-    case AppRoute.LIBRARY:
+    case AppRoute.MARKET:
       searchPlaceholder = 'Search library collections...';
       break;
     default:
@@ -78,7 +79,7 @@ export function useAppHeader(route: AppRoute) {
         case AppRoute.FEED:
           // Search conversations and people
           break;
-        case AppRoute.LIBRARY:
+        case AppRoute.MARKET:
           // Search library content
           break;
         case AppRoute.PROFILE:
@@ -119,6 +120,7 @@ export function useAppHeader(route: AppRoute) {
     onSearchSubmit: handleSearchSubmit,
     handleProfileClick,
     handleSettingsClick,
-    handleInsightsClick: handleProgressClick,
+    handleInsightsClick: handleProgressClick, // Keeping for backward compatibility
+    handleProgressClick, // Adding direct access to progress handler
   };
 }

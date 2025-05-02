@@ -1,4 +1,4 @@
-"""Library service for managing collections, directories and processes."""
+"""Market service for managing collections, directories and processes."""
 
 import logging
 from datetime import datetime
@@ -8,14 +8,14 @@ from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from api.schemas.library import CollectionCreate, CollectionResponse, LibraryInitializeResponse, LibraryProcessResponse, ProcessDirectoryResponse
+from api.schemas.market import CollectionCreate, CollectionResponse, LibraryInitializeResponse, LibraryProcessResponse, ProcessDirectoryResponse
 from db.models import Collection, Directory, Process, Step, SubStep, User
 from services.common.base_service import BaseService
 
 logger = logging.getLogger(__name__)
 
-class LibraryService(BaseService):
-    """Service for library-related operations."""
+class MarketService(BaseService):
+    """Service for market-related operations."""
 
     def __init__(self, db: Session):
         """Initialize the service with DB session."""
@@ -630,12 +630,12 @@ class LibraryService(BaseService):
 
     def get_directories(self) -> List[ProcessDirectoryResponse]:
         """
-        Get all directories that are marked as library directories.
+        Get all directories that are marked as market directories.
 
         Returns:
             List of directories
         """
-        # Get directories that are part of the library
+        # Get directories that are part of the market
         directories = self.db.query(Directory).filter(
             Directory.directory_metadata.contains({"is_library": True})
         ).all()
@@ -750,7 +750,7 @@ class LibraryService(BaseService):
 
     def initialize_library(self) -> LibraryInitializeResponse:
         """
-        Initialize the library with predefined collections, directories, and processes.
+        Initialize the market with predefined collections, directories, and processes.
 
         Returns:
             Status of the initialization

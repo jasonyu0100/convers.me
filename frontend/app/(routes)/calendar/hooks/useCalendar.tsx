@@ -183,15 +183,16 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
   const monthName = currentDate.toLocaleString('default', { month: 'long' });
   const year = currentDate.getFullYear();
 
-  // Calculate date range for the current view
+  // Calculate date range for the current view with 7-day padding on each side
   const getDateRange = useCallback(() => {
     const month = currentDate.getMonth();
     const year = currentDate.getFullYear();
 
-    // Start date is first day of current month
+    // Start date is first day of current month minus 7 days for padding
     const startDate = new Date(year, month, 1);
+    startDate.setDate(startDate.getDate() - 7); // Add 7 days padding before month
 
-    // End date is last day of next month
+    // End date is last day of next month plus 7 days for padding
     let endMonth = month + 1;
     let endYear = year;
     if (endMonth > 11) {
@@ -199,6 +200,7 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
       endYear += 1;
     }
     const endDate = new Date(endYear, endMonth + 1, 0);
+    endDate.setDate(endDate.getDate() + 7); // Add 7 days padding after month
 
     // Format dates for API
     const startDateStr = startDate.toISOString().split('T')[0];
@@ -236,17 +238,21 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
       const month = currentDate.getMonth();
       const year = currentDate.getFullYear();
 
-      // Prefetch previous month
+      // Prefetch previous month with padding
       const prevMonth = month === 0 ? 11 : month - 1;
       const prevYear = month === 0 ? year - 1 : year;
       const prevStartDate = new Date(prevYear, prevMonth, 1);
+      prevStartDate.setDate(prevStartDate.getDate() - 7); // Add 7 days padding before
       const prevEndDate = new Date(year, month, 0);
+      prevEndDate.setDate(prevEndDate.getDate() + 7); // Add 7 days padding after
 
-      // Prefetch next month
+      // Prefetch next month with padding
       const nextMonth = month === 11 ? 0 : month + 1;
       const nextYear = month === 11 ? year + 1 : year;
       const nextStartDate = new Date(nextYear, nextMonth, 1);
+      nextStartDate.setDate(nextStartDate.getDate() - 7); // Add 7 days padding before
       const nextEndDate = new Date(nextYear, nextMonth + 1, 0);
+      nextEndDate.setDate(nextEndDate.getDate() + 7); // Add 7 days padding after
 
       // Format dates for API
       const prevStartDateStr = prevStartDate.toISOString().split('T')[0];

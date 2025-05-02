@@ -3,8 +3,9 @@ import { ErrorDisplay } from '@/app/components/ui/errors';
 import { PageLoading } from '@/app/components/ui/loading';
 import { ProgressTabType } from '../../types/progress';
 import { EffortTab } from './components/tabs/EffortTab';
+import { GoalsTab } from './components/tabs/GoalsTab';
+import { ProgressTab } from './components/tabs/ProgressTab';
 import { TimeTab } from './components/tabs/TimeTab';
-import { WorkTab } from './components/tabs/WorkTab';
 import { useProgress } from './hooks/useProgress';
 import { useProgressHeader } from './hooks/useProgressHeader';
 
@@ -15,7 +16,8 @@ function TabSelector() {
   const { selectedTab, setSelectedTab } = useProgress();
 
   const tabs: { id: ProgressTabType; label: string }[] = [
-    { id: 'work', label: 'Work' },
+    { id: 'goals', label: 'Goals' },
+    { id: 'progress', label: 'Progress' },
     { id: 'effort', label: 'Effort' },
     { id: 'time', label: 'Time' },
   ];
@@ -28,7 +30,7 @@ function TabSelector() {
             <button
               key={tab.id}
               onClick={() => setSelectedTab(tab.id)}
-              className={`border-t-2 px-4 py-4 text-base font-medium ${
+              className={`border-t-2 px-4 py-4 font-medium text-base ${
                 selectedTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
               }`}
             >
@@ -57,14 +59,16 @@ function ProgressBody() {
 
   const renderTabContent = () => {
     switch (selectedTab) {
-      case 'work':
-        return <WorkTab />;
+      case 'progress':
+        return <ProgressTab />;
       case 'time':
         return <TimeTab />;
       case 'effort':
         return <EffortTab />;
+      case 'goals':
+        return <GoalsTab />;
       default:
-        return <WorkTab />;
+        return <ProgressTab />;
     }
   };
 

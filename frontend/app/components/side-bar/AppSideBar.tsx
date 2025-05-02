@@ -27,7 +27,7 @@ export function SideBarButton({ children, onClick, label, title, isActive, hideL
       aria-pressed={isActive}
     >
       {children}
-      {!hideLabel && <span className='mt-1 text-xs font-medium'>{label}</span>}
+      {!hideLabel && <span className='mt-1 font-medium text-xs'>{label}</span>}
     </div>
   );
 }
@@ -96,22 +96,22 @@ const NAV_ITEMS: SideBarNavItem[] = [
     icon: <InboxIcon className='size-5' />,
   },
   {
+    label: 'Calendar',
+    route: '/calendar',
+    appRoute: AppRoute.CALENDAR,
+    icon: <CalendarDaysIcon className='size-5' />,
+  },
+  {
     label: 'Process',
     route: '/process',
     appRoute: AppRoute.PROCESS,
     icon: <MapIcon className='size-5' />,
   },
   {
-    label: 'Library',
-    route: '/library',
-    appRoute: AppRoute.LIBRARY,
+    label: 'Market',
+    route: '/market',
+    appRoute: AppRoute.MARKET,
     icon: <GlobeAltIcon className='size-5' />,
-  },
-  {
-    label: 'Calendar',
-    route: '/calendar',
-    appRoute: AppRoute.CALENDAR,
-    icon: <CalendarDaysIcon className='size-5' />,
   },
 ];
 
@@ -129,17 +129,17 @@ const NAV_ITEMS: SideBarNavItem[] = [
 export function AppSideBarView({ className = '' }: AppSideBarProps) {
   // Add a custom click handler for Process navigation
   const handleProcessClick = () => {
-    // If we're in the Library view, try to find and reset the LibraryContext
+    // If we're in the Market view, try to find and reset the MarketContext
     if (typeof window !== 'undefined') {
-      const libraryContext = (window as any).__LIBRARY_CONTEXT__;
-      if (libraryContext && typeof libraryContext.setSelectedCollection === 'function') {
-        libraryContext.setSelectedCollection(null);
+      const marketContext = (window as any).__MARKET_CONTEXT__;
+      if (marketContext && typeof marketContext.setSelectedCollection === 'function') {
+        marketContext.setSelectedCollection(null);
       }
     }
   };
 
   return (
-    <div className={`flex h-full w-[6rem] flex-shrink-0 flex-col items-center justify-between border-r-1 border-slate-200 py-4 ${className}`}>
+    <div className={`border-r-1 flex h-full w-[6rem] flex-shrink-0 flex-col items-center justify-between border-slate-200 py-4 ${className}`}>
       <div className='flex flex-col items-center space-y-[1rem]'>
         <AppSideBarToggle />
         {/* Render navigation items from the centralized array */}

@@ -1,13 +1,13 @@
 'use client';
 
+import logger from '@/app/lib/logger';
 import { BookmarkIcon, DocumentTextIcon, UserIcon } from '@heroicons/react/24/outline';
 import { BookmarkIcon as BookmarkSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { useState } from 'react';
-import { useLibrary } from '../../hooks/useLibrary';
+import { useMarket } from '../../hooks/useMarket';
 import { Collection } from '../../types';
 import { DirectoryCard } from '../cards/DirectoryCard';
-import logger from '@/app/lib/logger';
 
 interface CollectionDetailProps {
   collection: Collection;
@@ -17,7 +17,7 @@ interface CollectionDetailProps {
  * Component that displays the details of a collection including its directories and processes
  */
 export function CollectionDetail({ collection }: CollectionDetailProps) {
-  const { handleProcessSelect, saveCollection } = useLibrary();
+  const { handleProcessSelect, saveCollection } = useMarket();
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -79,7 +79,7 @@ export function CollectionDetail({ collection }: CollectionDetailProps) {
       <div className='mb-8'>
         <div className='mb-4 flex items-center justify-between'>
           <div className='flex items-center'>
-            <h1 className='text-xl font-medium text-slate-700'>{collection.title}</h1>
+            <h1 className='font-medium text-xl text-slate-700'>{collection.title}</h1>
             <button className='ml-2 text-slate-400 hover:text-yellow-500'>
               <StarIconSolid className='h-5 w-5 text-yellow-500' />
             </button>
@@ -88,7 +88,7 @@ export function CollectionDetail({ collection }: CollectionDetailProps) {
           <button
             onClick={handleSave}
             disabled={isSaved || isSaving}
-            className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 rounded-md px-4 py-2 font-medium text-sm transition-colors ${
               isSaved ? 'cursor-default bg-blue-50 text-blue-600' : isSaving ? 'cursor-wait text-slate-500' : 'text-blue-600 hover:bg-blue-50'
             }`}
           >
@@ -144,7 +144,7 @@ export function CollectionDetail({ collection }: CollectionDetailProps) {
               }
 
               return (
-                <span key={category} className={`rounded-full border px-2.5 py-1 text-xs font-medium ${colorClass}`}>
+                <span key={category} className={`rounded-full border px-2.5 py-1 font-medium text-xs ${colorClass}`}>
                   {category.replace(/-/g, ' ')}
                 </span>
               );
@@ -174,7 +174,7 @@ export function CollectionDetail({ collection }: CollectionDetailProps) {
       {/* Directories section */}
       <div className='mb-8'>
         <div className='mb-4'>
-          <h2 className='text-base font-medium text-slate-700'>Directories & Processes</h2>
+          <h2 className='font-medium text-base text-slate-700'>Directories & Processes</h2>
         </div>
 
         <div className='space-y-6'>

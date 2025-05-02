@@ -2,12 +2,12 @@ import { AreaChart, BarChart } from '@/app/components/ui/charts';
 import { useProgress } from '../../hooks/useProgress';
 
 /**
- * Work pulse component - shows the rhythm of work throughout the week
+ * Progress pulse component - shows the rhythm of work throughout the week
  */
-function WorkPulse() {
+function ProgressPulse() {
   const { dailyActivities, weeklyProgress, quarterlyProgress, selectedTimeFrame } = useProgress();
 
-  // Create data for work pulse chart with null checks
+  // Create data for progress pulse chart with null checks
   const getPulseData = () => {
     if (selectedTimeFrame === 'week') {
       // Ensure dailyActivities exists and is an array
@@ -67,7 +67,7 @@ function WorkPulse() {
     <div className='flex h-full flex-col rounded-lg border border-gray-200 bg-white/80 p-6'>
       <div className='flex flex-col items-start justify-between md:flex-row md:items-center'>
         <div>
-          <h3 className='font-medium text-lg text-gray-800'>{selectedTimeFrame === 'week' ? 'Work Rhythm' : 'Quarterly Work Rhythm'}</h3>
+          <h3 className='font-medium text-lg text-gray-800'>{selectedTimeFrame === 'week' ? 'Progress Rhythm' : 'Quarterly Progress Rhythm'}</h3>
           <p className='text-sm text-gray-600'>Steps completed over time with efficiency coloring</p>
         </div>
 
@@ -114,9 +114,9 @@ function WorkPulse() {
 }
 
 /**
- * Work progress burnup chart component
+ * Progress burnup chart component
  */
-function WorkBurnup() {
+function ProgressBurnup() {
   const { weeklyProgress, quarterlyProgress, selectedTimeFrame, dailyBurnup, quarterlyBurnup } = useProgress();
 
   // Create data for the burnup chart based on selected time frame with null checks
@@ -316,13 +316,13 @@ function ProcessProgressBox() {
 }
 
 /**
- * Work tab component
+ * Progress tab component
  */
-export function WorkTab() {
+export function ProgressTab() {
   return (
     <div className='flex h-full flex-col'>
       <div className='mb-5 grid grid-cols-1 gap-5 md:grid-cols-2'>
-        <WorkPulse />
+        <ProgressPulse />
         <ProcessProgressBox />
       </div>
     </div>

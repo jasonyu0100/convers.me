@@ -1,4 +1,10 @@
-"""Progress routes for the API."""
+"""Progress routes for the API.
+
+Tab types:
+- progress: Overall progress metrics (formerly 'work')
+- time: Time allocation metrics
+- effort: Effort distribution metrics
+"""
 
 import logging
 from typing import Annotated, Any, Dict

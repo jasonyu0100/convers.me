@@ -1,18 +1,18 @@
 import { AppHeader } from '@/app/components/app/AppHeader';
 import { ErrorDisplay } from '@/app/components/ui/errors';
 import { PageLoading } from '@/app/components/ui/loading';
-import { LibrarySidebar, LibraryContent } from './components';
-import { useLibrary } from './hooks/useLibrary';
-import { useLibraryHeader } from './hooks/useLibraryHeader';
+import { MarketContent, MarketSidebar } from './components';
+import { useMarket } from './hooks/useMarket';
+import { useMarketHeader } from './hooks/useMarketHeader';
 
 /**
  * Main view component for the Library section
  * Handles the layout and error/loading states for the library module
  */
-export function LibraryView() {
+export function MarketView() {
   // Get header configuration from the library header hook
-  const headerProps = useLibraryHeader();
-  const { isLoading, error, clearError } = useLibrary();
+  const headerProps = useMarketHeader();
+  const { isLoading, error, clearError } = useMarket();
 
   // Handle loading state
   if (isLoading) {
@@ -51,8 +51,8 @@ export function LibraryView() {
 
       {/* Main content area with sidebar and library content */}
       <div className='flex flex-1 overflow-hidden'>
-        <LibrarySidebar />
-        <LibraryContent />
+        <MarketSidebar />
+        <MarketContent />
       </div>
     </div>
   );

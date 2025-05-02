@@ -1,17 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useLibraryContext } from './useLibraryContext';
-import { CATEGORIES } from '../utils/libraryRoutes';
-import { Collection, LibraryProcess } from '../types';
-import { LibraryService } from '@/app/services/libraryService';
 import logger from '@/app/lib/logger';
+import { MarketService } from '@/app/services/marketService';
+import { useEffect, useState } from 'react';
+import { Collection } from '../types';
+import { CATEGORIES } from '../utils/marketRoutes';
+import { useMarketContext } from './useMarketContext';
 
 /**
- * Custom hook for accessing and manipulating library data
+ * Custom hook for accessing and manipulating market data
  * Provides access to collections, categories, and active selections
  */
-export function useLibrary() {
+export function useMarket() {
   const {
     isLoading: contextLoading,
     error: contextError,
@@ -22,7 +22,7 @@ export function useLibrary() {
     handleProcessSelect,
     saveCollection,
     clearError: clearContextError,
-  } = useLibraryContext();
+  } = useMarketContext();
 
   const [allCollections, setAllCollections] = useState<Collection[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -38,7 +38,7 @@ export function useLibrary() {
 
       try {
         // Fetch all collections from API
-        const response = await LibraryService.getCollections(undefined);
+        const response = await MarketService.getCollections(undefined);
 
         if (response.data) {
           // Store all collections
@@ -58,7 +58,7 @@ export function useLibrary() {
         } else {
           // Create a more detailed error with context
           const errorMessage = response.error || 'Failed to fetch collections';
-          const contextError = new Error(`Library Collections Error: ${errorMessage}`);
+          const contextError = new Error(`Market Collections Error: ${errorMessage}`);
           // Add metadata to error object
           (contextError as any).context = {
             status: response.status,
@@ -71,7 +71,7 @@ export function useLibrary() {
           setCollections([]);
 
           // Log to application logger for tracking
-          logger.error('Library collections fetch failed', {
+          logger.error('Market collections fetch failed', {
             status: response.status,
             error: response.error,
             originalError: response.originalError,
@@ -80,7 +80,7 @@ export function useLibrary() {
       } catch (err) {
         // Handle unexpected errors with more context
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        const contextError = new Error(`Library Collections Error: ${errorMessage}`);
+        const contextError = new Error(`Market Collections Error: ${errorMessage}`);
 
         // Add context data to error object
         (contextError as any).context = {
@@ -93,7 +93,7 @@ export function useLibrary() {
         setAllCollections([]);
         setCollections([]);
 
-        logger.error('Unexpected error fetching library collections', {
+        logger.error('Unexpected error fetching market collections', {
           error: err,
         });
       } finally {
@@ -142,14 +142,14 @@ export function useLibrary() {
 
       try {
         // Fetch collection and its associated directories
-        const collectionResponse = await LibraryService.getCollectionById(selectedCollection);
+        const collectionResponse = await MarketService.getCollectionById(selectedCollection);
 
         if (collectionResponse.data) {
           const collection = collectionResponse.data;
 
           try {
             // Now fetch directories associated with this collection
-            const directoriesResponse = await LibraryService.getDirectoriesByCollectionId(selectedCollection);
+            const directoriesResponse = await MarketService.getDirectoriesByCollectionId(selectedCollection);
 
             if (directoriesResponse.data) {
               // Update the collection with the fetched directories
@@ -179,7 +179,7 @@ export function useLibrary() {
         } else {
           // Create a more detailed error with context
           const errorMessage = collectionResponse.error || 'Failed to fetch collection';
-          const contextError = new Error(`Library Collections Error: ${errorMessage}`);
+          const contextError = new Error(`Market Collections Error: ${errorMessage}`);
 
           // Add metadata to error object
           (contextError as any).context = {
@@ -192,7 +192,7 @@ export function useLibrary() {
           setActiveCollection(null);
 
           // Log to application logger for tracking
-          logger.error('Library collection fetch failed', {
+          logger.error('Market collection fetch failed', {
             collectionId: selectedCollection,
             status: collectionResponse.status,
             error: collectionResponse.error,
@@ -202,7 +202,7 @@ export function useLibrary() {
       } catch (err) {
         // Handle unexpected errors with more context
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        const contextError = new Error(`Library Collections Error: ${errorMessage}`);
+        const contextError = new Error(`Market Collections Error: ${errorMessage}`);
 
         // Add context data to error object
         (contextError as any).context = {
@@ -214,7 +214,7 @@ export function useLibrary() {
         setError(contextError);
         setActiveCollection(null);
 
-        logger.error('Unexpected error fetching library collection', {
+        logger.error('Unexpected error fetching market collection', {
           collectionId: selectedCollection,
           error: err,
         });

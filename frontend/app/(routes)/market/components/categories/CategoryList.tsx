@@ -1,13 +1,13 @@
 'use client';
 
 import { CheckIcon } from '@heroicons/react/24/outline';
-import { useLibrary } from '../../hooks/useLibrary';
+import { useMarket } from '../../hooks/useMarket';
 
 /**
  * Component that displays a list of categories for filtering library collections
  */
 export function CategoryList() {
-  const { categories, selectedCategory, setSelectedCategory, setSelectedCollection, collections, isLoading } = useLibrary();
+  const { categories, selectedCategory, setSelectedCategory, setSelectedCollection, collections, isLoading } = useMarket();
 
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -43,7 +43,7 @@ export function CategoryList() {
 
   return (
     <div className='overflow-y-auto'>
-      <h2 className='mb-3 text-sm font-medium tracking-wider text-gray-500 uppercase'>Categories</h2>
+      <h2 className='mb-3 font-medium text-sm uppercase tracking-wider text-gray-500'>Categories</h2>
       <div className='space-y-1'>
         {categories.map((category) => (
           <button

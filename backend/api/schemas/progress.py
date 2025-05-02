@@ -17,9 +17,10 @@ class SchemaTimeFrameType(str, Enum):
 class SchemaProgressTabType(str, Enum):
     """Progress tab type enum."""
 
-    WORK = "work"
+    PROGRESS = "progress"
     TIME = "time"
     EFFORT = "effort"
+    GOALS = "goals"
 
 
 class SchemaPerformanceMetric(APIBaseModel):
@@ -112,6 +113,24 @@ class SchemaWeeklyBurnup(APIBaseModel):
     progress: int
 
 
+class SchemaGoal(APIBaseModel):
+    """Simple goal schema."""
+
+    id: str
+    text: str
+    createdAt: str  # ISO date
+    active: bool
+
+
+class SchemaGoalEvaluation(APIBaseModel):
+    """Goal evaluation schema."""
+
+    goalId: str
+    weekOf: str  # ISO date of week start
+    score: int  # 0-10 adherence score
+    comment: str
+
+
 class SchemaProgressResponse(APIBaseModel):
     """Progress response schema."""
 
@@ -125,6 +144,8 @@ class SchemaProgressResponse(APIBaseModel):
     effortDistribution: List[SchemaEffortMetric] = Field()
     dailyBurnup: List[SchemaDailyBurnup] = Field()
     quarterlyBurnup: List[SchemaWeeklyBurnup] = Field()
+    goals: List[SchemaGoal] = Field(default_factory=list)
+    goalEvaluations: List[SchemaGoalEvaluation] = Field(default_factory=list)
     progressMetadata: Optional[Dict[str, Any]] = Field(default=None)
 
 

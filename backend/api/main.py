@@ -22,8 +22,8 @@ from api.routes import (
     directories,
     events,
     feed,
-    library,
     live,
+    market,
     media,
     notifications,
     plan,
@@ -438,7 +438,7 @@ app.include_router(progress.router)  # New progress router
 app.include_router(reports.router)
 app.include_router(live.router)  # Live router for handling real-time conversation contexts
 app.include_router(plan.router)
-app.include_router(library.router)  # Library router for collections and processes
+app.include_router(market.router)  # Library router for collections and processes
 
 
 @app.get("/")

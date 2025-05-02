@@ -1,4 +1,3 @@
-import { PieChart } from '@/app/components/ui/charts';
 import { useProgress } from '../../hooks/useProgress';
 
 /**
@@ -23,16 +22,12 @@ function EffortDistribution() {
 
   return (
     <div className='flex h-full flex-col rounded-lg border border-gray-200 bg-white/80 p-6'>
-      <h3 className='text-lg font-medium text-gray-800'>Effort Distribution</h3>
+      <h3 className='font-medium text-lg text-gray-800'>Effort Distribution</h3>
       <p className='text-sm text-gray-600'>How your effort is distributed across different categories</p>
 
       <div className='mt-4 flex-1'>
         {chartData.length > 0 ? (
-          <div className='grid h-full grid-cols-1 gap-4 md:grid-cols-2'>
-            <div className='flex items-center justify-center'>
-              <PieChart data={chartData} height='100%' donut={true} showLabels={true} showLegend={false} labelPosition='inside' />
-            </div>
-
+          <div className='grid h-full grid-cols-1 gap-4'>
             <div className='flex flex-col justify-center space-y-4'>
               {chartData
                 .sort((a, b) => b.value - a.value)
@@ -41,7 +36,7 @@ function EffortDistribution() {
                     <div className='flex items-center justify-between'>
                       <div className='flex items-center'>
                         <div className='mr-2 h-3 w-3 rounded-full' style={{ backgroundColor: item.color }}></div>
-                        <span className='text-sm font-medium text-gray-700'>{item.label}</span>
+                        <span className='font-medium text-sm text-gray-700'>{item.label}</span>
                       </div>
                       <span className='text-sm font-semibold'>{item.value} points</span>
                     </div>
@@ -148,7 +143,7 @@ function ActivityBreakdown() {
 
   return (
     <div className='flex h-full flex-col rounded-lg border border-gray-200 bg-white/80 p-6'>
-      <h3 className='text-lg font-medium text-gray-800'>Activity Summary</h3>
+      <h3 className='font-medium text-lg text-gray-800'>Activity Summary</h3>
       <p className='text-sm text-gray-600'>Key metrics about your activities this period</p>
 
       <div className='mt-6 grid flex-1 grid-cols-1 gap-6 md:grid-cols-2'>
@@ -157,7 +152,7 @@ function ActivityBreakdown() {
             <div className='mr-4 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md bg-white shadow-sm'>{stat.icon}</div>
             <div>
               <p className='font-medium'>{stat.title}</p>
-              <p className='text-2xl font-bold'>{stat.value}</p>
+              <p className='font-bold text-2xl'>{stat.value}</p>
               <p className='mt-1 text-xs opacity-80'>{stat.description}</p>
             </div>
           </div>

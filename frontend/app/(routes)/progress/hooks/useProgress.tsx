@@ -9,10 +9,10 @@ import {
   DailyActivity,
   DailyBurnup,
   EffortMetric,
-  ProgressContextType,
   PerformanceMetric,
-  ProgressTabType,
   ProcessMetric,
+  ProgressContextType,
+  ProgressTabType,
   QuarterlyProgress,
   TimeFrameType,
   WeeklyBurnup,
@@ -33,7 +33,7 @@ const { Provider, useRouteContext } = createRouteContext<ProgressContextType>('P
   dailyBurnup: [] as DailyBurnup[],
   quarterlyBurnup: [] as WeeklyBurnup[],
   selectedTimeFrame: 'week',
-  selectedTab: 'work',
+  selectedTab: 'progress',
   setSelectedTab: () => {},
   selectedTag: null,
   setSelectedTag: () => {},
@@ -51,7 +51,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const selectedTimeFrame: TimeFrameType = 'week';
 
   // Tab selection
-  const [selectedTab, setSelectedTab] = useState<ProgressTabType>('work');
+  const [selectedTab, setSelectedTab] = useState<ProgressTabType>('goals');
 
   // Tag filter
   const [selectedTag, setSelectedTag] = useState<string | null>(null);

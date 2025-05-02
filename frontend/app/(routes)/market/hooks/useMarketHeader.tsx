@@ -1,14 +1,14 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useLibrary } from './useLibrary';
+import { useMarket } from './useMarket';
 
 /**
  * Custom hook for managing library header functionality
  * Provides search capabilities and dynamic title based on the selected content
  */
-export function useLibraryHeader() {
-  const { selectedCategory, setSelectedCategory, categories, selectedCollection, activeCollection } = useLibrary();
+export function useMarketHeader() {
+  const { selectedCategory, setSelectedCategory, categories, selectedCollection, activeCollection } = useMarket();
 
   // Search state
   const [searchValue, setSearchValue] = useState('');

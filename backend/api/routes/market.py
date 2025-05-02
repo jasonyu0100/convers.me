@@ -1,4 +1,4 @@
-"""Library routes for the API."""
+"""Market routes for the API."""
 
 import logging
 from typing import Annotated, List, Optional
@@ -6,16 +6,16 @@ from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from api.schemas.library import CollectionCreate, CollectionResponse, LibraryProcessResponse, ProcessDirectoryResponse
+from api.schemas.market import CollectionCreate, CollectionResponse, LibraryProcessResponse, ProcessDirectoryResponse
 from api.security import get_current_user
 from db.database import get_db
 from db.models import User
-from services.library.library_service import LibraryService
+from services.market.market_service import MarketService
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/library", tags=["library"])
+router = APIRouter(prefix="/market", tags=["market"])
 
 
 @router.get("/collections", response_model=List[CollectionResponse])
@@ -27,7 +27,7 @@ async def get_collections(
     limit: int = Query(100, ge=1, le=1000, description="Maximum number of records to return"),
 ) -> List[CollectionResponse]:
     """
-    Get all collections from the library.
+    Get all collections from the market.
 
     Args:
         current_user: The authenticated user
@@ -37,10 +37,10 @@ async def get_collections(
         limit: Maximum number of records to return
 
     Returns:
-        List of library collections
+        List of market collections
     """
-    library_service = LibraryService(db)
-    collections = library_service.get_collections(category=category, skip=skip, limit=limit)
+    market_service = MarketService(db)
+    collections = market_service.get_collections(category=category, skip=skip, limit=limit)
     return collections
 
 
@@ -64,8 +64,8 @@ async def get_collection(
     Raises:
         HTTPException: If collection not found
     """
-    library_service = LibraryService(db)
-    collection = library_service.get_collection_by_id(collection_id)
+    market_service = MarketService(db)
+    collection = market_service.get_collection_by_id(collection_id)
 
     if not collection:
         raise HTTPException(
@@ -93,8 +93,8 @@ async def create_collection(
     Returns:
         The created collection
     """
-    library_service = LibraryService(db)
-    created_collection = library_service.create_collection(collection, current_user.id)
+    market_service = MarketService(db)
+    created_collection = market_service.create_collection(collection, current_user.id)
     return created_collection
 
 
@@ -115,10 +115,10 @@ async def delete_collection(
     Raises:
         HTTPException: If collection not found
     """
-    library_service = LibraryService(db)
+    market_service = MarketService(db)
 
     # Check if the collection exists
-    collection = library_service.get_collection_by_id(collection_id)
+    collection = market_service.get_collection_by_id(collection_id)
     if not collection:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -126,7 +126,7 @@ async def delete_collection(
         )
 
     # Delete the collection
-    library_service.delete_collection(collection_id)
+    market_service.delete_collection(collection_id)
 
 
 @router.get("/directories", response_model=List[ProcessDirectoryResponse])
@@ -144,8 +144,8 @@ async def get_directories(
     Returns:
         List of directories
     """
-    library_service = LibraryService(db)
-    directories = library_service.get_directories()
+    market_service = MarketService(db)
+    directories = market_service.get_directories()
     return directories
 
 
@@ -166,8 +166,8 @@ async def get_processes(
     Returns:
         List of processes
     """
-    library_service = LibraryService(db)
-    processes = library_service.get_processes(category=category)
+    market_service = MarketService(db)
+    processes = market_service.get_processes(category=category)
     return processes
 
 
@@ -191,10 +191,10 @@ async def get_collection_directories(
     Raises:
         HTTPException: If collection not found
     """
-    library_service = LibraryService(db)
+    market_service = MarketService(db)
 
     # Check if the collection exists
-    collection_response = library_service.get_collection_by_id(collection_id)
+    collection_response = market_service.get_collection_by_id(collection_id)
     if not collection_response:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -212,10 +212,10 @@ async def save_collection(
     db: Session = Depends(get_db),
 ) -> CollectionResponse:
     """
-    Save a collection to the user's library.
+    Save a collection to the user's market.
     This endpoint:
     1. Increments the original collection's save count
-    2. Creates a duplicate of the collection in the user's library with all:
+    2. Creates a duplicate of the collection in the user's market with all:
        - Directories
        - Process templates
        - Steps
@@ -232,10 +232,10 @@ async def save_collection(
     Raises:
         HTTPException: If collection not found
     """
-    library_service = LibraryService(db)
+    market_service = MarketService(db)
 
     # Get the original collection
-    original_collection = library_service.get_collection_by_id(collection_id)
+    original_collection = market_service.get_collection_by_id(collection_id)
     if not original_collection:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -243,8 +243,8 @@ async def save_collection(
         )
 
     # Increment the save count on the original collection
-    library_service.increment_collection_saves(collection_id)
+    market_service.increment_collection_saves(collection_id)
 
     # Create a duplicate of the collection for the user
-    duplicated_collection = library_service.duplicate_collection(collection_id, current_user.id)
+    duplicated_collection = market_service.duplicate_collection(collection_id, current_user.id)
     return duplicated_collection
