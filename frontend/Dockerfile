@@ -10,10 +10,10 @@ COPY package.json package-lock.json* ./
 # Convert npm to pnpm format
 RUN pnpm import
 
-# Set up pnpm caching and install dependencies with production flag
-# This improves build speed by using a persistent cache and skipping dev dependencies
+# Set up pnpm caching and install dependencies including dev dependencies
+# We need devDependencies for the build process (autoprefixer etc.)
 RUN --mount=type=cache,target=/root/.pnpm-store \
-    pnpm install --frozen-lockfile --production
+    pnpm install --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM node:18-alpine AS builder

@@ -97,7 +97,6 @@ export function MarketProvider({ children }: MarketProviderProps) {
     saveCollection,
     clearError,
   };
-
   return <MarketContext.Provider value={contextValue}>{children}</MarketContext.Provider>;
 }
 

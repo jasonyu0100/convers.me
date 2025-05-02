@@ -2,7 +2,6 @@
 
 import logging
 import os
-import subprocess
 from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -43,19 +42,11 @@ async def initialize_database(
     if os.environ.get("DEBUG", "False").lower() != "true":
         return {"success": False, "message": "This endpoint is only available in development mode"}
 
-    # Run migrations if no tables exist
+    # Check if tables exist
     if not tables:
-        try:
-            # Use alembic to run migrations
-            alembic_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "alembic.ini")
-            subprocess.run(["alembic", "-c", alembic_path, "upgrade", "head"], check=True)
-            result["actions"].append("Applied database migrations")
-        except subprocess.CalledProcessError as e:
-            result["success"] = False
-            result["errors"].append(f"Failed to run migrations: {str(e)}")
-            return result
+        result["actions"].append("No database tables found")
     else:
-        result["actions"].append("Database tables already exist, skipping migrations")
+        result["actions"].append("Database tables already exist")
 
     # Create default admin user if none exists
     admin_user = db.query(User).filter(User.email == "admin@convers.me").first()
