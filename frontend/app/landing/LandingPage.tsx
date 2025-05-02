@@ -4,35 +4,12 @@ import { Logo } from '@/app/components/ui/logo';
 import { ProcessProgress } from '@/app/components/ui/process';
 import { PlayIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 export function LandingPage() {
   const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('connect');
-  const demoRef = useRef(null);
-  const demoImages = ['/demo/demo-2.png', '/demo/demo-3.png', '/demo/demo-4.png'];
-
-  // Auto-rotate images
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % demoImages.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Reference to the Process Planning section
-  const processRoutingRef = useRef(null);
-
-  // Scroll to Process Planning section
-  const scrollToProcessRouting = () => {
-    processRoutingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  // Scroll to demo section
-  const scrollToDemo = () => {
-    demoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
 
   const features = {
     connect: {
@@ -79,14 +56,14 @@ export function LandingPage() {
           </div>
 
           <nav className='flex items-center space-x-2 md:space-x-6'>
-            <button onClick={() => router.push('/about')} className='text-sm font-medium text-blue-700 hover:text-blue-800'>
-              About
+            <button onClick={() => router.push('/pilot')} className='hidden text-sm font-medium text-blue-700 hover:text-blue-800 md:block'>
+              Pilot Beta
             </button>
-            <button onClick={() => router.push('/features')} className='hidden text-sm font-medium text-blue-700 hover:text-blue-800 md:block'>
-              Features
+            <button onClick={() => router.push('/about')} className='text-sm font-medium text-blue-700 hover:text-blue-800'>
+              About Us
             </button>
             <button onClick={() => router.push('/login')} className='text-sm font-medium text-blue-700 hover:text-blue-800'>
-              Sign In
+              Portal
             </button>
             <button
               onClick={() => window.open('https://calendly.com/jasonyu0100/15min', '_blank')}
@@ -124,9 +101,7 @@ export function LandingPage() {
           {/* Hero CTA buttons */}
           <div className='mt-4 flex flex-col justify-center space-y-5 sm:flex-row sm:space-y-0 sm:space-x-8'>
             <button
-              onClick={() => {
-                scrollToProcessRouting();
-              }}
+              onClick={() => window.open('https://calendly.com/jasonyu0100/15min', '_blank')}
               className='group rounded-full bg-gradient-to-r from-blue-500 to-blue-700 px-8 py-4 text-lg font-bold text-white shadow-lg transition-all hover:from-blue-600 hover:to-blue-800 hover:shadow-xl md:px-10 md:py-5'
             >
               Learn More
@@ -167,21 +142,21 @@ export function LandingPage() {
             onClick={() => router.push('/about')}
           >
             <img
-              src='/demo/demo-2.png'
+              src='/demo/demo.png'
               alt='Process Intelligence Platform'
               className='w-full object-cover transition-transform duration-500 group-hover:scale-105'
             />
             <div className='absolute inset-0 flex items-end bg-gradient-to-t from-blue-600/60 to-white/20'>
               <div className='p-6 md:p-8'>
-                <h3 className='mb-2 text-2xl font-bold text-white md:text-3xl'>The Future of Process Management</h3>
-                <p className='mb-4 text-white/90'>How dynamic process planning can upgrade your flow.</p>
+                <h3 className='mb-2 text-2xl font-bold text-white md:text-3xl'>Automation with a Human Touch</h3>
+                <p className='mb-4 text-white/90'>How dynamic processes can improve your flow</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section ref={processRoutingRef} className='relative z-10 py-24 md:py-32'>
+      <section className='relative z-10 py-24 md:py-32'>
         <div className='mx-auto max-w-6xl px-4 md:px-8'>
           <h2 className='mb-6 text-center text-3xl font-bold text-blue-700 md:text-4xl'>Weekly Planning, Perfected</h2>
           <p className='mx-auto mb-16 max-w-3xl text-center text-lg text-blue-600'>
