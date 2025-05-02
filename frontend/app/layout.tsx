@@ -1,6 +1,6 @@
 'use client';
 import { Analytics } from '@vercel/analytics/react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import { useEffect } from 'react';
@@ -8,6 +8,7 @@ import './globals.css';
 import { ClientLayout } from './layouts/ClientLayout';
 import { isDevelopment } from './lib/utils';
 import { metadata as siteMetadata } from './metadata';
+import { SearchParamsProvider, AnalyticsWrapper } from './components/search-params';
 
 /**
  * Root layout for the entire application
@@ -34,23 +35,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     if (!posthog) return;
   }, []);
 
-  // Track pageviews with the App Router
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    // Track page views
-    if (pathname) {
-      let url = window.origin + pathname;
-      if (searchParams?.toString()) {
-        url = `${url}?${searchParams.toString()}`;
-      }
-      posthog.capture('$pageview', {
-        $current_url: url,
-      });
-    }
-  }, [pathname, searchParams]);
-
   return (
     <html lang='en'>
       <head>
@@ -73,7 +57,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Only enable Analytics in production */}
         {!isDevelopment() && <Analytics mode='production' debug={false} />}
         <PostHogProvider client={posthog}>
-          <ClientLayout>{children}</ClientLayout>
+          <SearchParamsProvider>
+            <ClientLayout>
+              {/* Wrap children with analytics */}
+              <AnalyticsWrapper>{children}</AnalyticsWrapper>
+            </ClientLayout>
+          </SearchParamsProvider>
         </PostHogProvider>
       </body>
     </html>

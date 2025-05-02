@@ -1,7 +1,7 @@
-import { withSentryConfig } from '@sentry/nextjs';
-import type { NextConfig } from 'next';
+const { withSentryConfig } = require('@sentry/nextjs');
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   eslint: {
     // This disables ESLint during build
     ignoreDuringBuilds: true,
@@ -12,14 +12,8 @@ const nextConfig: NextConfig = {
   },
   // Set output to standalone for Docker deployment
   output: 'standalone',
-  devIndicators: false,
 
   // Performance optimizations
-  compiler: {
-    // Enable React optimizations
-    reactRemoveProperties: process.env.NODE_ENV === 'production',
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
 
   // Only enable React strict mode in production to improve dev performance
   reactStrictMode: process.env.NODE_ENV === 'production',
@@ -30,8 +24,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['@heroicons/react', 'date-fns', 'recharts', 'framer-motion'],
     // Improve module resolution performance
     serverMinification: true,
-    // Improve bundle splitting
-    isrMemoryCacheSize: 50, // 50MB cache size for ISR
     // Skip duplicate work
     workerThreads: false,
   },
@@ -70,7 +62,7 @@ const nextConfig: NextConfig = {
   skipTrailingSlashRedirect: true,
 };
 
-export default withSentryConfig(
+module.exports = withSentryConfig(
   withSentryConfig(
     nextConfig,
     {
