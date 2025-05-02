@@ -57,7 +57,7 @@ export function LandingPage() {
 
           <nav className='flex items-center space-x-2 md:space-x-6'>
             <button onClick={() => router.push('/pilot')} className='hidden text-sm font-medium text-blue-700 hover:text-blue-800 md:block'>
-              Pilot Beta
+              Beta Access
             </button>
             <button onClick={() => router.push('/about')} className='text-sm font-medium text-blue-700 hover:text-blue-800'>
               About Us
