@@ -122,6 +122,7 @@ uvicorn app:app --reload --log-level=info
 
 # Then initialize the database by making a POST request to:
 curl -X POST http://localhost:8000/admin/initialize
+curl -X POST http://localhost:8000/admin/initialize-library
 ```
 
 This will:
