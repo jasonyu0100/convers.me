@@ -1,32 +1,28 @@
 In a dimly lit forest, a worm squirmed and struggled. Its form morphed and crackled.
 
-A bird. A fly.
+A bird. A fly. A tiger.
 
-So witchcraft run amock in a span of an hour.
+Some witchcraft run amock in the span of an hour.
 
-Taylor watched from afar, eyes aghast. She had planted the seed. It was hers, but on borrowed time.
-Who knew when, transfiguration and the phase would come to abrupt ends.
+Taylor watched from afar, eyes aghast. She had plant the seed. It was hers, but on borrowed time. Who knew when transfiguration would end.
 
-Mentors said to wait and see. And, when the time was right, spring the trap.
+When the next phase arrived it would be abrupt.
 
-Surround, encircle and expose to glaring rays of light. This was the art.
+Mentors said, to wait and see. And when the time was right, spring the trap
+Surround, encircle and expose to glaring rays of light. This was the art
 
-A tiger, an antelope, a bee. The fear crept.
-
+A tiger, an antelope, a now a bee. Fear crept.
 Could it be?
 
-"Sarah". You've been standing there for too long.
+"Sarah".
+You've been standing there for too long.
 
 It was her mentor.
-
-"You've done well, now just say 'when' and it will happen."
+"You've done well... just say 'when' and it will happen."
 
 "Why not let it linger, Fang?"
+"You can just leave it be in that case, you'll be left without the control or the desire, so just say when."
 
-"You can just leave it be in that case, you'll be left without the control you desire."
+A fox? A fly? A demon.
 
-"So just say when"
-
-A fox? A fly? When would it be ready.
-
-Now was the time for action.
+It would make itself known.
