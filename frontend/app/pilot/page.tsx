@@ -34,10 +34,10 @@ export default function PilotPage() {
       <div className='fixed inset-0 bg-gradient-to-b from-white via-blue-100 to-blue-300'>
         {/* Subtle abstract shapes for visual depth */}
         <div className='absolute inset-0 opacity-30'>
-          <div className='absolute top-0 right-0 h-[45vh] w-[45vw] rounded-full bg-blue-200 blur-[100px]'></div>
+          <div className='absolute right-0 top-0 h-[45vh] w-[45vw] rounded-full bg-blue-200 blur-[100px]'></div>
           <div className='absolute bottom-0 left-0 h-[40vh] w-[40vw] rounded-full bg-blue-200 blur-[100px]'></div>
-          <div className='absolute right-1/4 bottom-1/3 h-[30vh] w-[30vw] rounded-full bg-indigo-200 opacity-40 blur-[80px]'></div>
-          <div className='absolute top-1/3 left-1/4 h-[20vh] w-[20vw] rounded-full bg-purple-200 opacity-30 blur-[60px]'></div>
+          <div className='absolute bottom-1/3 right-1/4 h-[30vh] w-[30vw] rounded-full bg-indigo-200 opacity-40 blur-[80px]'></div>
+          <div className='absolute left-1/4 top-1/3 h-[20vh] w-[20vw] rounded-full bg-purple-200 opacity-30 blur-[60px]'></div>
         </div>
       </div>
 
@@ -48,13 +48,13 @@ export default function PilotPage() {
         </div>
 
         <nav className='flex items-center space-x-4'>
-          <button onClick={() => router.push('/')} className='flex items-center text-sm font-medium text-blue-600 hover:text-blue-700'>
+          <button onClick={() => router.push('/')} className='flex items-center font-medium text-sm text-blue-600 hover:text-blue-700'>
             <ArrowLeftIcon className='mr-2 h-4 w-4' />
             Back to Home
           </button>
           <button
             onClick={() => window.open('https://calendly.com/jasonyu0100/15min', '_blank')}
-            className='rounded-full bg-gradient-to-r from-blue-500 to-blue-700 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition-all hover:from-blue-600 hover:to-blue-800'
+            className='rounded-full bg-gradient-to-r from-blue-500 to-blue-700 px-4 py-1.5 font-medium text-sm text-white shadow-sm transition-all hover:from-blue-600 hover:to-blue-800'
           >
             Schedule Demo
           </button>
@@ -65,7 +65,7 @@ export default function PilotPage() {
       <main className='relative z-10 mx-auto max-w-6xl px-6 py-16 md:px-10 md:py-24'>
         <div className='relative mb-20 text-center'>
           <span className='mb-8 inline-block rounded-full bg-blue-500 px-4 py-1 text-sm font-semibold text-white shadow-md'>BETA ACCESS</span>
-          <h1 className='mb-6 bg-gradient-to-r from-purple-600 to-indigo-500 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl lg:text-6xl'>
+          <h1 className='mb-6 bg-gradient-to-r from-purple-600 to-indigo-500 bg-clip-text font-bold text-4xl tracking-tight text-transparent md:text-5xl lg:text-6xl'>
             Automation Meet Intelligence
           </h1>
           <p className='mx-auto max-w-2xl text-lg text-slate-700 md:text-xl'>
@@ -84,13 +84,13 @@ export default function PilotPage() {
 
               {/* Content */}
               <div className='relative flex h-full flex-col rounded-xl bg-white p-6'>
-                <h2 className={`mb-4 bg-gradient-to-r ${feature.gradient} bg-clip-text text-2xl font-bold text-transparent`}>{feature.title}</h2>
+                <h2 className={`mb-4 bg-gradient-to-r ${feature.gradient} bg-clip-text font-bold text-2xl text-transparent`}>{feature.title}</h2>
                 <p className='mb-6 text-slate-700'>{feature.description}</p>
                 <h3 className='mb-4 font-medium text-slate-800'>Key Capabilities:</h3>
                 <ul className='space-y-3 text-slate-600'>
                   {feature.capabilities.map((capability, idx) => (
                     <li key={idx} className='flex items-start'>
-                      <span className={`mr-2 text-lg font-bold text-blue-500`}>→</span>
+                      <span className={`mr-2 font-bold text-lg text-blue-500`}>→</span>
                       {capability}
                     </li>
                   ))}
@@ -106,7 +106,7 @@ export default function PilotPage() {
             <div className='overflow-hidden rounded-xl bg-gradient-to-r from-purple-50 to-indigo-50 p-8 md:p-10'>
               <div className='grid gap-10 md:grid-cols-2'>
                 <div>
-                  <h2 className='mb-6 bg-gradient-to-r from-purple-600 to-indigo-500 bg-clip-text text-3xl font-bold text-transparent'>
+                  <h2 className='mb-6 bg-gradient-to-r from-purple-600 to-indigo-500 bg-clip-text font-bold text-3xl text-transparent'>
                     Powerful Browser Automation
                   </h2>
                   <p className='mb-6 text-slate-700'>
@@ -114,7 +114,7 @@ export default function PilotPage() {
                   </p>
                   <ul className='mb-8 space-y-4'>
                     <li className='flex items-start'>
-                      <span className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-600'>
+                      <span className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 font-bold text-sm text-purple-600'>
                         1
                       </span>
                       <div>
@@ -123,7 +123,7 @@ export default function PilotPage() {
                       </div>
                     </li>
                     <li className='flex items-start'>
-                      <span className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-600'>
+                      <span className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 font-bold text-sm text-purple-600'>
                         2
                       </span>
                       <div>
@@ -132,7 +132,7 @@ export default function PilotPage() {
                       </div>
                     </li>
                     <li className='flex items-start'>
-                      <span className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-600'>
+                      <span className='mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 font-bold text-sm text-purple-600'>
                         3
                       </span>
                       <div>
@@ -159,34 +159,34 @@ export default function PilotPage() {
 
         {/* How Browser Automation Works */}
         <div className='mt-32'>
-          <h2 className='mb-12 bg-gradient-to-r from-purple-600 to-indigo-500 bg-clip-text text-center text-3xl font-bold text-transparent md:text-4xl'>
+          <h2 className='mb-12 bg-gradient-to-r from-purple-600 to-indigo-500 bg-clip-text text-center font-bold text-3xl text-transparent md:text-4xl'>
             Automate Any Workflow Now
           </h2>
           <div className='grid gap-8 md:grid-cols-4'>
             <div className='rounded-xl bg-white/80 p-6 shadow-lg'>
               <div className='mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-indigo-400'>
-                <span className='text-xl font-bold text-white'>1</span>
+                <span className='font-bold text-xl text-white'>1</span>
               </div>
               <h3 className='mb-2 text-xl font-semibold text-slate-900'>Design Your Flow</h3>
               <p className='text-slate-700'>Map out your web operations with our intuitive visual workflow builder</p>
             </div>
             <div className='rounded-xl bg-white/80 p-6 shadow-lg'>
               <div className='mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-blue-500'>
-                <span className='text-xl font-bold text-white'>2</span>
+                <span className='font-bold text-xl text-white'>2</span>
               </div>
               <h3 className='mb-2 text-xl font-semibold text-slate-900'>Add Decision Points</h3>
               <p className='text-slate-700'>Set up conditional logic that responds dynamically to changing web content</p>
             </div>
             <div className='rounded-xl bg-white/80 p-6 shadow-lg'>
               <div className='mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-purple-500'>
-                <span className='text-xl font-bold text-white'>3</span>
+                <span className='font-bold text-xl text-white'>3</span>
               </div>
               <h3 className='mb-2 text-xl font-semibold text-slate-900'>Schedule Execution</h3>
               <p className='text-slate-700'>Set when and how often your automation runs with flexible scheduling options</p>
             </div>
             <div className='rounded-xl bg-white/80 p-6 shadow-lg'>
               <div className='mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-purple-700'>
-                <span className='text-xl font-bold text-white'>4</span>
+                <span className='font-bold text-xl text-white'>4</span>
               </div>
               <h3 className='mb-2 text-xl font-semibold text-slate-900'>Monitor & Refine</h3>
               <p className='text-slate-700'>Track execution details and improve your automation with AI-suggested optimizations</p>
@@ -196,8 +196,8 @@ export default function PilotPage() {
 
         <div className='mt-24 text-center'>
           <button
-            onClick={() => router.push('/login?mode=signup&beta=true')}
-            className='group relative overflow-hidden rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl'
+            onClick={() => router.push('/login')}
+            className='group relative overflow-hidden rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 px-8 py-4 font-medium text-lg text-white shadow-lg transition-all duration-300 hover:shadow-xl'
           >
             <span className='relative z-10'>Join the Pilot Program</span>
             <span className='absolute inset-0 -translate-y-full bg-gradient-to-r from-purple-700 to-indigo-600 transition-transform duration-300 ease-in-out group-hover:translate-y-0'></span>

@@ -60,10 +60,10 @@ export function LandingPage() {
 
           <nav className='flex items-center space-x-2 md:space-x-6'>
             <button onClick={() => router.push('/pilot')} className='hidden font-medium text-sm text-blue-700 hover:text-blue-800 md:block'>
-              Beta Access
+              Get Access
             </button>
             <button onClick={() => router.push('/about')} className='font-medium text-sm text-blue-700 hover:text-blue-800'>
-              About Us
+              About
             </button>
             <button onClick={() => router.push('/login')} className='font-medium text-sm text-blue-700 hover:text-blue-800'>
               Portal
@@ -96,18 +96,18 @@ export function LandingPage() {
 
           {/* Subheading - More Impactful */}
           <p className='mx-auto mb-12 max-w-3xl font-medium text-xl text-blue-600 md:text-2xl lg:text-3xl'>
-            <span className='bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text font-bold text-transparent'>AI-driven</span> workflow management that
-            turns complex processes into{' '}
-            <span className='bg-gradient-to-r from-purple-500 to-blue-600 bg-clip-text font-bold text-transparent'>automated browser tasks and schedules</span>.
+            <span className='bg-gradient-to-r from-indigo-500 to-purple-700 bg-clip-text font-extrabold text-transparent'>Scripting for execs.</span> Turn{' '}
+            <span className='bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text font-bold text-transparent'>complex processes</span> into automated{' '}
+            <span className='bg-gradient-to-r from-purple-500 to-blue-600 bg-clip-text font-bold text-transparent'>browser tasks</span>.
           </p>
 
           {/* Hero CTA buttons */}
           <div className='mt-4 flex flex-col justify-center space-y-5 sm:flex-row sm:space-x-8 sm:space-y-0'>
             <button
-              onClick={() => window.open('https://calendly.com/jasonyu0100/15min', '_blank')}
+              onClick={() => router.push('/login')}
               className='group rounded-full bg-gradient-to-r from-blue-500 to-blue-700 px-8 py-4 font-bold text-lg text-white shadow-lg transition-all hover:from-blue-600 hover:to-blue-800 hover:shadow-xl md:px-10 md:py-5'
             >
-              Learn More
+              Try Demo
               <span className='ml-2'>→</span>
             </button>
             <button

@@ -162,17 +162,10 @@ export default function AboutPage() {
 
             <div className='flex flex-col items-center justify-center space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0'>
               <button
-                onClick={() => router.push('/pilot')}
+                onClick={() => window.open('https://calendly.com/jasonyu0100/15min', '_blank')}
                 className='w-full rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-2.5 font-bold text-base text-white shadow-md transition-all hover:from-purple-700 hover:to-indigo-700 sm:w-auto'
               >
                 Join the Pilot Program
-              </button>
-
-              <button
-                onClick={() => window.open('https://calendly.com/jasonyu0100/15min', '_blank')}
-                className='w-full rounded-full border border-indigo-200 bg-white px-6 py-2.5 font-bold text-base text-indigo-700 shadow-sm transition-all hover:bg-indigo-50 sm:w-auto'
-              >
-                Schedule a Demo
               </button>
             </div>
           </section>
