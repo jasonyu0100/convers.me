@@ -16,7 +16,7 @@ export function LandingPage() {
       title: 'Process Intelligence',
       description:
         "Transform your organization's standard operating procedures into an intelligent planning system that understands your unique workflows and automates browser tasks.",
-      points: ['SOP digitization and indexing', 'AI-powered workflow understanding', 'Browser automation integration'],
+      points: ['Process digitization and indexing', 'AI-powered workflow understanding', 'Browser automation integration'],
     },
     schedule: {
       title: 'Prompt-Based Weekly Planning',
@@ -69,7 +69,7 @@ export function LandingPage() {
               Portal
             </button>
             <button
-              onClick={() => window.open('https://calendly.com/jasonyu0100/15min', '_blank')}
+              onClick={() => router.push('/login')}
               className='rounded-full bg-gradient-to-r from-blue-500 to-blue-700 px-3 py-1 font-medium text-xs text-white shadow-sm transition-all hover:from-blue-600 hover:to-blue-800 md:px-4 md:px-5 md:py-1.5 md:py-2 md:text-sm'
             >
               Try Demo
@@ -97,7 +97,7 @@ export function LandingPage() {
           {/* Subheading - More Impactful */}
           <p className='mx-auto mb-12 max-w-3xl font-medium text-xl text-blue-600 md:text-2xl lg:text-3xl'>
             <span className='bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text font-bold text-transparent'>AI-driven</span> workflow management that
-            turns complex SOPs into{' '}
+            turns complex processes into{' '}
             <span className='bg-gradient-to-r from-purple-500 to-blue-600 bg-clip-text font-bold text-transparent'>automated browser tasks and schedules</span>.
           </p>
 
@@ -115,7 +115,7 @@ export function LandingPage() {
               className='group flex items-center justify-center rounded-full border border-blue-100 bg-white/80 px-8 py-4 font-bold text-lg text-blue-700 shadow-md transition-all hover:bg-white/80 hover:shadow-lg md:px-10 md:py-5'
             >
               <PlayIcon className='mr-3 h-5 w-5' />
-              Book a Demo
+              Book a Call
             </button>
           </div>
         </div>
@@ -469,7 +469,8 @@ export function LandingPage() {
                 <p className='mb-6 font-light text-lg text-blue-600'>
                   Follow <span className='bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text font-bold text-transparent'>guided execution</span> with
                   automatic documentation to ensure{' '}
-                  <span className='bg-gradient-to-r from-purple-500 to-blue-600 bg-clip-text font-bold text-transparent'>SOP compliance</span> at every step.
+                  <span className='bg-gradient-to-r from-purple-500 to-blue-600 bg-clip-text font-bold text-transparent'>process compliance</span> at every
+                  step.
                 </p>
                 <ul className='space-y-3'>
                   <li className='flex'>
@@ -755,7 +756,7 @@ export function LandingPage() {
             onClick={() => window.open('https://calendly.com/jasonyu0100/15min', '_blank')}
             className='rounded-full bg-white/80 px-10 py-5 font-bold text-xl text-blue-700 shadow-lg transition-all hover:bg-blue-50'
           >
-            Book a Demo
+            Book a Call
             <span className='ml-2'>→</span>
           </button>
           <p className='mt-4 font-medium text-sm opacity-90'>Implement browser automations in as little as 7 days.</p>
