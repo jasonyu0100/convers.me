@@ -98,7 +98,7 @@ export function LandingPage() {
           <p className='mx-auto mb-12 max-w-3xl font-medium text-xl text-blue-600 md:text-2xl lg:text-3xl'>
             <span className='bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text font-bold text-transparent'>AI-driven</span> workflow management that
             turns complex SOPs into{' '}
-            <span className='bg-gradient-to-r from-purple-500 to-blue-600 bg-clip-text font-bold text-transparent'>automated browser tasks</span>.
+            <span className='bg-gradient-to-r from-purple-500 to-blue-600 bg-clip-text font-bold text-transparent'>automated browser tasks and schedules</span>.
           </p>
 
           {/* Hero CTA buttons */}
@@ -151,8 +151,8 @@ export function LandingPage() {
             />
             <div className='absolute inset-0 flex items-end bg-gradient-to-t from-blue-600/60 to-white/20'>
               <div className='p-6 md:p-8'>
-                <h3 className='mb-2 font-bold text-2xl text-white md:text-3xl'>Browser Automation with Intelligence</h3>
-                <p className='mb-4 text-white/90'>How automated browser tasks supercharge your workflows</p>
+                <h3 className='mb-2 font-bold text-2xl text-white md:text-3xl'>Intelligent Scheduling and Browser Automation</h3>
+                <p className='mb-4 text-white/90'>How automated scheduling and browser tasks supercharge your workflows</p>
               </div>
             </div>
           </div>
@@ -164,9 +164,9 @@ export function LandingPage() {
           <h2 className='mb-6 text-center font-bold text-3xl text-blue-700 md:text-4xl'>Browser Workflows, Automated</h2>
           <p className='mx-auto mb-16 max-w-3xl text-center text-lg text-blue-600'>
             Turn intentions into{' '}
-            <span className='bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text font-bold text-transparent'>automated browser tasks</span> with{' '}
-            <span className='bg-gradient-to-r from-purple-500 to-blue-600 bg-clip-text font-bold text-transparent'>real-time execution</span> and{' '}
-            <span className='bg-gradient-to-br from-blue-400 to-purple-500 bg-clip-text font-bold text-transparent'>intelligent workflow control</span>
+            <span className='bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text font-bold text-transparent'>automated schedules and browser tasks</span>{' '}
+            with <span className='bg-gradient-to-r from-purple-500 to-blue-600 bg-clip-text font-bold text-transparent'>real-time execution</span> and{' '}
+            <span className='bg-gradient-to-br from-blue-400 to-purple-500 bg-clip-text font-bold text-transparent'>intelligent schedule control</span>
           </p>
 
           {/* Three-step workflow visualization - Horizontal with alternating layout */}
@@ -179,8 +179,9 @@ export function LandingPage() {
                   <h3 className='font-bold text-2xl text-blue-700'>Define Your Intention</h3>
                 </div>
                 <p className='mb-6 font-light text-lg text-blue-600'>
-                  Just describe what you need to accomplish this week and the{' '}
-                  <span className='bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text font-bold text-transparent'>system handles the rest</span>.
+                  Just describe what you need to schedule this week and the{' '}
+                  <span className='bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text font-bold text-transparent'>AI creates your optimal schedule</span>
+                  .
                 </p>
                 <ul className='space-y-3'>
                   <li className='flex'>
